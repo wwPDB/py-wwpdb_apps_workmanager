@@ -28,8 +28,8 @@ except ImportError:
 
 import filecmp, os, shutil, sys
 
-from wwpdb.api.facade.ConfigInfo import ConfigInfo
-from wwpdb.utils.rcsb.PathInfo   import PathInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.io.locator.PathInfo   import PathInfo
 
 class BaseClass(object):
     """ Base Class responsible for all workflow manager task activities

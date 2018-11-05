@@ -131,7 +131,7 @@ class DepictSnapShot(object):
         return text
 
 if __name__ == '__main__':
-    from wwpdb.api.facade.ConfigInfo   import ConfigInfo
+    from wwpdb.utils.config.ConfigInfo   import ConfigInfo
     from wwpdb.utils.rcsb.WebRequest   import InputRequest
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     #siteId = 'WWPDB_DEPLOY_PRODUCTION_RU'

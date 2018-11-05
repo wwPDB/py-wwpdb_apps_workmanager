@@ -25,7 +25,7 @@ __version__   = "V0.07"
 import os,sys
 from types import *
 
-from wwpdb.api.facade.ConfigInfo                import ConfigInfo
+from wwpdb.utils.config.ConfigInfo                import ConfigInfo
 from wwpdb.apps.workmanager.db_access.DbApiUtil import DbApiUtil
 
 

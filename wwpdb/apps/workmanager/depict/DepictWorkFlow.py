@@ -23,11 +23,11 @@ __version__   = "V0.07"
 
 import os, sys, traceback, urllib
 
-from wwpdb.api.status.dbapi.WFEtime                           import getTimeString
+from wwpdb.utils.wf.dbapi.WFEtime                           import getTimeString
 from wwpdb.apps.workmanager.depict.DepictBase                 import DepictBase
 from wwpdb.apps.workmanager.file_access.LogFileUtil           import LogFileUtil
 from wwpdb.apps.workmanager.workflow_access.WorkflowXMLLoader import WorkflowXMLLoader
-from wwpdb.utils.rcsb.PathInfo                                import PathInfo
+from wwpdb.io.locator.PathInfo                                import PathInfo
 
 class DepictWorkFlow(DepictBase):
     """

@@ -24,7 +24,7 @@ __version__   = "V0.07"
 import os,sys
 
 from wwpdb.apps.entity_transform.utils.mmCIFUtil  import mmCIFUtil
-from wwpdb.utils.rcsb.PathInfo                    import PathInfo
+from wwpdb.io.locator.PathInfo                    import PathInfo
 
 class AnnotAssignUtil(object):
     """

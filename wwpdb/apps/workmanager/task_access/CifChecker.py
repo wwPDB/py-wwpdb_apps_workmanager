@@ -23,7 +23,7 @@ __version__   = "V0.07"
 import multiprocessing, os, sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
-from wwpdb.utils.rcsb.MultiProcUtil               import MultiProcUtil
+from rcsb.utils.multiproc.MultiProcUtil               import MultiProcUtil
 #
 
 class CifChecker(BaseClass):
@@ -114,7 +114,7 @@ class CifChecker(BaseClass):
 
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
-    from wwpdb.api.facade.ConfigInfo import ConfigInfo
+    from wwpdb.utils.config.ConfigInfo import ConfigInfo
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)

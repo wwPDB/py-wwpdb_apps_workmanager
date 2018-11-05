@@ -23,7 +23,7 @@ __version__   = "V0.07"
 
 import os, sys, urllib
 
-from wwpdb.api.status.dbapi.WFEtime                 import getTimeFromEpoc
+from wwpdb.utils.wf.dbapi.WFEtime                 import getTimeFromEpoc
 from wwpdb.apps.ann_tasks_v2.filer.FileUtils        import FileUtils
 from wwpdb.apps.workmanager.depict.DepictBase       import DepictBase,processPublicIDs
 from wwpdb.apps.workmanager.depict.DepictWorkFlow   import DepictWorkFlow

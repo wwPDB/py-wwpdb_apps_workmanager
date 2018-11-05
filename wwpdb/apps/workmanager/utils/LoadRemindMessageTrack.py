@@ -25,10 +25,10 @@ __version__   = "V0.07"
 import datetime, getopt, os, re, sys, time, traceback
 import MySQLdb
 
-from wwpdb.api.facade.ConfigInfo         import ConfigInfo
+from wwpdb.utils.config.ConfigInfo         import ConfigInfo
 from wwpdb.api.status.dbapi.DbConnection import DbConnection
 from wwpdb.utils.rcsb.mmCIFUtil          import mmCIFUtil
-from wwpdb.utils.rcsb.PathInfo           import PathInfo
+from wwpdb.io.locator.PathInfo           import PathInfo
 
 class DbApiUtil(object):
     """ Class for making status database connection

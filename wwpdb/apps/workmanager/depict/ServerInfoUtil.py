@@ -23,7 +23,7 @@ __version__   = "V0.07"
 
 import os,sys
 
-from wwpdb.api.status.dbapi.WFEtime           import getTimeNow
+from wwpdb.utils.wf.dbapi.WFEtime           import getTimeNow
 from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
 
 class ServerInfoUtil(DepictBase):

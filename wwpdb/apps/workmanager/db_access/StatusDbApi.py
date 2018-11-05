@@ -24,8 +24,8 @@ __version__   = "V0.07"
 
 import os,sys
 
-from wwpdb.api.facade.ConfigInfo                import ConfigInfo
-from wwpdb.api.status.dbapi.WFEtime             import getTimeNow
+from wwpdb.utils.config.ConfigInfo                import ConfigInfo
+from wwpdb.utils.wf.dbapi.WFEtime             import getTimeNow
 from wwpdb.apps.workmanager.db_access.DbApiUtil import DbApiUtil
 
 

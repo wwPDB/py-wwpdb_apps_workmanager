@@ -24,7 +24,7 @@ __version__   = "V0.07"
 import os,sys
 from xml.dom import minidom
 #
-from wwpdb.api.facade.ConfigInfo                        import ConfigInfo
+from wwpdb.utils.config.ConfigInfo                        import ConfigInfo
 from wwpdb.apps.workmanager.workflow_access.OrderedDict import OrderedDict
 
 class WorkflowXMLLoader(object):

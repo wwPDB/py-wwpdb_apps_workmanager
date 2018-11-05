@@ -28,8 +28,8 @@ except ImportError:
 
 import datetime, json, os, string, subprocess, sys, time, traceback, types
 
-from wwpdb.api.facade.ConfigInfo                        import ConfigInfo
-from wwpdb.api.status.dbapi.WFEtime                     import getTimeNow
+from wwpdb.utils.config.ConfigInfo                        import ConfigInfo
+from wwpdb.utils.wf.dbapi.WFEtime                     import getTimeNow
 from wwpdb.apps.deposit.settings                        import STORAGE_PICKLED_DEPOSITIONS,FTP_INSTRUCT_EMAIL
 from wwpdb.apps.wf_engine.engine.WFEapplications        import reRunWorkflow,WFEgetDepositorEmail,WFEsendEmail
 from wwpdb.apps.workmanager.db_access.DBLoader          import DBLoader
@@ -52,7 +52,7 @@ from wwpdb.apps.workmanager.task_access.PdbFileGenerator import PdbFileGenerator
 from wwpdb.apps.workmanager.task_access.SequenceMerger  import SequenceMerger
 from wwpdb.apps.workmanager.task_access.StatusUpdater   import StatusUpdater
 from wwpdb.utils.rcsb.DetachUtils                       import DetachUtils
-from wwpdb.utils.rcsb.PathInfo                          import PathInfo
+from wwpdb.io.locator.PathInfo                          import PathInfo
 from wwpdb.utils.rcsb.WebRequest                        import InputRequest,ResponseContent
 from wwpdb.utils.rcsb.WebUploadUtils                    import WebUploadUtils
 #
