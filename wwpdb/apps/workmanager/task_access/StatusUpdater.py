@@ -25,8 +25,8 @@ import multiprocessing, os, sys
 from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
 from wwpdb.apps.workmanager.db_access.StatusDbApi  import StatusDbApi
 from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
-from wwpdb.utils.rcsb.mmCIFUtil                    import mmCIFUtil
-from rcsb.utils.multiproc.MultiProcUtil                import MultiProcUtil
+from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
+from rcsb.utils.multiproc.MultiProcUtil            import MultiProcUtil
 #
 
 class StatusUpdater(BaseClass):

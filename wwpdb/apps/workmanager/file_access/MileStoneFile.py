@@ -23,9 +23,9 @@ __version__   = "V0.07"
 
 import os,sys
 
-from pdbx_v2.trans.InstanceMapper           import InstanceMapper
-from wwpdb.utils.config.ConfigInfo            import ConfigInfo
-from wwpdb.utils.rcsb.DataExchange          import DataExchange
+from mmcif_utils.trans.InstanceMapper       import InstanceMapper
+from wwpdb.utils.config.ConfigInfo          import ConfigInfo
+from wwpdb.io.file.DataExchange             import DataExchange
 from wwpdb.io.locator.PathInfo              import PathInfo
 
 class MileStoneFile(object):

@@ -22,10 +22,10 @@ __version__   = "V0.07"
 
 import multiprocessing, os, shutil, sys
 
-from wwpdb.utils.config.ConfigInfo     import ConfigInfo
-from wwpdb.wwpdb.utils.wf.DataReference  import DataFileReference
+from wwpdb.utils.config.ConfigInfo       import ConfigInfo
+from wwpdb.io.locator.DataReference      import DataFileReference
 from rcsb.utils.multiproc.MultiProcUtil  import MultiProcUtil
-from wwpdb.io.locator.PathInfo       import PathInfo
+from wwpdb.io.locator.PathInfo           import PathInfo
 #
 
 class CopyFileToAutoGroup(object):

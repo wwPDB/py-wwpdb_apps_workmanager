@@ -23,7 +23,7 @@ __version__   = "V0.07"
 
 import os,sys,pickle
 
-from wwpdb.apps.deposit.settings  import STORAGE_PICKLED_DEPOSITIONS
+from wwpdb.apps.wf_engine.engine.WFEapplications import getPicklePath
 
 class SnapShotDiff(object):
     """
@@ -40,7 +40,7 @@ class SnapShotDiff(object):
             name is the type of snapshot like reset or upload
             Only the last snapshot is supported at this time
         """
-        path = os.path.join(STORAGE_PICKLED_DEPOSITIONS, depID)
+        path = getPickePath(depID)
         if not os.access(path, os.F_OK):
             return None
         #
@@ -56,7 +56,7 @@ class SnapShotDiff(object):
         """ Method to check all categories in a snapshot and return all differences
             Look for all pickle files - and compare each matching file name
         """
-        path = os.path.join(STORAGE_PICKLED_DEPOSITIONS, depID)
+        path = getPicklePath(depID)
         #
         ret = []
         list = os.listdir(path)

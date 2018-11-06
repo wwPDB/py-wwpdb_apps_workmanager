@@ -23,9 +23,9 @@ __version__   = "V0.07"
 import multiprocessing, os, sys
 
 from wwpdb.utils.config.ConfigInfo     import ConfigInfo
-from wwpdb.apps.releasemodule.utils.DBLoadUtil import DBLoadUtil
+from wwpdb.utils.db.DBLoadUtil import DBLoadUtil
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
-from wwpdb.utils.rcsb.mmCIFUtil      import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil      import mmCIFUtil
 from rcsb.utils.multiproc.MultiProcUtil  import MultiProcUtil
 from wwpdb.io.locator.PathInfo       import PathInfo
 #

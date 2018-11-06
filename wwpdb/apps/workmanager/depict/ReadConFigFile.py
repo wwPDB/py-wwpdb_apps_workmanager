@@ -26,7 +26,7 @@ except ImportError:
     import pickle as pickle
 
 import os, sys
-from wwpdb.apps.entity_transform.utils.mmCIFUtil  import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil  import mmCIFUtil
 
 class ReadConFigFile(object):
     """

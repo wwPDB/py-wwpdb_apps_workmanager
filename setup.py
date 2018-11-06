@@ -43,7 +43,10 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=[],
+    install_requires=['wwpdb.utils.config', 'wwpdb.utils.wf', 'wwpdb.io',
+                      'rcsb.utils.multiproc', 'wwpdb.apps.wf_engine >= 0.5',
+                      'wwpdb.utils.db >= 0.4', 'wwpdb.utils.session >= 0.3',
+                      'mmcif.utils', 'wwpdb.utils.detach'],
     packages=find_packages(exclude=['wwpdb.apps.tests-workmanager']),
     # Enables Manifest to be used
     #include_package_data = True,

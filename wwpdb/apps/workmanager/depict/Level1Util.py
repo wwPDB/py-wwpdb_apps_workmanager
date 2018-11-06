@@ -24,8 +24,8 @@ __version__   = "V0.07"
 import os, sys, traceback
 from types import *
 
-from wwpdb.utils.config.ConfigInfo                  import ConfigInfo
-from wwpdb.apps.entity_transform.utils.mmCIFUtil  import mmCIFUtil
+from wwpdb.utils.config.ConfigInfo                import ConfigInfo
+from wwpdb.io.file.mmCIFUtil                      import mmCIFUtil
 from wwpdb.apps.workmanager.depict.DepictBase     import DepictBase
 from wwpdb.apps.workmanager.depict.DepictContent  import DepictContent
 from wwpdb.apps.workmanager.depict.ReadConFigFile import dumpPickleFile
