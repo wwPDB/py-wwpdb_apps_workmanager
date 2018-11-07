@@ -21,7 +21,12 @@ __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
 
-import __builtin__,os,sys
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
+import os
+import sys
 from types import *
 
 from wwpdb.utils.config.ConfigInfo                    import ConfigInfo
@@ -405,7 +410,7 @@ class DepictBase(object):
         #
         for paraMap in self._conFigObj['function_parameter'][key]:
             if ('value_type' in paraMap) and ('parameter_type' in paraMap) and paraMap['parameter_type'] == 'constant':
-                paraD[paraMap['name']] = getattr(__builtin__, '%s' % paraMap['value_type'])(paraMap['value'])
+                paraD[paraMap['name']] = getattr(builtins, '%s' % paraMap['value_type'])(paraMap['value'])
             else:
                 paraD[paraMap['name']] = paraMap['value']
             #

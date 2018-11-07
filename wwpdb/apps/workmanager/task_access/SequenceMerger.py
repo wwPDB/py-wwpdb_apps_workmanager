@@ -126,4 +126,4 @@ if __name__ == '__main__':
     entryList = [ 'D_8000210285', 'D_8000210286' ]
     tempFile = '/wwpdb_da/da_top/data_test/archive/D_8000210285/D_8000210285_model_P1.cif.V10'
     pfGenUtil = SequenceMerger(reqObj=myReqObj, entryList=entryList, templateFile=tempFile, verbose=False,log=sys.stderr)
-    print pfGenUtil.run()
+    print(pfGenUtil.run())

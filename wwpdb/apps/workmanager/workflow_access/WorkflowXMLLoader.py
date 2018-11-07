@@ -119,15 +119,15 @@ if __name__ == '__main__':
     loader = WorkflowXMLLoader(siteId='WWPDB_DEPLOY_TEST', verbose=True, log=sys.stderr)
     loader.loadWorkFlowXMLFile('Annotation.xml')
     info = loader.getMetaDataInfo()
-    print info
+    print(info)
     wfinfo = loader.getWorkFlowInfo()
-    print wfinfo[0:1]
-    print wfinfo['T1'] 
-    print wfinfo
+    print(wfinfo[0:1])
+    print(wfinfo['T1'])
+    print(wfinfo)
     for key,task in wfinfo.items():
-        print key
-        print task
+        print(key)
+        print(task)
     #
     values = wfinfo.values()
     for v in values:
-        print v
+        print(v)

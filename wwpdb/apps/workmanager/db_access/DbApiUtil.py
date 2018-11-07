@@ -86,7 +86,7 @@ class DbApiUtil(object):
             curs = self.__dbcon.cursor(MySQLdb.cursors.DictCursor)
             curs.execute(query)
             rows = curs.fetchall()
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
             self.__dbState = e.args[0]
             self.__lfh.write("Database error %d: %s\n" % (e.args[0], e.args[1]))
 
@@ -103,7 +103,7 @@ class DbApiUtil(object):
             curs.execute("set autocommit=1")
             curs.close()
             return 'OK'
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
             self.__dbcon.rollback()
             self.__dbState = e.args[0]
             self.__lfh.write("Database error %d: %s\n" % (e.args[0], e.args[1]))

@@ -178,4 +178,4 @@ if __name__ == '__main__':
     myReqObj.setValue("author_approval_type", "implicit")
     entryList = [ 'D_8000210285', 'D_8000210286' ]
     pfGenUtil = StatusUpdater(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
-    print pfGenUtil.run()
+    print(pfGenUtil.run())

@@ -126,4 +126,4 @@ if __name__ == '__main__':
     myReqObj.setValue("sessionid", "88626e0cc0b1a1bbd10bb2df8a0d68573fcbd5fe")
     entryList = [ 'D_8000210285', 'D_8000210286' ]
     checkUtil = CifChecker(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
-    print checkUtil.run()
+    print(checkUtil.run())

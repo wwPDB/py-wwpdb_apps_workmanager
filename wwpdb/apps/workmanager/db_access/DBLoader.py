@@ -135,4 +135,4 @@ if __name__ == '__main__':
     myReqObj.setValue("sessionid", " b8030220bdf3559c10a2c63618cd85a25256f7c1")
     entryList = [ 'D_8000200175', 'D_8000200176' ]
     copyUtil = DBLoader(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
-    print copyUtil.run()
+    print(copyUtil.run())

@@ -662,11 +662,11 @@ class StatusDbApi(object):
 if __name__ == '__main__':
     db = StatusDbApi(siteId='WWPDB_DEPLOY_TEST_RU', verbose=True, log=sys.stderr)
     message,entryList = db.getEntryIdListFromInputIdString("G_1002014, G_10020,D_8000210666,1abc,D_8000210646,D_1000210646")
-    print message
-    print entryList
+    print(message)
+    print(entryList)
     """
     alList = db.getDistinctAnnotatorInitials()
-    print alList
+    print(alList)
     aaiList = db.getActiveAnnotatorInitials()
     print aaiList
     rtList = db.getRetiredAnnotatorInitials()

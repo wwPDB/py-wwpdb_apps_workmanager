@@ -193,11 +193,11 @@ class StatsUtil(object):
 if __name__ == '__main__':
     st = StatsUtil(siteId='WWPDB_DEPLOY_TEST_RU', verbose=True, log=sys.stderr)
     column,data = st.getWeeklyStatus()
-    print column
-    print data
+    print(column)
+    print(data)
     column1,data1 = st.getMonthlyStats()
-    print column1
-    print data1
+    print(column1)
+    print(data1)
     column2,data2 = st.getProcessStats()
-    print column2
-    print data2
+    print(column2)
+    print(data2)

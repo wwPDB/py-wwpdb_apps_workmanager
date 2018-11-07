@@ -146,5 +146,5 @@ if __name__ == '__main__':
     myReqObj.setValue("sessionid", "4f834792f0c20756c57eb8632b4e5d1c5a022f5e")
     myReqObj.setValue("identifier", sys.argv[1])
     snapshot = DepictSnapShot(reqObj=myReqObj, verbose = True, log = sys.stderr)
-    print snapshot.getPageText()
+    print(snapshot.getPageText())
 

@@ -82,7 +82,7 @@ class SnapShotDiff(object):
             ret = pickle.load(f)
             f.close()
             return ret
-        except Exception,e:
+        except Exception as e:
             self.__lfh.write("Exception=%s\n" % str(e))
             return None
         #
@@ -139,7 +139,7 @@ class SnapShotDiff(object):
                 ret['category'] = filename[0:-4]
                 ret['data'] = dif
             #
-        except Exception,e:
+        except Exception as e:
             self.__lfh.write("Exception=%s\n" % str(e))
         #
         return ret
@@ -147,6 +147,6 @@ class SnapShotDiff(object):
 if __name__ == '__main__':
     ssd = SnapShotDiff(siteId="WWPDB_DEPLOY_INTERNAL")
     snap = ssd.getSnap('D_1100209960')
-    print snap
+    print(snap)
     diff = ssd.getDifference('D_1100209960', snap)
-    print diff
+    print(diff)
