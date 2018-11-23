@@ -15,16 +15,19 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing
+import os
+import sys
 
-from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil                import MultiProcUtil
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 #
+
 
 class SequenceMerger(BaseClass):
     def __init__(self, reqObj=None, entryList=None, templateFile=None, verbose=False, log=sys.stderr):
@@ -38,10 +41,10 @@ class SequenceMerger(BaseClass):
         """
         """
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose = True, log = self._lfh)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True, log=self._lfh)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -52,16 +55,16 @@ class SequenceMerger(BaseClass):
             self.__runSingle(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __runSingle(self, entry_id):
         all_message = ''
-        message,modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
+        message, modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
         if message:
             self._dumpPickle(entry_id + "_SequenceMerger", message)
             return
         #
-        message,updatedModelFile = self.__updateModelFile(entry_id, modelFile)
+        message, updatedModelFile = self.__updateModelFile(entry_id, modelFile)
         if message:
             self._dumpPickle(entry_id + "_SequenceMerger", message)
             return
@@ -91,12 +94,12 @@ class SequenceMerger(BaseClass):
             msg += cmsg
         #
         if msg:
-            return msg,''
+            return msg, ''
         #
         if os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
-            return '',os.path.join(self._sessionPath, updatedModelFile)
+            return '', os.path.join(self._sessionPath, updatedModelFile)
         #
-        return "Merge sequence information failed.",""
+        return "Merge sequence information failed.", ""
 
     def __getReturnMessage(self):
         message = ''
@@ -111,6 +114,7 @@ class SequenceMerger(BaseClass):
         #
         return message
 
+
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -118,12 +122,12 @@ if __name__ == '__main__':
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002030")
     myReqObj.setValue("sessionid", "fc3d934eb200f2f817eb1a8f2c608640cd3b1ba1")
-    entryList = [ 'D_8000210285', 'D_8000210286' ]
+    entryList = ['D_8000210285', 'D_8000210286']
     tempFile = '/wwpdb_da/da_top/data_test/archive/D_8000210285/D_8000210285_model_P1.cif.V10'
-    pfGenUtil = SequenceMerger(reqObj=myReqObj, entryList=entryList, templateFile=tempFile, verbose=False,log=sys.stderr)
+    pfGenUtil = SequenceMerger(reqObj=myReqObj, entryList=entryList, templateFile=tempFile, verbose=False, log=sys.stderr)
     print(pfGenUtil.run())

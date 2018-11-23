@@ -15,34 +15,37 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing
+import os
+import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil               import MultiProcUtil
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 #
 
+
 class CifChecker(BaseClass):
-    def __init__(self, reqObj=None, entryList=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
         """
         super(CifChecker, self).__init__(reqObj=reqObj, verbose=verbose, log=log)
         self.__entryList = entryList
-        self.__dictRoot  = self._cI.get('SITE_PDBX_DICT_PATH')
-        self.__dictName  = self._cI.get('SITE_PDBX_DICT_NAME') + '.sdb'
+        self.__dictRoot = self._cI.get('SITE_PDBX_DICT_PATH')
+        self.__dictName = self._cI.get('SITE_PDBX_DICT_NAME') + '.sdb'
 
     def run(self):
         """
         """
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose = True, log = self._lfh)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True, log=self._lfh)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -53,11 +56,11 @@ class CifChecker(BaseClass):
             self.__runSingle(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __runSingle(self, entry_id):
         all_message = ''
-        message,modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
+        message, modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
         if message:
             self._dumpPickle(entry_id + "_CifChecker", message)
             return
@@ -78,7 +81,7 @@ class CifChecker(BaseClass):
         #
         logFile = localModelFile + '-diag.log'
         self._removeFile(os.path.join(self._sessionPath, logFile))
-        
+
         logFile = 'CifChecker_check_cif_' + entry_id + '.log'
         self._removeFile(os.path.join(self._sessionPath, logFile))
         clogFile = 'CifChecker_check_cif_command_' + entry_id + '.log'
@@ -112,6 +115,7 @@ class CifChecker(BaseClass):
         #
         return message
 
+
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -119,11 +123,11 @@ if __name__ == '__main__':
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002030")
     myReqObj.setValue("sessionid", "88626e0cc0b1a1bbd10bb2df8a0d68573fcbd5fe")
-    entryList = [ 'D_8000210285', 'D_8000210286' ]
-    checkUtil = CifChecker(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
+    entryList = ['D_8000210285', 'D_8000210286']
+    checkUtil = CifChecker(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
     print(checkUtil.run())

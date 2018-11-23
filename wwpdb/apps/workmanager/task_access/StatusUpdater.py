@@ -15,32 +15,35 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing
+import os
+import sys
 
 from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
-from wwpdb.apps.workmanager.db_access.StatusDbApi  import StatusDbApi
-from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
-from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
-from rcsb.utils.multiproc.MultiProcUtil            import MultiProcUtil
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 #
 
+
 class StatusUpdater(BaseClass):
-    def __init__(self, reqObj=None, entryList=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
         """
         super(StatusUpdater, self).__init__(reqObj=reqObj, verbose=verbose, log=log)
         self.__entryList = entryList
-        self.__statusTokens = ( 'status_code', 'author_approval_type', 'author_release_status_code',  'date_hold_coordinates', 'pdbx_annotator', 'process_site' )
-        self.__depositionTableMap = { 'status_code':'status_code', 'author_release_status_code':'author_release_status_code', \
-                                      'pdbx_annotator':'annotator_initials', 'process_site':'process_site' }
-        self.__rcsb_statusTableMap = { 'status_code':'status_code', 'author_approval_type':'author_approval_type', \
-                                       'author_release_status_code':'author_release_status_code', 'date_hold_coordinates':'date_hold_coordinates', \
-                                       'pdbx_annotator':'rcsb_annotator', 'process_site':'process_site' }
+        self.__statusTokens = ('status_code', 'author_approval_type', 'author_release_status_code', 'date_hold_coordinates', 'pdbx_annotator', 'process_site')
+        self.__depositionTableMap = {'status_code': 'status_code', 'author_release_status_code': 'author_release_status_code',
+                                     'pdbx_annotator': 'annotator_initials', 'process_site': 'process_site'}
+        self.__rcsb_statusTableMap = {'status_code': 'status_code', 'author_approval_type': 'author_approval_type',
+                                      'author_release_status_code': 'author_release_status_code', 'date_hold_coordinates': 'date_hold_coordinates',
+                                      'pdbx_annotator': 'rcsb_annotator', 'process_site': 'process_site'}
         self.__statusInfo = {}
         self.__depositionInfo = {}
         self.__rcsb_statusInfo = {}
@@ -54,10 +57,10 @@ class StatusUpdater(BaseClass):
             return 'No status info. selected.'
         #
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose = True, log = self._lfh)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True, log=self._lfh)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -68,7 +71,7 @@ class StatusUpdater(BaseClass):
             self.__runSingle(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __getStatusInfo(self):
         for token in self.__statusTokens:
@@ -93,19 +96,19 @@ class StatusUpdater(BaseClass):
         cifUtil = mmCIFUtil()
         cifUtil.AddBlock("STATUS")
         cifUtil.AddCategory('pdbx_database_status', self.__statusTokens)
-        for key,value in self.__statusInfo.items():
+        for key, value in self.__statusInfo.items():
             cifUtil.UpdateSingleRowValue('pdbx_database_status', key, 0, value)
         #
         cifUtil.WriteCif(os.path.join(self._sessionPath, 'statusInfo_StatusUpdater.cif'))
 
     def __runSingle(self, entry_id):
         all_message = ''
-        message,modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
+        message, modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
         if message:
             self._dumpPickle(entry_id + "_StatusUpdater", message)
             return
         #
-        message,updatedModelFile = self.__updateModelFile(entry_id, modelFile)
+        message, updatedModelFile = self.__updateModelFile(entry_id, modelFile)
         if message:
             self._dumpPickle(entry_id + "_StatusUpdater", message)
             return
@@ -126,9 +129,9 @@ class StatusUpdater(BaseClass):
         cmd = self._getCmd('${BINPATH}/UpdateCifCategory', inputFile, updatedModelFile, logFile, clogFile, ' -data statusInfo_StatusUpdater.cif ')
         self._runCmd(cmd)
         if os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
-            return '',os.path.join(self._sessionPath, updatedModelFile)
+            return '', os.path.join(self._sessionPath, updatedModelFile)
         #
-        return "Status update failed.",""
+        return "Status update failed.", ""
 
     def __getReturnMessage(self):
         message = ''
@@ -147,17 +150,18 @@ class StatusUpdater(BaseClass):
             if self.__depositionInfo:
                 statusDB = StatusDbApi(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
                 for entry_id in updatedList:
-                     statusDB.runUpdate(table = 'deposition', where = { 'dep_set_id' : entry_id }, data = self.__depositionInfo)
+                    statusDB.runUpdate(table='deposition', where={'dep_set_id': entry_id}, data=self.__depositionInfo)
                 #
             #
             if self.__rcsb_statusInfo:
                 contentDB = ContentDbApi(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
                 for entry_id in updatedList:
-                     contentDB.runUpdate(table = 'rcsb_status', where = { 'Structure_ID' : entry_id }, data = self.__rcsb_statusInfo)
+                    contentDB.runUpdate(table='rcsb_status', where={'Structure_ID': entry_id}, data=self.__rcsb_statusInfo)
                 #
             #
         #
         return message
+
 
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
@@ -166,7 +170,7 @@ if __name__ == '__main__':
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002030")
@@ -176,6 +180,6 @@ if __name__ == '__main__':
     myReqObj.setValue("date_hold_coordinates", "2017-04-25")
     myReqObj.setValue("pdbx_annotator", "LD")
     myReqObj.setValue("author_approval_type", "implicit")
-    entryList = [ 'D_8000210285', 'D_8000210286' ]
-    pfGenUtil = StatusUpdater(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
+    entryList = ['D_8000210285', 'D_8000210286']
+    pfGenUtil = StatusUpdater(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
     print(pfGenUtil.run())

@@ -15,23 +15,27 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os, sys, urllib
+import os
+import sys
+import urllib
 
-from wwpdb.utils.wf.dbapi.WFEtime                   import getTimeFromEpoc
-from wwpdb.utils.session.FileUtils                  import FileUtils
-from wwpdb.apps.workmanager.depict.DepictBase       import DepictBase,processPublicIDs
-from wwpdb.apps.workmanager.depict.DepictWorkFlow   import DepictWorkFlow
+from wwpdb.utils.wf.dbapi.WFEtime import getTimeFromEpoc
+from wwpdb.utils.session.FileUtils import FileUtils
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase, processPublicIDs
+from wwpdb.apps.workmanager.depict.DepictWorkFlow import DepictWorkFlow
 from wwpdb.apps.workmanager.file_access.LogFileUtil import LogFileUtil
+
 
 class DepictOther(DepictBase):
     """
     """
+
     def __init__(self, reqObj=None, statusDB=None, conFigObj=None, verbose=False, log=sys.stderr):
         """
         """
@@ -44,19 +48,19 @@ class DepictOther(DepictBase):
     def SummaryPage(self):
         """
         """
-        self._dataInfo['summary_tmplt'] = [ self.__dataD ]
+        self._dataInfo['summary_tmplt'] = [self.__dataD]
         #
         self._connectContentDB()
         c_authors = self._contentDB.ContactAuthor(depositionid=self._reqObj.getValue("identifier"))
         if c_authors:
             self._dataInfo['contact_table_row_tmplt'] = list(c_authors)
         #
-        audit_history  = self._contentDB.AuditHistory(depositionid=self._reqObj.getValue("identifier"))
+        audit_history = self._contentDB.AuditHistory(depositionid=self._reqObj.getValue("identifier"))
         if audit_history:
             hisList = []
             for Dict in audit_history:
                 myD = {}
-                for item in ( 'public_version', 'date', 'file_version' ):
+                for item in ('public_version', 'date', 'file_version'):
                     myD[item] = ''
                 #
                 if ('major_revision' in Dict) and ('minor_revision' in Dict):
@@ -86,11 +90,11 @@ class DepictOther(DepictBase):
         """
         """
         fu = FileUtils(self._reqObj.getValue("identifier"), reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
-        for item in ( 'archive', 'deposit', 'wf_instance' ):
+        for item in ('archive', 'deposit', 'wf_instance'):
             nFiles, list = fu.renderFileList(fileSource=item)
             self.__dataD[item] = '\n'.join(list)
         #
-        self._dataInfo['allfile_tmplt'] = [ self.__dataD ]
+        self._dataInfo['allfile_tmplt'] = [self.__dataD]
 
     def getLevelPageSetting(self, page_tmplt):
         """
@@ -104,14 +108,14 @@ class DepictOther(DepictBase):
         if page_tmplt == 'level3_tmplt':
             self.__depictLevel3WorkFlow()
         #
-        self._dataInfo[page_tmplt] = [ self.__dataD ]
-        self._dataInfo['entry_tmplt'] = [ self.__lastInst ]
+        self._dataInfo[page_tmplt] = [self.__dataD]
+        self._dataInfo['entry_tmplt'] = [self.__lastInst]
 
     def DepictLevel2WorkFlow(self):
         """
         """
         self._reqObj.setValue("classID", "Annotate")
-        for item in ( 'wf_inst_id', 'wf_class_id' ):
+        for item in ('wf_inst_id', 'wf_class_id'):
             self._reqObj.setValue(item, self.__getInstanceData(item))
             #
         #
@@ -148,7 +152,7 @@ class DepictOther(DepictBase):
         logFilePath = logUtil.getLogFile()
         if logFilePath:
             myD = {}
-            for item in ( 'identifier', 'sessionid', 'instance', 'classID' ):
+            for item in ('identifier', 'sessionid', 'instance', 'classID'):
                 myD[item] = self._reqObj.getValue(item)
             #
             log_tmplt = self._getPageTemplate('download_wf_log_tmplt')

@@ -15,33 +15,38 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os, sys, traceback, urllib
+import os
+import sys
+import traceback
+import urllib
 
-from wwpdb.utils.wf.dbapi.WFEtime                           import getTimeString
-from wwpdb.apps.workmanager.depict.DepictBase                 import DepictBase
-from wwpdb.apps.workmanager.file_access.LogFileUtil           import LogFileUtil
+from wwpdb.utils.wf.dbapi.WFEtime import getTimeString
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
+from wwpdb.apps.workmanager.file_access.LogFileUtil import LogFileUtil
 from wwpdb.apps.workmanager.workflow_access.WorkflowXMLLoader import WorkflowXMLLoader
-from wwpdb.io.locator.PathInfo                                import PathInfo
+from wwpdb.io.locator.PathInfo import PathInfo
+
 
 class DepictWorkFlow(DepictBase):
     """
     """
+
     def __init__(self, reqObj=None, statusDB=None, conFigObj=None, verbose=False, log=sys.stderr):
         """
         """
         super(DepictWorkFlow, self).__init__(reqObj=reqObj, statusDB=statusDB, conFigObj=conFigObj, verbose=verbose, log=log)
         #
-        self.__sObj        = self._reqObj.newSessionObj()
-        self.__sessionId   = self.__sObj.getId()
+        self.__sObj = self._reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__MaxBox      = 7
-        self.__MaxBoxTask  = 4
+        self.__MaxBox = 7
+        self.__MaxBoxTask = 4
         #
         self.__setup()
 
@@ -69,7 +74,7 @@ class DepictWorkFlow(DepictBase):
         dataD['wf_entry_name'] = self.__wfFlow[0]['name']
         dataD['wf_exit_id'] = self.__wfFlow[-1]['taskID']
         dataD['wf_exit_name'] = self.__wfFlow[-1]['name']
-        self._dataInfo['workflow_tmplt'] = [ dataD ]
+        self._dataInfo['workflow_tmplt'] = [dataD]
         #
         self.__download_tmplt = self._getPageTemplate('download_tmplt')
         self.__depictLevel2WorkFlow()
@@ -113,11 +118,11 @@ class DepictWorkFlow(DepictBase):
                 single_module += '</tr>\n<tr>\n'
             #
             myD = self.__initializeMyD()
-            myD = self.__expandMyD(myD, wf, ( 'classID', 'taskID', 'name' ))
+            myD = self.__expandMyD(myD, wf, ('classID', 'taskID', 'name'))
             myD['inst_status'] = 'notdone'
             myD['instance'] = ''
             lastWFInstance = self._statusDB.getLastWFInstance(depositionid=self._reqObj.getValue('identifier'), classid=wf['classID'])
-            myD = self.__expandMyD(myD, lastWFInstance, ( 'inst_status', 'wf_inst_id' ))
+            myD = self.__expandMyD(myD, lastWFInstance, ('inst_status', 'wf_inst_id'))
             if not myD['inst_status']:
                 myD['inst_status'] = 'notdone'
             #
@@ -167,7 +172,7 @@ class DepictWorkFlow(DepictBase):
                 contents += '</tr>\n<tr>\n'
             #
             myD = self.__initializeMyD()
-            myD = self.__expandMyD(myD, dir, ( 'inst_status', 'wf_inst_id', 'wf_class_id', 'status_timestamp' ))
+            myD = self.__expandMyD(myD, dir, ('inst_status', 'wf_inst_id', 'wf_class_id', 'status_timestamp'))
             myD['download_ciffile'] = self.__processDownLoadCifFile(myD, '')
             contents += run_module_tmplt % myD
             #
@@ -182,7 +187,7 @@ class DepictWorkFlow(DepictBase):
     def __depictLevel3TaskInfo(self):
         """
         """
-        realFlowList = self._statusDB.getRealFlow(depositionid=self._reqObj.getValue('identifier'), instid=self._reqObj.getValue('instance'), \
+        realFlowList = self._statusDB.getRealFlow(depositionid=self._reqObj.getValue('identifier'), instid=self._reqObj.getValue('instance'),
                                                   classid=self._reqObj.getValue('classID'))
         if not realFlowList:
             return ''
@@ -198,10 +203,10 @@ class DepictWorkFlow(DepictBase):
                 contents += '</tr>\n<tr>\n'
             #
             myD = self.__initializeMyD()
-            myD = self.__expandMyD(myD, dir, ( 'wf_task_id', 'task_status', 'task_type', 'status_timestamp' ))
+            myD = self.__expandMyD(myD, dir, ('wf_task_id', 'task_status', 'task_type', 'status_timestamp'))
             #
             wf = self.__wfWorkFlowInfo[myD['wf_task_id']]
-            myD = self.__expandMyD(myD, wf, ( 'name', 'description', 'reference' ))
+            myD = self.__expandMyD(myD, wf, ('name', 'description', 'reference'))
             #
             myD['log_file'] = self.__getTaskLogFile(log_tmplt, myD)
             #
@@ -222,7 +227,7 @@ class DepictWorkFlow(DepictBase):
         """
         """
         myD = {}
-        for item in ( 'identifier', 'sessionid', 'annotator', 'method', 'urlmethod', 'instance', 'classID' ):
+        for item in ('identifier', 'sessionid', 'annotator', 'method', 'urlmethod', 'instance', 'classID'):
             myD[item] = self._reqObj.getValue(item)
         #
         if myD['method'] and (not myD['urlmethod']):
@@ -256,9 +261,9 @@ class DepictWorkFlow(DepictBase):
         """
         try:
             pI = PathInfo(siteId=self._siteId, sessionPath=self.__sessionPath, verbose=self._verbose, log=self._lfh)
-            filePath = pI.getFilePath(dataSetId=myD['identifier'], wfInstanceId=myD['instance'], contentType='model', \
-                         formatType='pdbx', fileSource='wf-instance', versionId='latest', partNumber='1')
-    
+            filePath = pI.getFilePath(dataSetId=myD['identifier'], wfInstanceId=myD['instance'], contentType='model',
+                                      formatType='pdbx', fileSource='wf-instance', versionId='latest', partNumber='1')
+
             if filePath and os.access(filePath, os.F_OK):
                 return delimiter + self.__download_tmplt % myD
             #
@@ -266,7 +271,7 @@ class DepictWorkFlow(DepictBase):
             traceback.print_exc(file=self._lfh)
         #
         return ''
- 
+
     def __getTaskLogFile(self, log_tmplt, myD):
         """
         """

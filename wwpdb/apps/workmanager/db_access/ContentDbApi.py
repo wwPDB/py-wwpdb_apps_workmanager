@@ -16,56 +16,58 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import os
+import sys
 from types import *
 
-from wwpdb.utils.config.ConfigInfo                import ConfigInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.apps.workmanager.db_access.DbApiUtil import DbApiUtil
 
 
 class ContentDbApi(object):
-    __schemaMap = { "AUDIT_HISTORY" : "select Structure_ID, ordinal, major_revision, minor_revision, revision_date, internal_version from pdbx_audit_revision_history " +
-                                      "where Structure_ID = '%s' order by ordinal",
-                    "CONTACT_AUTHOR" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID = '%s'",
-                    "CONTACT_AUTHOR_LIST" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID in ( '%s' )",
-                    "CONTACT_AUTHOR_PI" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID = '%s' " +
-                                          "and role = 'principal investigator/group leader'",
-                    "CONTACT_AUTHOR_PI_LIST" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID in ( '%s' ) " +
-                                               "and role = 'principal investigator/group leader'",
-                    "GET_REMINDER_LIST" : "select structure_id from rcsb_status where status_code in ('WAIT','PROC','REPL','AUTH','AUCO') and " +
-                                          "rcsb_annotator = '%s' and initial_deposition_date <= DATE_SUB(curdate(), interval 14 day) order by structure_id",
-                    "GET_DAILY_STATS" : "select rcsb_annotator from rcsb_status where status_code not in ('PROC','WAIT','POLC','AUCO') " +
-                                        "and date_begin_processing  = '%s'",
-                    "GET_RANGE_STATS" : "select rcsb_annotator from rcsb_status where status_code not in ('PROC','WAIT','POLC','AUCO') " +
-                                        "and date_begin_processing  >= '%s' and date_begin_processing <= '%s'",
-                "GET_INPROCESS_STATS" : "select rcsb_annotator, status_code from rcsb_status where status_code in ('WAIT','PROC','AUTH','POLC','REPL')",
-                   "GET_RELEASE_DATE" : "select structure_id, pdb_id, date_of_RCSB_release from rcsb_status where structure_id in ( '%s' ) order by structure_id",
-                "GET_EM_RELEASE_DATE" : "select structure_id, current_status, map_release_date date_of_EM_release from em_admin where structure_id in ( '%s' ) order by structure_id"
-                  }
+    __schemaMap = {"AUDIT_HISTORY": "select Structure_ID, ordinal, major_revision, minor_revision, revision_date, internal_version from pdbx_audit_revision_history " +
+                   "where Structure_ID = '%s' order by ordinal",
+                   "CONTACT_AUTHOR": "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID = '%s'",
+                   "CONTACT_AUTHOR_LIST": "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID in ( '%s' )",
+                   "CONTACT_AUTHOR_PI": "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID = '%s' " +
+                   "and role = 'principal investigator/group leader'",
+                   "CONTACT_AUTHOR_PI_LIST": "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID in ( '%s' ) " +
+                   "and role = 'principal investigator/group leader'",
+                   "GET_REMINDER_LIST": "select structure_id from rcsb_status where status_code in ('WAIT','PROC','REPL','AUTH','AUCO') and " +
+                   "rcsb_annotator = '%s' and initial_deposition_date <= DATE_SUB(curdate(), interval 14 day) order by structure_id",
+                   "GET_DAILY_STATS": "select rcsb_annotator from rcsb_status where status_code not in ('PROC','WAIT','POLC','AUCO') " +
+                   "and date_begin_processing  = '%s'",
+                   "GET_RANGE_STATS": "select rcsb_annotator from rcsb_status where status_code not in ('PROC','WAIT','POLC','AUCO') " +
+                   "and date_begin_processing  >= '%s' and date_begin_processing <= '%s'",
+                   "GET_INPROCESS_STATS": "select rcsb_annotator, status_code from rcsb_status where status_code in ('WAIT','PROC','AUTH','POLC','REPL')",
+                   "GET_RELEASE_DATE": "select structure_id, pdb_id, date_of_RCSB_release from rcsb_status where structure_id in ( '%s' ) order by structure_id",
+                   "GET_EM_RELEASE_DATE": "select structure_id, current_status, map_release_date date_of_EM_release from em_admin where structure_id in ( '%s' ) order by structure_id"
+                   }
     """
     """
+
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__lfh       = log
-        self.__verbose   = verbose
-        self.__siteId    = siteId
-        self.__cI        = ConfigInfo(self.__siteId)
-        self.__dbServer  = self.__cI.get("SITE_DB_SERVER")
-        self.__dbHost    = self.__cI.get("SITE_DB_HOST_NAME")
-        self.__dbName    = "da_internal"
-        self.__dbUser    = self.__cI.get("SITE_DB_USER_NAME")
-        self.__dbPw      = self.__cI.get("SITE_DB_PASSWORD")
-        self.__dbSocket  = self.__cI.get("SITE_DB_SOCKET")
-        self.__dbPort    = int(self.__cI.get("SITE_DB_PORT_NUMBER"))
+        self.__lfh = log
+        self.__verbose = verbose
+        self.__siteId = siteId
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__dbServer = self.__cI.get("SITE_DB_SERVER")
+        self.__dbHost = self.__cI.get("SITE_DB_HOST_NAME")
+        self.__dbName = "da_internal"
+        self.__dbUser = self.__cI.get("SITE_DB_USER_NAME")
+        self.__dbPw = self.__cI.get("SITE_DB_PASSWORD")
+        self.__dbSocket = self.__cI.get("SITE_DB_SOCKET")
+        self.__dbPort = int(self.__cI.get("SITE_DB_PORT_NUMBER"))
         #
-        self.__dbApi = DbApiUtil(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, dbPw=self.__dbPw, \
+        self.__dbApi = DbApiUtil(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, dbPw=self.__dbPw,
                                  dbSocket=self.__dbSocket, dbPort=self.__dbPort, verbose=self.__verbose, log=self.__lfh)
         self.__dbApi.setSchemaMap(self.__schemaMap)
 

@@ -16,15 +16,14 @@ import unittest
 
 from wwpdb.apps.workmanager.webapp.WorkManagerWebApp import WorkManagerWebApp
 
+
 class ImportTests(unittest.TestCase):
     def setUp(self):
         pass
 
     def testInstantiate(self):
         pass
-    
+
+
 if __name__ == '__main__':
     unittest.main()
-
-
-    

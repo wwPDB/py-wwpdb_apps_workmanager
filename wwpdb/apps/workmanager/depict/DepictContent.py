@@ -15,20 +15,24 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os, sys, urllib
+import os
+import sys
+import urllib
 
-from wwpdb.apps.workmanager.depict.DepictBase     import DepictBase,processPublicIDs
-from wwpdb.apps.workmanager.depict.ReadConFigFile import dumpPickleFile,loadPickleFile
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase, processPublicIDs
+from wwpdb.apps.workmanager.depict.ReadConFigFile import dumpPickleFile, loadPickleFile
+
 
 class DepictContent(DepictBase):
     """
     """
+
     def __init__(self, reqObj=None, statusDB=None, conFigObj=None, verbose=False, log=sys.stderr):
         """
         """
@@ -43,8 +47,8 @@ class DepictContent(DepictBase):
         if 'table_data_field_binding' in self._conFigObj:
             self.__dataFieldMap = self._conFigObj['table_data_field_binding']
         #
-        self.__sObj        = self._reqObj.newSessionObj()
-        self.__sessionId   = self.__sObj.getId()
+        self.__sObj = self._reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
 
     def depictTableContent(self, index):
@@ -71,9 +75,9 @@ class DepictContent(DepictBase):
             if 'binding_class' in tableMap:
                 self._processBindingClass(tableMap['binding_class'])
                 classUtil = self._UtilClass[tableMap['binding_class']]
-                columnDef,contentResults = getattr(classUtil, '%s' % tableMap['binding_function'])()
+                columnDef, contentResults = getattr(classUtil, '%s' % tableMap['binding_function'])()
             else:
-                columnDef,contentResults = getattr(self, '%s' % tableMap['binding_function'])()
+                columnDef, contentResults = getattr(self, '%s' % tableMap['binding_function'])()
             #
             dumpPickleFile(self.__sessionPath, tableMap['pkl'], contentResults)
             return
@@ -137,7 +141,7 @@ class DepictContent(DepictBase):
             PIInfoMap = {}
             if ('add_list' in tableMap['data-field']) or ('major_issue' in tableMap['data-field']) or \
                ('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
-               ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']): 
+               ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']):
                 if idList and ('add_list' in tableMap['data-field']):
                     return_list = self._statusDB.getAnnoSelection(depositionids=idList)
                     annSelectMap = self.__convertListIntoMap(return_list)
@@ -146,8 +150,8 @@ class DepictContent(DepictBase):
                     return_list = self._statusDB.getRemindMessageTrack(depositionids=idList)
                     reminderSentMap = self.__convertListIntoMap(return_list)
                 #
-                if idList and (('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
-                   ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field'])):
+                if idList and (('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or
+                               ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field'])):
                     PIInfoMap = self.__getPIInfo(idList)
                 #
             #
@@ -207,7 +211,7 @@ class DepictContent(DepictBase):
                     elif dataD['method'].upper() == 'FIBER DIFFRACTION' or dataD['method'].upper() == 'FIBRE DIFFRACTION':
                         dataD['abbrv_method'] = 'FIBER'
                     elif dataD['method'].upper() == 'CRYO-ELECTRON MICROSCOPY' or dataD['method'].upper() == 'ELECTRON MICROSCOPY' or \
-                         dataD['method'].upper() == 'ELECTRON TOMOGRAPHY':
+                            dataD['method'].upper() == 'ELECTRON TOMOGRAPHY':
                         dataD['abbrv_method'] = 'EM'
                     elif dataD['method'].upper() == 'ELECTRON CRYSTALLOGRAPHY':
                         dataD['abbrv_method'] = 'EL. CRYS.'
@@ -222,7 +226,7 @@ class DepictContent(DepictBase):
                 if ('pdb_ids' in tableMap['data-field']) or ('user_pdb_id' in tableMap['data-field']):
                     dataD = processPublicIDs(dataD)
                     if ('coor_status' in tableMap['data-field']) or ('author_status' in tableMap['data-field']):
-                        dataD['comb_status_code'],dataD['comb_author_release_status_code'],titleEM,authorListEM = self.__processStatusCode(dataD)
+                        dataD['comb_status_code'], dataD['comb_author_release_status_code'], titleEM, authorListEM = self.__processStatusCode(dataD)
                         if titleEM:
                             dataD['dep_title'] = titleEM
                         #
@@ -231,7 +235,7 @@ class DepictContent(DepictBase):
                         #
                     #
                 #
-                self._dataInfo['data_for_all'] = [ dataD ]
+                self._dataInfo['data_for_all'] = [dataD]
                 resultD = {}
                 for field_item in tableMap['data-field']:
                     resultD[field_item] = ''
@@ -257,7 +261,7 @@ class DepictContent(DepictBase):
         dumpPickleFile(self.__sessionPath, tableMap['pkl'], contentResults)
         #
         if 'entry_count' in tableMap:
-            for type,list in tableMap['entry_count'].items():
+            for type, list in tableMap['entry_count'].items():
                 for item in list:
                     count = 0
                     if item == 'num_entries':
@@ -384,7 +388,7 @@ class DepictContent(DepictBase):
             if dataD['group_id'] in groupIdMap:
                 groupIdMap[dataD['group_id']].append(dataD['dep_set_id'])
             else:
-                groupIdMap[dataD['group_id']] = [ dataD['dep_set_id'] ]
+                groupIdMap[dataD['group_id']] = [dataD['dep_set_id']]
                 entryIdList.append(dataD['dep_set_id'])
             #
         #
@@ -400,12 +404,12 @@ class DepictContent(DepictBase):
             infoMap[dataD['dep_set_id']] = dataD
         #
         groupInfoMap = {}
-        for group_id,entry_ids in groupIdMap.items():
+        for group_id, entry_ids in groupIdMap.items():
             if not entry_ids[0] in infoMap:
                 continue
             #
-            if ((not 'annotator_initials' in infoMap[entry_ids[0]]) or (not infoMap[entry_ids[0]]['annotator_initials']) or \
-                (infoMap[entry_ids[0]]['annotator_initials'] != self._getUserInfo('initials'))) and filter_by_annotator_flag:
+            if ((not 'annotator_initials' in infoMap[entry_ids[0]]) or (not infoMap[entry_ids[0]]['annotator_initials']) or
+                    (infoMap[entry_ids[0]]['annotator_initials'] != self._getUserInfo('initials'))) and filter_by_annotator_flag:
                 continue
             #
             groupInfoMap[group_id] = {}
@@ -420,12 +424,12 @@ class DepictContent(DepictBase):
             if (not 'dep_set_id' in dataD) or (not dataD['dep_set_id']) or (not dataD['dep_set_id'] in groupInfoMap):
                 continue
             #
-            for item in ( 'initial_deposition_date', 'status_code' ):
+            for item in ('initial_deposition_date', 'status_code'):
                 dataD[item] = groupInfoMap[dataD['dep_set_id']][item]
             #
             group_rows.append(dataD)
         #
-        return group_rows;
+        return group_rows
 
     def unsubmit_group(self, rows):
         """ further process un-submitted group deposition
@@ -456,7 +460,7 @@ class DepictContent(DepictBase):
         if rRows:
             nRows.extend(rRows)
         #
-        return nRows;
+        return nRows
 
     def __initializeStatusCount(self, tableMap):
         """
@@ -540,12 +544,12 @@ class DepictContent(DepictBase):
         """
         """
         self._connectContentDB()
-        return self.__processPIInfo(self._contentDB.ContactAuthorPI(rList), [ 'name_first', 'name_mi', 'name_last' ])
+        return self.__processPIInfo(self._contentDB.ContactAuthorPI(rList), ['name_first', 'name_mi', 'name_last'])
 
     def __getPIInfoFromStatusDB(self, rList):
         """
         """
-        return self.__processPIInfo(self._statusDB.ContactAuthorPI(rList), [ 'last_name' ])
+        return self.__processPIInfo(self._statusDB.ContactAuthorPI(rList), ['last_name'])
 
     def __processPIInfo(self, rows, name_items):
         """
@@ -588,7 +592,7 @@ class DepictContent(DepictBase):
                 Map[dep_id]['pi_name_only'] += ", <br/>" + pi_name
                 Map[dep_id]['pi_country_only'] += ", <br/>" + country
             else:
-                Map[dep_id] = { 'pi_name': pi_name, 'country': country, 'pi_name_only': pi_name, 'pi_country_only': country }
+                Map[dep_id] = {'pi_name': pi_name, 'country': country, 'pi_name_only': pi_name, 'pi_country_only': country}
             #
         #
         return Map
@@ -623,7 +627,7 @@ class DepictContent(DepictBase):
         """
         """
         if (not 'dep_status_code' in dataDict) or (not 'dep_locking' in dataDict) or (str(dataDict['dep_locking']).upper() == 'WFM') or \
-           (str(dataDict['dep_status_code']).upper() in ( 'DEP', 'OBS', 'REL', 'WDRN' )):
+           (str(dataDict['dep_status_code']).upper() in ('DEP', 'OBS', 'REL', 'WDRN')):
             return ''
         #
         return '&allowunlock=yes'
@@ -670,7 +674,7 @@ class DepictContent(DepictBase):
                 authorReleaseStatusCode = dataDict['dep_author_release_status_code']
             #
         #
-        return statusCode,authorReleaseStatusCode,titleEM,authorListEM
+        return statusCode, authorReleaseStatusCode, titleEM, authorListEM
 
     def __getGroupStatusCode(self, entryIdList):
         status_code = 'unknown'
@@ -691,7 +695,7 @@ class DepictContent(DepictBase):
                 statusMap[code] = 1
             #
         #
-        for code,val in statusMap.items():
+        for code, val in statusMap.items():
             if val > count:
                 count = val
                 status_code = code

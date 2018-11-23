@@ -16,33 +16,38 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V1.00"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V1.00"
 
 try:
     import cPickle as pickle
 except ImportError:
     import pickle as pickle
 
-import filecmp, os, shutil, sys
+import filecmp
+import os
+import shutil
+import sys
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.io.locator.PathInfo   import PathInfo
+from wwpdb.io.locator.PathInfo import PathInfo
+
 
 class BaseClass(object):
     """ Base Class responsible for all workflow manager task activities
     """
+
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self._verbose=verbose
-        self._lfh=log
-        self._reqObj=reqObj
-        self._sObj=None
-        self._sessionId=None
-        self._sessionPath=None
-        self._siteId  = str(self._reqObj.getValue("WWPDB_SITE_ID"))
-        self._cI=ConfigInfo(self._siteId)
+        self._verbose = verbose
+        self._lfh = log
+        self._reqObj = reqObj
+        self._sObj = None
+        self._sessionId = None
+        self._sessionPath = None
+        self._siteId = str(self._reqObj.getValue("WWPDB_SITE_ID"))
+        self._cI = ConfigInfo(self._siteId)
         self._archivePath = self._cI.get('SITE_ARCHIVE_STORAGE_PATH')
         #
         self.__getSession()
@@ -56,11 +61,11 @@ class BaseClass(object):
         elif not os.access(filePath, os.F_OK):
             message = "File " + filePath + " not exist."
         #
-        return message,filePath
+        return message, filePath
 
     def _findArchiveFileName(self, entryId, contentType, formatType, version):
-        return self._pI.getFilePath(dataSetId=entryId, wfInstanceId=None, contentType=contentType, formatType=formatType, \
-                                     fileSource='archive', versionId=version, partNumber='1')
+        return self._pI.getFilePath(dataSetId=entryId, wfInstanceId=None, contentType=contentType, formatType=formatType,
+                                    fileSource='archive', versionId=version, partNumber='1')
 
     def _copyFileUtil(self, sourcePath, targetPath):
         if not sourcePath:
@@ -82,10 +87,10 @@ class BaseClass(object):
 
     def _bashSetting(self):
         setting = " RCSBROOT=" + self._cI.get('SITE_ANNOT_TOOLS_PATH') + "; export RCSBROOT; " \
-                + " COMP_PATH=" + self._cI.get('SITE_CC_CVS_PATH') + "; export COMP_PATH; " \
-                + " BINPATH=${RCSBROOT}/bin; export BINPATH; " \
-                + " LOCALBINPATH=" + os.path.join(self._cI.get('SITE_LOCAL_APPS_PATH'), 'bin') + "; export LOCALBINPATH; " \
-                + " DICTBINPATH=" + os.path.join(self._cI.get('SITE_PACKAGES_PATH'), 'dict', 'bin') + "; export DICTBINPATH; " 
+            + " COMP_PATH=" + self._cI.get('SITE_CC_CVS_PATH') + "; export COMP_PATH; " \
+            + " BINPATH=${RCSBROOT}/bin; export BINPATH; " \
+            + " LOCALBINPATH=" + os.path.join(self._cI.get('SITE_LOCAL_APPS_PATH'), 'bin') + "; export LOCALBINPATH; " \
+            + " DICTBINPATH=" + os.path.join(self._cI.get('SITE_PACKAGES_PATH'), 'dict', 'bin') + "; export DICTBINPATH; "
         return setting
 
     def _getCmd(self, command, inputFile, outputFile, logFile, clogFile, extraOptions):
@@ -108,7 +113,7 @@ class BaseClass(object):
         #
         if clogFile:
             self._removeFile(os.path.join(self._sessionPath, clogFile))
-            cmd  += " > " + clogFile + " 2>&1"
+            cmd += " > " + clogFile + " 2>&1"
         #
         cmd += " ; "
         return cmd
@@ -140,24 +145,24 @@ class BaseClass(object):
     def _removePickle(self, pickleFile):
         self._removeFile(os.path.join(self._sessionPath, pickleFile + '.pickle'))
 
-    def _processTemplate(self,fn,parameterDict={}):
+    def _processTemplate(self, fn, parameterDict={}):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
-            
+
             :Params:
                 ``parameterDict``: dictionary where
                 key = name of subsitution placeholder in the template and
                 value = data to be used to substitute information for the placeholder
-                
+
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
-        tPath =self._reqObj.getValue("TemplatePath")
-        fPath=os.path.join(tPath,fn)
-        ifh=open(fPath,'r')
-        sIn=ifh.read()
+        tPath = self._reqObj.getValue("TemplatePath")
+        fPath = os.path.join(tPath, fn)
+        ifh = open(fPath, 'r')
+        sIn = ifh.read()
         ifh.close()
-        return (  sIn % parameterDict )
+        return (sIn % parameterDict)
 
     def _getLogMessage(self, logfile):
         if not os.access(logfile, os.F_OK):
@@ -187,11 +192,11 @@ class BaseClass(object):
         """ Join existing session or create new session as required.
         """
         #
-        self._sObj=self._reqObj.newSessionObj()
-        self._sessionId=self._sObj.getId()
-        self._sessionPath=self._sObj.getPath()
+        self._sObj = self._reqObj.newSessionObj()
+        self._sessionId = self._sObj.getId()
+        self._sessionPath = self._sObj.getPath()
         if (self._verbose):
-            self._lfh.write("------------------------------------------------------\n")                    
+            self._lfh.write("------------------------------------------------------\n")
             self._lfh.write("+BaseClass._getSession() - creating/joining session %s\n" % self._sessionId)
-            self._lfh.write("+BaseClass._getSession() - session path %s\n" % self._sessionPath)            
+            self._lfh.write("+BaseClass._getSession() - session path %s\n" % self._sessionPath)
         #

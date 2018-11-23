@@ -15,38 +15,41 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 try:
     import cPickle as pickle
 except ImportError:
     import pickle as pickle
 
-import os, sys
-from wwpdb.io.file.mmCIFUtil  import mmCIFUtil
+import os
+import sys
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+
 
 class ReadConFigFile(object):
     """
     """
+
     def __init__(self, reqObj=None, configFile=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj     = reqObj
+        self.__reqObj = reqObj
         self.__configFile = configFile
-        self.__verbose    = verbose
-        self.__lfh        = log
-        self.__topPath    = self.__reqObj.getValue("TemplatePath")
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__topPath = self.__reqObj.getValue("TemplatePath")
         self.__configPath = os.path.join(self.__topPath, self.__configFile)
         #
-        self.__sObj        = self.__reqObj.newSessionObj()
-        self.__sessionId   = self.__sObj.getId()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        (base,ext) = os.path.splitext(self.__configFile)
-        self.__pickleFile  = base + '.pkl'
-        self.__picklePath  = os.path.join(self.__sessionPath, self.__pickleFile)
+        (base, ext) = os.path.splitext(self.__configFile)
+        self.__pickleFile = base + '.pkl'
+        self.__picklePath = os.path.join(self.__sessionPath, self.__pickleFile)
         #
 
     def read(self):
@@ -58,9 +61,9 @@ class ReadConFigFile(object):
             return Dict
         #
         cifObj = mmCIFUtil(filePath=self.__configPath)
-        for item in ( 'user_template_mapping', 'user_tab_table_column_config', 'level1_template_definition', 'tab_definition_template', \
-                      'tab_preprocess_mapping', 'page_template', 'page_template_alias', 'page_template_parameter', 'function_parameter', \
-                      'ui_input_where_condition_binding', 'ui_input_dependence', 'table_data_field_binding' ):
+        for item in ('user_template_mapping', 'user_tab_table_column_config', 'level1_template_definition', 'tab_definition_template',
+                     'tab_preprocess_mapping', 'page_template', 'page_template_alias', 'page_template_parameter', 'function_parameter',
+                     'ui_input_where_condition_binding', 'ui_input_dependence', 'table_data_field_binding'):
             vMap = {}
             try:
                 vMap = getattr(self, "_read_%s" % item)(cifObj.GetValue(item))
@@ -73,8 +76,8 @@ class ReadConFigFile(object):
         #
         tabDict = {}
         foundEmpty = False
-        for item in ( 'tab_definition_table', 'table_definition', 'table_binding_definition', 'table_option_definition', \
-                      'table_column_definition', 'tab_table_sql_binding', 'sql_selection_definition' ):
+        for item in ('tab_definition_table', 'table_definition', 'table_binding_definition', 'table_option_definition',
+                     'table_column_definition', 'tab_table_sql_binding', 'sql_selection_definition'):
             try:
                 tabDict[item] = getattr(self, "_read_%s" % item)(cifObj.GetValue(item))
             except:
@@ -102,7 +105,7 @@ class ReadConFigFile(object):
         Map = {}
         for vMap in vList:
             data = []
-            for item in ( 'user_id', 'tab_id', 'table_id', 'data-field' ):
+            for item in ('user_id', 'tab_id', 'table_id', 'data-field'):
                 data.append(vMap[item])
             #
             Map['-'.join(data)] = vMap['data-visible']
@@ -115,7 +118,7 @@ class ReadConFigFile(object):
         Map = {}
         for vMap in vList:
             if not vMap['id'] in Map:
-                Map[vMap['id']] = [ ]
+                Map[vMap['id']] = []
             #
             Map[vMap['id']].append(vMap)
         #
@@ -137,7 +140,7 @@ class ReadConFigFile(object):
         Map = {}
         for vMap in vList:
             if not vMap['page_id'] in Map:
-                Map[vMap['page_id']] = [ [], [] ]
+                Map[vMap['page_id']] = [[], []]
             #
             if vMap['preprocess'].lower() == 'y':
                 Map[vMap['page_id']][0].append(vMap)
@@ -216,7 +219,7 @@ class ReadConFigFile(object):
         Map = {}
         for vMap in vList:
             if not vMap['id'] in Map:
-                Map[vMap['id']] = [ ]
+                Map[vMap['id']] = []
             #
             Map[vMap['id']].append(vMap)
         #
@@ -228,7 +231,7 @@ class ReadConFigFile(object):
                         'sort_function', 'sql_where_condition': 'sql_where_condition', 'sql_variable': 'sql_variable' } } }
         """
         outDict = {}
-        for tab_id,vList in inDict['tab_definition_table'].items():
+        for tab_id, vList in inDict['tab_definition_table'].items():
             tableList = {}
             for vDict in vList:
                 option = ''
@@ -258,11 +261,11 @@ class ReadConFigFile(object):
                     #
                     tableDict['option'] = option
                     if tableDef:
-                        for k,v in tableDef.items():
+                        for k, v in tableDef.items():
                             tableDict[k] = v
                         #
                     else:
-                        for item in ( 'binding_function', 'binding_class'):
+                        for item in ('binding_function', 'binding_class'):
                             if item in bindingTableDef:
                                 tableDict[item] = bindingTableDef[item]
                             #
@@ -312,14 +315,15 @@ class ReadConFigFile(object):
         if not myD:
             return myD
         #
-        for options in ( ( 'sql_where_condition', 'where_condition' ), ( 'order_condition', 'additional_order_condition' ), \
-                         ( 'sql_variable', 'variable' ), ( 'sort_function', 'additional_sort_function') ):
+        for options in (('sql_where_condition', 'where_condition'), ('order_condition', 'additional_order_condition'),
+                        ('sql_variable', 'variable'), ('sort_function', 'additional_sort_function')):
             if (not options[1] in inDict['tab_table_sql_binding'][key]) or (not inDict['tab_table_sql_binding'][key][options[1]]):
                 continue
             #
             myD[options[0]] = inDict['tab_table_sql_binding'][key][options[1]]
         #
         return myD
+
 
 def dumpPickleFile(sessionPath, filename, data):
     """
@@ -328,6 +332,7 @@ def dumpPickleFile(sessionPath, filename, data):
     f = open(pickle_file, 'wb')
     pickle.dump(data, f)
     f.close()
+
 
 def loadPickleFile(sessionPath, filename):
     """

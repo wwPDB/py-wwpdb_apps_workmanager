@@ -15,28 +15,31 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import os
+import sys
 from xml.dom import minidom
 #
-from wwpdb.utils.config.ConfigInfo                        import ConfigInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.apps.workmanager.workflow_access.OrderedDict import OrderedDict
+
 
 class WorkflowXMLLoader(object):
     """
     """
+
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__siteId    = siteId
-        self.__verbose   = verbose
-        self.__lfh       = log
-        self.__cI        = ConfigInfo(self.__siteId)
+        self.__siteId = siteId
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__cI = ConfigInfo(self.__siteId)
         self.__workFlowXMLPath = self.__cI.get("SITE_WF_XML_PATH")
         #
         self.__metaDataInfo = {}
@@ -62,7 +65,7 @@ class WorkflowXMLLoader(object):
 
     def __readMetaDataInfo(self, xmlDoc):
         metadata_version = xmlDoc.getElementsByTagName("wf:version")
-        for item in ( 'author', 'major', 'date', 'id', 'name' ):
+        for item in ('author', 'major', 'date', 'id', 'name'):
             self.__metaDataInfo[item] = str(metadata_version[0].getAttribute(item))
         #
 
@@ -105,15 +108,16 @@ class WorkflowXMLLoader(object):
                     task['file'] = str(childnode.getAttribute('file'))
                     task['classID'] = str(childnode.getAttribute('classID'))
                 else:
-                    for item in ( 'process', 'decision', 'manual' ):
+                    for item in ('process', 'decision', 'manual'):
                         if childnode.tagName == 'wf:' + item:
                             task['type'] = item
                         #
-                    # 
+                    #
                 #
             #
         #
         return task
+
 
 if __name__ == '__main__':
     loader = WorkflowXMLLoader(siteId='WWPDB_DEPLOY_TEST', verbose=True, log=sys.stderr)
@@ -124,7 +128,7 @@ if __name__ == '__main__':
     print(wfinfo[0:1])
     print(wfinfo['T1'])
     print(wfinfo)
-    for key,task in wfinfo.items():
+    for key, task in wfinfo.items():
         print(key)
         print(task)
     #

@@ -15,10 +15,10 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
 try:
@@ -29,37 +29,39 @@ import os
 import sys
 from types import *
 
-from wwpdb.utils.config.ConfigInfo                    import ConfigInfo
-from wwpdb.apps.workmanager.db_access.ContentDbApi  import ContentDbApi
-from wwpdb.apps.workmanager.db_access.StatsUtil     import StatsUtil
-from wwpdb.apps.workmanager.db_access.StatusDbApi   import StatusDbApi
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
+from wwpdb.apps.workmanager.db_access.StatsUtil import StatsUtil
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+
 
 class DepictBase(object):
     """
     """
+
     def __init__(self, reqObj=None, statusDB=None, conFigObj=None, verbose=False, log=sys.stderr):
         """
         """
-        self._reqObj    = reqObj
+        self._reqObj = reqObj
         self._conFigObj = conFigObj
-        self._verbose   = verbose
-        self._lfh       = log
-        self._siteId    = self._reqObj.getValue("WWPDB_SITE_ID")
-        self._topPath   = self._reqObj.getValue("TemplatePath")
+        self._verbose = verbose
+        self._lfh = log
+        self._siteId = self._reqObj.getValue("WWPDB_SITE_ID")
+        self._topPath = self._reqObj.getValue("TemplatePath")
         #
-        self.__urlMap   = {}
+        self.__urlMap = {}
         self._UtilClass = {}
-        self._userInfo  = {}
-        self._dataInfo  = {}
+        self._userInfo = {}
+        self._dataInfo = {}
         self._uInfoFlag = False
-        self._statusDB  = statusDB
+        self._statusDB = statusDB
         self._contentDB = None
         self.__getUrlMap()
-    
+
     def getPageText(self, page_id='', paraD={}):
         """
         """
-        page_template,alias_page_id = self.__getPageTemplateAndAliasID(page_id)
+        page_template, alias_page_id = self.__getPageTemplateAndAliasID(page_id)
         if not page_template:
             return ''
         #
@@ -79,11 +81,11 @@ class DepictBase(object):
         return_text = ''
         if ('repeat' in pageD) and (pageD['repeat'] == 'yes') and (page_id in self._dataInfo):
             while len(self._dataInfo[page_id]) > 0:
-                 text = self.__processParameter(page_id, alias_page_id, page_template, page_parameter[1])
-                 if return_text:
-                     return_text += '\n'
-                 return_text += text
-                 self._dataInfo[page_id].pop(0)
+                text = self.__processParameter(page_id, alias_page_id, page_template, page_parameter[1])
+                if return_text:
+                    return_text += '\n'
+                return_text += text
+                self._dataInfo[page_id].pop(0)
             #
         else:
             return_text = self.__processParameter(page_id, alias_page_id, page_template, page_parameter[1])
@@ -124,7 +126,7 @@ class DepictBase(object):
     def _preProcessParameterMap(self, template, myD):
         """
         """
-        for k,v in myD.items():
+        for k, v in myD.items():
             template = template.replace('%(' + k + ')s', v)
         #
         return template
@@ -168,10 +170,10 @@ class DepictBase(object):
         rows = self._statusDB.getAnnUser(self._userInfo['site'])
         list = []
         for dir in rows:
-            list.append( [ str(dir['initials']), str(dir['first_name']) + ' ' +  str(dir['last_name']) ] )
+            list.append([str(dir['initials']), str(dir['first_name']) + ' ' + str(dir['last_name'])])
         #
-        list.sort(key = lambda data: data[1])
-        list.insert(0, [ '', '' ] )
+        list.sort(key=lambda data: data[1])
+        list.insert(0, ['', ''])
         return list
 
     def _getAnnotatorSelection(self):
@@ -213,12 +215,12 @@ class DepictBase(object):
         """
         """
         GroupInfo = []
-        GroupInfo.append( [ '', '' ] )
+        GroupInfo.append(['', ''])
         self._getUserInfoDict()
         if self._statusDB:
             rows = self._statusDB.getSiteGroup(self._userInfo['site'])
             for dir in rows:
-                GroupInfo.append( [ str(dir['group_id']), str(dir['group_name']) ] )
+                GroupInfo.append([str(dir['group_id']), str(dir['group_name'])])
             #
         #
         return self.__getSelectionOption(GroupInfo)
@@ -293,8 +295,8 @@ class DepictBase(object):
     def __getUrlMap(self):
         """
         """
-        mod_url_list = [ [ 'AnnMod', 'SITE_ANN_TASKS_URL' ], [ 'LigMod', 'SITE_LE_URL' ], [ 'LigModUI', 'SITE_LE_URL' ], \
-                         [ 'SeqMod', 'SITE_SE_URL' ], [ 'TransMod', 'SITE_TRANS_EDITOR_URL' ], [ 'ValMod', 'SITE_VAL_TASKS_URL' ] ]
+        mod_url_list = [['AnnMod', 'SITE_ANN_TASKS_URL'], ['LigMod', 'SITE_LE_URL'], ['LigModUI', 'SITE_LE_URL'],
+                        ['SeqMod', 'SITE_SE_URL'], ['TransMod', 'SITE_TRANS_EDITOR_URL'], ['ValMod', 'SITE_VAL_TASKS_URL']]
         #
         cI = ConfigInfo(self._siteId)
         for list in mod_url_list:
@@ -307,7 +309,7 @@ class DepictBase(object):
         alias_page_id = page_id
         page_template = self._getPageTemplate(page_id)
         if page_template:
-            return page_template,alias_page_id
+            return page_template, alias_page_id
         #
         if ('page_template_alias' in self._conFigObj) and (page_id in self._conFigObj['page_template_alias']):
             tmp_page_id = self._conFigObj['page_template_alias'][page_id]
@@ -317,7 +319,7 @@ class DepictBase(object):
                 alias_page_id = tmp_page_id
             #
         #
-        return page_template,alias_page_id
+        return page_template, alias_page_id
 
     def __preProcessParameter(self, page_id, alias_page_id, template, paraList):
         """
@@ -327,7 +329,7 @@ class DepictBase(object):
             return template
         #
         return self._preProcessParameterMap(template, myD)
-            
+
     def __processParameter(self, page_id, alias_page_id, template, paraList):
         """
         """
@@ -345,7 +347,7 @@ class DepictBase(object):
             return myD
         #
         for paraMap in paraList:
-            myD[paraMap['variable']] = '' 
+            myD[paraMap['variable']] = ''
             if paraMap['type'] == 'page_template':
                 myD[paraMap['variable']] = self.getPageText(page_id=paraMap['value'])
             elif paraMap['type'] == 'function':
@@ -434,7 +436,7 @@ class DepictBase(object):
             quotation = ""
         #
         text = ''
-        for k,v in obj.items():
+        for k, v in obj.items():
             if text:
                 text += delimiter
             #
@@ -486,9 +488,9 @@ class DepictBase(object):
         """
         SelectionHtml = ''
         for list in SelectionInfo:
-            SelectionHtml += '<option value="' + list[0] + '"';
+            SelectionHtml += '<option value="' + list[0] + '"'
             if list[0] == '':
-                SelectionHtml += ' selected';
+                SelectionHtml += ' selected'
             #
             SelectionHtml += '>' + list[1] + '</option>'
         #
@@ -503,6 +505,7 @@ class DepictBase(object):
         #
         return self._statusDB.getSiteUser(self._userInfo['site'])
 
+
 def processPublicIDs(dataDict):
     if not dataDict:
         dataDict = {}
@@ -510,7 +513,7 @@ def processPublicIDs(dataDict):
         dataDict['bmrb_id'] = '-'
         dataDict['emdb_id'] = '-'
     #
-    for item in ( 'pdb_id', 'bmrb_id', 'emdb_id' ):
+    for item in ('pdb_id', 'bmrb_id', 'emdb_id'):
         if (not item in dataDict) or (not dataDict[item]) or (dataDict[item] == '?'):
             dataDict[item] = '-'
         #
