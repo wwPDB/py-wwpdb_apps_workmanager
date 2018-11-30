@@ -144,7 +144,7 @@ class MetaDataEditor(BaseClass):
         all_data_type = self.__all_data_type.split(",")
         #
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose = True, log = self._lfh)
+        mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runGetEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
         ok,failList,retLists,diagList = mpu.runMulti(dataList = selectedEntryList, numProc = numProc, numResults = 1)
@@ -228,7 +228,7 @@ class MetaDataEditor(BaseClass):
             return
         #
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose = True, log = self._lfh)
+        mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runUpdateEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
         ok,failList,retLists,diagList = mpu.runMulti(dataList = entryList, numProc = numProc, numResults = 1)

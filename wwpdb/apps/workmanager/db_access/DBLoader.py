@@ -54,7 +54,7 @@ class DBLoader(object):
         """
         """
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose = True, log = self.__lfh)
+        mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runMulti")
         mpu.setWorkingDir(self.__sessionPath)
         ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
