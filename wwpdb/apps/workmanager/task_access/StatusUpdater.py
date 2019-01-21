@@ -57,8 +57,8 @@ class StatusUpdater(BaseClass):
             return 'No status info. selected.'
         #
         numProc = multiprocessing.cpu_count() / 2
-        mpu = MultiProcUtil(verbose=True, log=self._lfh)
-        mpu.set(workerObj=self, workerMethod="runMulti")
+        mpu = MultiProcUtil(verbose = True)
+        mpu.set(workerObj = self, workerMethod = "runMulti")
         mpu.setWorkingDir(self._sessionPath)
         ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
