@@ -31,11 +31,10 @@ import time
 import traceback
 import MySQLdb
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.api.status.dbapi.DbConnection import DbConnection
-from wwpdb.utils.rcsb.mmCIFUtil import mmCIFUtil
-from wwpdb.io.locator.PathInfo import PathInfo
-
+from wwpdb.utils.config.ConfigInfo       import ConfigInfo
+from wwpdb.utils.wf.dbapi.DbConnection   import DbConnection
+from wwpdb.io.file.mmCIFUtil             import mmCIFUtil
+from wwpdb.io.locator.PathInfo           import PathInfo
 
 class DbApiUtil(object):
     """ Class for making status database connection
