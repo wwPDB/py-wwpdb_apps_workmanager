@@ -40,7 +40,7 @@ class SnapShotDiff(object):
             name is the type of snapshot like reset or upload
             Only the last snapshot is supported at this time
         """
-        path = getPickePath(depID)
+        path = getPicklePath(depID)
         if not os.access(path, os.F_OK):
             return None
         #
