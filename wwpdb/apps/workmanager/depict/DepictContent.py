@@ -135,9 +135,11 @@ class DepictContent(DepictBase):
             annSelectMap = {}
             reminderSentMap = {}
             PIInfoMap = {}
+            submitMap = {}
             if ('add_list' in tableMap['data-field']) or ('major_issue' in tableMap['data-field']) or \
                ('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
-               ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']): 
+               ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']) or \
+               ('submit_date' in tableMap['data-field']): 
                 if idList and ('add_list' in tableMap['data-field']):
                     return_list = self._statusDB.getAnnoSelection(depositionids=idList)
                     annSelectMap = self.__convertListIntoMap(return_list)
@@ -150,6 +152,10 @@ class DepictContent(DepictBase):
                    ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field'])):
                     PIInfoMap = self.__getPIInfo(idList)
                 #
+                if idList and ('submit_date' in tableMap['data-field']):
+                    return_list = self._statusDB.getLastSubmitDate(depositionids=idList)
+                    submitMap = self.__convertListIntoMap(return_list)
+                
             #
             if 'assign_annotator' in tableMap['data-field']:
                 self.__assign_annotator_tmplt = self._getPageTemplate('assign_annotator_tmplt')
@@ -191,6 +197,9 @@ class DepictContent(DepictBase):
                     else:
                         dataD['add_list'] = 'Add'
                     #
+                #
+                if (dataD['dep_set_id'] in submitMap) and submitMap[dataD['dep_set_id']]:
+                    dataD.update(submitMap[dataD['dep_set_id']])
                 #
                 dataD['base_url'] = ''
                 if ('class_id' in dataD) and dataD['class_id']:
