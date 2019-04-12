@@ -72,7 +72,7 @@ class StatusDbApi(object):
                                     "last_message_received_date from remind_message_track where dep_set_id = '%s'",
   "SELECT_MULTIPLE_MESSAGE_TRACK" : "select dep_set_id, major_issue, last_reminder_sent_date, last_validation_sent_date, last_message_sent_date, " +
                                     "last_message_received_date from remind_message_track where dep_set_id in ( '%s' )",
-    "SELECT_MULTIPLE_SUBMIT_DATE" : "select dep_set_id, submit_date from communitation where something = 'submit2' and dep_set_id in ( '%s' )",
+    "SELECT_MULTIPLE_SUBMIT_DATE" : "select dep_set_id, submit_date from timestamp where event = 'submit2' and dep_set_id in ( '%s' )",
            "DELETE_MESSAGE_TRACK" : "delete from remind_message_track where dep_set_id = '%s'",
           "UPDATE_ANN_DEPOSITION" : "update deposition set annotator_initials  = '%s' where dep_set_id = '%s'",
            "UPDATE_ANN_LAST_INST" : "update dep_last_instance set annotator_initials  = '%s' where dep_set_id = '%s'",
