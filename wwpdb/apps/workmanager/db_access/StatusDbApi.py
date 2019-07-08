@@ -77,7 +77,7 @@ class StatusDbApi(object):
            "UPDATE_ANN_LAST_INST" : "update dep_last_instance set annotator_initials  = '%s' where dep_set_id = '%s'",
            "SELECT_LAST_INSTANCE" : "select class_id as wf_class_id, inst_id as wf_inst_id, inst_status, dep_set_id, dep_exp_method, pdb_id, dep_bmrb_id as " +
                                     "bmrb_id, dep_emdb_id as emdb_id, dep_status_code, dep_status_code_exp, dep_author_release_status_code, " +
-                                    "dep_initial_deposition_date, annotator_initials, dep_notify, dep_locking, dep_title, dep_author_list from " +
+                                    "dep_initial_deposition_date, annotator_initials, dep_notify, dep_locking, dep_title, dep_author_list, dep_post_rel_status from " +
                                     "dep_last_instance where dep_set_id = '%s'", 
         "SELECT_WF_LAST_INSTANCE" : "select ordinal, wf_inst_id, wf_class_id, dep_set_id, owner, inst_status, status_timestamp from wf_instance " +
                                     "where dep_set_id = '%s' and wf_class_id = '%s' order by status_timestamp desc limit 1",

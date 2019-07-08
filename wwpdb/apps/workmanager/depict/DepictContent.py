@@ -635,12 +635,20 @@ class DepictContent(DepictBase):
         authorReleaseStatusCode = ''
         titleEM = ''
         authorListEM = ''
+        baseStatusCode = ''
+        if 'dep_status_code' in dataDict and dataDict['dep_status_code']:
+            baseStatusCode = dataDict['dep_status_code']
+            if 'dep_post_rel_status' in dataDict and dataDict['dep_post_rel_status']:
+                baseStatusCode = dataDict['dep_post_rel_status'] + '(' + baseStatusCode + ')';
+
         if dataDict['emdb_id'] != '-':
+            # EMDB ID
             if dataDict['pdb_id'] != '-':
+                # PDB ID present
                 if ('dep_status_code' in dataDict) and dataDict['dep_status_code'] and ('dep_status_code_emdb' in dataDict) and dataDict['dep_status_code_emdb']:
-                    statusCode = dataDict['dep_status_code'] + '/' + dataDict['dep_status_code_emdb']
-                elif ('dep_status_code' in dataDict) and dataDict['dep_status_code']:
-                    statusCode = dataDict['dep_status_code']
+                    statusCode =  baseStatusCode + '/' + dataDict['dep_status_code_emdb']
+                else:
+                    statusCode = baseStatusCode
                 #
                 if ('dep_author_release_status_code' in dataDict) and dataDict['dep_author_release_status_code'] and \
                    ('dep_author_release_status_code_emdb' in dataDict) and dataDict['dep_author_release_status_code_emdb']:
@@ -649,6 +657,7 @@ class DepictContent(DepictBase):
                     authorReleaseStatusCode = dataDict['dep_author_release_status_code']
                 #
             else:
+                # Map only
                 if ('dep_status_code_emdb' in dataDict) and dataDict['dep_status_code_emdb']:
                     statusCode = dataDict['dep_status_code_emdb']
                 #
@@ -663,8 +672,8 @@ class DepictContent(DepictBase):
                 #
             #
         else:
-            if ('dep_status_code' in dataDict) and dataDict['dep_status_code']:
-                statusCode = dataDict['dep_status_code']
+            # No emdb id
+            statusCode = baseStatusCode
             #
             if ('dep_author_release_status_code' in dataDict) and dataDict['dep_author_release_status_code']:
                 authorReleaseStatusCode = dataDict['dep_author_release_status_code']
