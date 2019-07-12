@@ -622,10 +622,17 @@ class DepictContent(DepictBase):
     def __processLockLabelForCommunication(self, dataDict):
         """
         """
+        # Determine if unlock from communication is allowed when invoked from WFM
+        # dep_status_code and dep_locking must be present.
+        # Must be unlocked
+        # Must not be DEP, OBS, or WDRN status (author initiated post_relase allows REL if pdb_id present (i.e. not map onlu)
         if (not 'dep_status_code' in dataDict) or (not 'dep_locking' in dataDict) or (str(dataDict['dep_locking']).upper() == 'WFM') or \
-           (str(dataDict['dep_status_code']).upper() in ( 'DEP', 'OBS', 'REL', 'WDRN' )):
+           (str(dataDict['dep_status_code']).upper() in ( 'DEP', 'OBS', 'WDRN')):
             return ''
-        #
+
+        # Check for map only
+        if str(dataDict['dep_status_code']).upper() == 'REL' and ('pdb_id' not in dataDict or len(dataDict['pdb_id']) < 2):
+            return ""
         return '&allowunlock=yes'
 
     def __processStatusCode(self, dataDict):
