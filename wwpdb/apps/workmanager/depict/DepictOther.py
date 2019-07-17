@@ -56,7 +56,7 @@ class DepictOther(DepictBase):
             hisList = []
             for Dict in audit_history:
                 myD = {}
-                for item in ( 'public_version', 'date', 'file_version' ):
+                for item in ( 'public_version', 'date', 'file_version', 'description' ):
                     myD[item] = ''
                 #
                 if ('major_revision' in Dict) and ('minor_revision' in Dict):
@@ -67,6 +67,9 @@ class DepictOther(DepictBase):
                 #
                 if ('internal_version' in Dict) and Dict['internal_version']:
                     myD['file_version'] = 'V' + str(Dict['internal_version'])
+                #
+                if ('description' in Dict) and Dict['description']:
+                    myD['description'] = Dict['description']
                 #
                 hisList.append(myD)
             #

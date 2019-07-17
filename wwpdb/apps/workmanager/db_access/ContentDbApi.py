@@ -30,8 +30,9 @@ from wwpdb.apps.workmanager.db_access.DbApiUtil import DbApiUtil
 
 
 class ContentDbApi(object):
-    __schemaMap = { "AUDIT_HISTORY" : "select Structure_ID, ordinal, major_revision, minor_revision, revision_date, internal_version from pdbx_audit_revision_history " +
-                                      "where Structure_ID = '%s' order by ordinal",
+    __schemaMap = { "AUDIT_HISTORY" : "select h.Structure_ID, h.ordinal, h.major_revision, h.minor_revision, h.revision_date, h.internal_version, d.description from pdbx_audit_revision_history as h " +
+                         "LEFT JOIN pdbx_audit_revision_details d ON h.Structure_ID = d.Structure_ID and h.ordinal = d.revision_ordinal and d.type='Coordinate replacement' " +
+                         "where h.Structure_ID = '%s' order by ordinal",
                     "CONTACT_AUTHOR" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID = '%s'",
                     "CONTACT_AUTHOR_LIST" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID in ( '%s' )",
                     "CONTACT_AUTHOR_PI" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID = '%s' " +
