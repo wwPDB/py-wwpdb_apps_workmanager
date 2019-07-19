@@ -47,7 +47,13 @@ class ContentDbApi(object):
                                         "and date_begin_processing  >= '%s' and date_begin_processing <= '%s'",
                 "GET_INPROCESS_STATS" : "select rcsb_annotator, status_code from rcsb_status where status_code in ('WAIT','PROC','AUTH','POLC','REPL')",
                    "GET_RELEASE_DATE" : "select structure_id, pdb_id, date_of_RCSB_release from rcsb_status where structure_id in ( '%s' ) order by structure_id",
-                "GET_EM_RELEASE_DATE" : "select structure_id, current_status, map_release_date date_of_EM_release from em_admin where structure_id in ( '%s' ) order by structure_id"
+                "GET_EM_RELEASE_DATE" : "select structure_id, current_status, map_release_date date_of_EM_release from em_admin where structure_id in ( '%s' ) order by structure_id",
+                 "GET_REPLACE_COUNTS" : "select s2.name, s2.identifier_ORCID, sum(s2.count) as numreplace from " +
+                        "(select c.identifier_ORCID, CONCAT('', c.name_last, ', ', c.name_first) as name, s1.count from pdbx_contact_author as c, " + 
+                        "(select d.Structure_id, count(d.Structure_id) as count   from pdbx_audit_revision_details as d, pdbx_audit_revision_history as h where " +
+                        "h.Structure_id = d.Structure_id and h.ordinal = d.revision_ordinal and d.type='Coordinate replacement' and DATEDIFF(CURDATE(), h.revision_date) <= 365 " +
+                        "group by d.Structure_id  ) s1  where s1.Structure_id = c.Structure_Id and c.role='principal investigator/group leader' " +
+                        "order by c.identifier_ORCID ) s2 group by identifier_ORCID, name order by name"
                   }
     """
     """
@@ -163,6 +169,10 @@ class ContentDbApi(object):
             #
         #
         return releaseDateMap
+
+    def GetReplaceCounts(self):
+        #
+        return self.__dbApi.selectData(key="GET_REPLACE_COUNTS")
 
     def runSelectSQL(self, sql):
         return self.__dbApi.runSelectSQL(sql)

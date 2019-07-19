@@ -85,6 +85,32 @@ class DepictOther(DepictBase):
             #
         #
 
+    def ReplacementPage(self):
+        """
+        """
+        self._connectContentDB()
+        
+        replace_counts = self._contentDB.GetReplaceCounts()
+        if replace_counts:
+            replaceList = []
+            for Dict in replace_counts:
+                myD = {}
+                for item in ( 'ORCID', 'numreplace', 'name'):
+                    myD[item] = ''
+                #
+                if 'identifier_ORCID' in Dict:
+                    myD['ORCID'] = str(Dict['identifier_ORCID'])
+                #
+                if 'numreplace' in Dict:
+                    myD['numreplace'] = str(Dict['numreplace'])
+                #
+                if 'name' in Dict:
+                    myD['name'] = str(Dict['name'])
+                #
+                replaceList.append(myD)
+                #
+            self._dataInfo['replace_count_table_row_tmplt'] = replaceList
+
     def AllFilePage(self):
         """
         """

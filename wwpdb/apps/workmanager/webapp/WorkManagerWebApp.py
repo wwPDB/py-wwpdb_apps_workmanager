@@ -179,6 +179,7 @@ class WorkManagerWebAppWorker(object):
                          '/service/workmanager/login':               '_LoginOp',
                          '/service/workmanager/logout':              '_LogoutOp',
                          '/service/workmanager/summary':             '_SummaryOp',
+                         '/service/workmanager/replacementhist':     '_ReplacementHistOp',
                          '/service/workmanager/snapshotdiff':        '_SnapshotDiffOp',
                          '/service/workmanager/getpassword':         '_PasswordOp',
                          '/service/workmanager/milestonearchive':    '_MilestoneOp',
@@ -334,6 +335,22 @@ class WorkManagerWebAppWorker(object):
         depictUtil = DepictOther(reqObj=self.__reqObj, conFigObj=configDict, verbose=self.__verbose, log=self.__lfh)
         depictUtil.SummaryPage()
         rC.setHtmlText(depictUtil.getPageText(page_id='summary_tmplt'))
+        #
+        return rC
+
+    def _ReplacementHistOp(self):
+        """ Author initiated replacement history page interface
+        """
+        if (self.__verbose):
+            self.__lfh.write("+WorkManagerWebAppWorker._ReplacementHistOp() Starting now\n")
+        #
+        self.__reqObj.setReturnFormat(return_format="html")        
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='replacement_config.cif', verbose=self.__verbose, log=self.__lfh)
+        configDict = readUtil.read()
+        depictUtil = DepictOther(reqObj=self.__reqObj, conFigObj=configDict, verbose=self.__verbose, log=self.__lfh)
+        depictUtil.ReplacementPage()
+        rC.setHtmlText(depictUtil.getPageText(page_id='replacement_tmplt'))
         #
         return rC
 
