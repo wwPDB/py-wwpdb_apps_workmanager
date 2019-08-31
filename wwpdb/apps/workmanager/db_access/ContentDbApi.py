@@ -93,7 +93,7 @@ class ContentDbApi(object):
         if not depositionid:
             return None
         #
-        if type(depositionid) is ListType:
+        if isinstance(depositionid, list):
             return self.__dbApi.selectData(key="CONTACT_AUTHOR_LIST", parameter=("', '".join(depositionid)))
         #
         return self.__dbApi.selectData(key="CONTACT_AUTHOR", parameter=(depositionid))
@@ -102,7 +102,7 @@ class ContentDbApi(object):
         if not depositionid:
             return None
         #
-        if type(depositionid) is ListType:
+        if isinstance(depositionid, list):
             return self.__dbApi.selectData(key="CONTACT_AUTHOR_PI_LIST", parameter=("', '".join(depositionid)))
         #
         return self.__dbApi.selectData(key="CONTACT_AUTHOR_PI", parameter=(depositionid))

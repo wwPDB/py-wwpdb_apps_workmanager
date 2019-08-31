@@ -21,7 +21,11 @@ __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
 
-import os, sys, traceback, urllib
+import os, sys, traceback
+try:
+    from urllib.parse import quote as u_quote
+except ImportError:
+    from urllib import quote  as u_quote
 
 from wwpdb.utils.wf.dbapi.WFEtime                           import getTimeString
 from wwpdb.apps.workmanager.depict.DepictBase                 import DepictBase
@@ -226,7 +230,7 @@ class DepictWorkFlow(DepictBase):
             myD[item] = self._reqObj.getValue(item)
         #
         if myD['method'] and (not myD['urlmethod']):
-            myD['urlmethod'] = urllib.quote(myD['method'])
+            myD['urlmethod'] = u_quote(myD['method'])
         #
         return myD
 

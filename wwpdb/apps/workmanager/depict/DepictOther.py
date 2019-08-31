@@ -21,7 +21,11 @@ __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
 
-import os, sys, urllib
+import os, sys
+try:
+    from urllib.parse import quote as u_quote
+except ImportError:
+    from urllib import quote  as u_quote
 
 from wwpdb.utils.wf.dbapi.WFEtime                   import getTimeFromEpoc
 from wwpdb.utils.session.FileUtils                  import FileUtils
@@ -128,7 +132,7 @@ class DepictOther(DepictBase):
         method = self.__getInstanceData('dep_exp_method')
         if method:
             self._reqObj.setValue('method', method)
-            self._reqObj.setValue("urlmethod", urllib.quote(method))
+            self._reqObj.setValue("urlmethod", u_quote(method))
         #
         if page_tmplt == 'level3_tmplt':
             self.__depictLevel3WorkFlow()

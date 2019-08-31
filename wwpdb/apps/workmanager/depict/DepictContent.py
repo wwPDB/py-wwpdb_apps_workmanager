@@ -21,7 +21,11 @@ __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
 
-import os, sys, urllib
+import os, sys
+try:
+    from urllib.parse import quote as u_quote
+except ImportError:
+    from urllib import quote  as u_quote
 
 from wwpdb.apps.workmanager.depict.DepictBase     import DepictBase,processPublicIDs
 from wwpdb.apps.workmanager.depict.ReadConFigFile import dumpPickleFile,loadPickleFile
@@ -199,7 +203,7 @@ class DepictContent(DepictBase):
                 dataD['urlmethod'] = ''
                 dataD['abbrv_method'] = ''
                 if ('method' in dataD) and dataD['method']:
-                    dataD['urlmethod'] = urllib.quote(dataD['method'])
+                    dataD['urlmethod'] = u_quote(dataD['method'])
                     if dataD['method'].upper() == 'X-RAY DIFFRACTION':
                         dataD['abbrv_method'] = 'X-RAY'
                     elif dataD['method'].upper() == 'NEUTRON DIFFRACTION':

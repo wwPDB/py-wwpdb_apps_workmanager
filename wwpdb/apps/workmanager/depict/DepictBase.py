@@ -264,9 +264,9 @@ class DepictBase(object):
         if return_type == 'string':
             stringFlag = True
         #
-        if type(resultObj) is DictType:
+        if isinstance(resultObj, dict):
             return self.__writeDirValue(resultObj, delimiter, stringFlag)
-        elif type(resultObj) is ListType:
+        elif isinstance(resultObj, list):
             return self.__writeListValue(resultObj, delimiter, stringFlag)
         else:
             return str(resultObj)
@@ -438,9 +438,9 @@ class DepictBase(object):
             if text:
                 text += delimiter
             #
-            if type(v) is DictType:
+            if isinstance(v, dict):
                 text += quotation + str(k) + quotation + ":" + self.__writeDirValue(v, delimiter, stringFlag)
-            elif type(v) is ListType:
+            elif isinstance(v, list):
                 text += quotation + str(k) + quotation + ":" + self.__writeListValue(v, delimiter, stringFlag)
             else:
                 text += quotation + str(k) + quotation + ":" + quotation + str(v) + quotation
@@ -465,9 +465,9 @@ class DepictBase(object):
             if text:
                 text += delimiter
             #
-            if type(v) is DictType:
+            if isinstance(v, dict):
                 text += self.__writeDirValue(v, delimiter, stringFlag)
-            elif type(v) is ListType:
+            elif isinstance(v, list):
                 text += self.__writeListValue(v, delimiter, stringFlag)
             else:
                 text += quotation + str(v) + quotation
