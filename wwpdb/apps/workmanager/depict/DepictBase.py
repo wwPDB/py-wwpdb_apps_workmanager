@@ -294,7 +294,8 @@ class DepictBase(object):
         """
         """
         mod_url_list = [ [ 'AnnMod', 'SITE_ANN_TASKS_URL' ], [ 'LigMod', 'SITE_LE_URL' ], [ 'LigModUI', 'SITE_LE_URL' ], \
-                         [ 'SeqMod', 'SITE_SE_URL' ], [ 'TransMod', 'SITE_TRANS_EDITOR_URL' ], [ 'ValMod', 'SITE_VAL_TASKS_URL' ] ]
+                         [ 'SeqMod', 'SITE_SE_URL' ], [ 'SeqModUI', 'SITE_SE_URL' ], [ 'TransMod', 'SITE_TRANS_EDITOR_URL' ], \
+                         [ 'ValMod', 'SITE_VAL_TASKS_URL' ] ]
         #
         cI = ConfigInfo(self._siteId)
         for list in mod_url_list:
