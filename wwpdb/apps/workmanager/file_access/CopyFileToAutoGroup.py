@@ -70,7 +70,7 @@ class CopyFileToAutoGroup(object):
     def run(self):
         """
         """
-        numProc = multiprocessing.cpu_count() / 2
+        numProc = int(multiprocessing.cpu_count() / 2)
         mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runMulti")
         mpu.setWorkingDir(self.__sessionPath)

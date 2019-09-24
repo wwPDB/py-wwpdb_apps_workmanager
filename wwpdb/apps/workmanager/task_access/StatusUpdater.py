@@ -53,7 +53,7 @@ class StatusUpdater(BaseClass):
         if not os.access(os.path.join(self._sessionPath, 'statusInfo_StatusUpdater.cif'), os.F_OK):
             return 'No status info. selected.'
         #
-        numProc = multiprocessing.cpu_count() / 2
+        numProc = int(multiprocessing.cpu_count() / 2)
         mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runMulti")
         mpu.setWorkingDir(self._sessionPath)

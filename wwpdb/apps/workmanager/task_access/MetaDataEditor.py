@@ -143,7 +143,7 @@ class MetaDataEditor(BaseClass):
         self.__all_data_type = str(self._reqObj.getValue("all_data_type"))
         all_data_type = self.__all_data_type.split(",")
         #
-        numProc = multiprocessing.cpu_count() / 2
+        numProc = int(multiprocessing.cpu_count() / 2)
         mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runGetEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
@@ -227,7 +227,7 @@ class MetaDataEditor(BaseClass):
         if not entryList:
             return
         #
-        numProc = multiprocessing.cpu_count() / 2
+        numProc = int(multiprocessing.cpu_count() / 2)
         mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runUpdateEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
