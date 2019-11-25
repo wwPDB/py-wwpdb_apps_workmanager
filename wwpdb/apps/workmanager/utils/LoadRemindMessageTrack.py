@@ -59,7 +59,7 @@ class DbApiUtil(object):
         #
         rowExists = False
         if where:
-            sql = "select * from " + str(table) + " where " + ' and '.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in where.iteritems()])
+            sql = "select * from " + str(table) + " where " + ' and '.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in where.items()])
             rows = self.runSelectSQL(sql)
             if rows and len(rows) > 0:
                 rowExists = True
@@ -69,21 +69,21 @@ class DbApiUtil(object):
             return 'OK'
         #
         if rowExists:
-            sql = "update " + str(table) + " set " + ','.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in data.iteritems()])
+            sql = "update " + str(table) + " set " + ','.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in data.items()])
             if not data.has_key('major_issue'):
                 sql += ',major_issue = NULL'
             #
             if where:
-                sql += ' where ' + ' and '.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in where.iteritems()])
+                sql += ' where ' + ' and '.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in where.items()])
             #
         else:
-            sql = "insert into " + str(table) + " (" + ','.join(['%s' % (k) for k, v in where.iteritems()])
+            sql = "insert into " + str(table) + " (" + ','.join(['%s' % (k) for k, v in where.items()])
             if data:
-                sql += "," + ','.join(['%s' % (k) for k, v in data.iteritems()])
+                sql += "," + ','.join(['%s' % (k) for k, v in data.items()])
             #
-            sql += ") values (" + ','.join(["'%s'" % (v.replace("'", "\\'")) for k, v in where.iteritems()])
+            sql += ") values (" + ','.join(["'%s'" % (v.replace("'", "\\'")) for k, v in where.items()])
             if data:
-                sql += "," + ','.join(["'%s'" % (v.replace("'", "\\'")) for k, v in data.iteritems()])
+                sql += "," + ','.join(["'%s'" % (v.replace("'", "\\'")) for k, v in data.items()])
             #
             sql += ")"
         #
@@ -268,13 +268,13 @@ class LoadRemindMessageTrack(object):
             #
             last_validation_report = ''
             for message in message_list:
-                if (message.has_key('message_text') and text_re.search(message['message_text'])) or \
-                   (message.has_key('message_subject') and subj_re.search(message['message_subject'])):
+                if ('message_text' in message and text_re.search(message['message_text'])) or \
+                   ('message_subject' in message and subj_re.search(message['message_subject'])):
                     trackMap['last_reminder_sent_date'] = message['timestamp'][0:10]
                 #
-                if map.has_key(message['message_id']) and map[message['message_id']] == 'validation-report-annotate':
+                if message['message_id'] in map and map[message['message_id']] == 'validation-report-annotate':
                     trackMap['last_validation_sent_date'] = message['timestamp'][0:10]
-                    if message.has_key('message_text'):
+                    if 'message_text' in message:
                         last_validation_report = message['message_text']
                     #
                 #

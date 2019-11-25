@@ -103,9 +103,9 @@ class SnapShotDiff(object):
                     n = 0
                     for (i1,i2) in zip(items1,items2):
                         n = n + 1
-                        for item1,value1 in i1.iteritems():
+                        for item1,value1 in i1.items():
                             if not (item1.endswith('_ordinal') or item1 == 'id') :
-                                if item1 in i2.iterkeys():
+                                if item1 in i2.keys():
                                     value2 = i2[item1]
                                     if value1['value'] != value2['value']:
                                         d = {}

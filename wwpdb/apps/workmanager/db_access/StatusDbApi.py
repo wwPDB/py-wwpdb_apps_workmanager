@@ -46,7 +46,8 @@ class StatusDbApi(object):
                                     "g.da_group_id and u.initials = '%s'",
                     "UPDATE_USER" : "update da_users set password = '%s', email = '%s', first_name = '%s', last_name = '%s' where " +
                                     "user_name = '%s'",
-              "SELECT_SITE_ANN"   : "select u.user_name, u.password, u.da_group_id group_id, u.email, u.initials, u.first_name, u.last_name, " +
+                   "SELECT_SITES" : "select g.code, g.group_name, g.site, g.da_group_id, g.main_page from da_group as g",
+                "SELECT_SITE_ANN" : "select u.user_name, u.password, u.da_group_id group_id, u.email, u.initials, u.first_name, u.last_name, " +
                                     "g.code, g.group_name, g.site from da_users as u, da_group as g where u.da_group_id = " +
                                     "g.da_group_id and u.active = 0 and g.code = '%s' and g.site = '%s'",
               "SELECT_GROUP_USER" : "select u.user_name, u.password, u.da_group_id group_id, u.email, u.initials, u.first_name, u.last_name, " +
@@ -185,6 +186,10 @@ class StatusDbApi(object):
             return None
         #
         return self.__dbApi.selectData(key="SELECT_GROUP_USER", parameter=(da_group_id))
+
+    def getSites(self):
+        """Returns list of sites in WFM user table"""
+        return self.__dbApi.selectData(key="SELECT_SITES", parameter=())
 
     def getSiteGroup(self, site=None):
         if not site:
@@ -658,6 +663,20 @@ class StatusDbApi(object):
             error_message += "'" +  input_id + "' is not a valid ID."
         #
         return error_message,return_id_list
+
+    def addSite(self, code, site, group_name, main_page, da_group_id):
+        data = { 'group_name' : group_name, 'site' : site, 'main_page' : main_page}
+        self.runUpdate(table = 'da_group', where = { 'code' : code, 'da_group_id' : str(da_group_id)}, data = data)
+        pass
+#                    "UPDATE_SITE" : "update da_group set code = '%s', group_name = '%s', main_page = '%s', da_group_id = %s where " +
+#                                    "code = '%s' and site = '%s'",
+
+#|code        | varchar(20) | NO   |     | NULL    |                |
+#| group_name  | varchar(25) | NO   |     | NULL    |                |
+#| site        | varchar(4)  | NO   |     | NULL    |                |
+#| main_page   | varchar(30) | YES  |     | NULL    |                |
+#| da_group_id | int(10)     | NO   | PRI | NULL    |                |
+        
 
 if __name__ == '__main__':
     db = StatusDbApi(siteId='WWPDB_DEPLOY_TEST_RU', verbose=True, log=sys.stderr)
