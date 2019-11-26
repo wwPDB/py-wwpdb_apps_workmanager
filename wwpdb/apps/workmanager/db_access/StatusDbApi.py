@@ -664,19 +664,61 @@ class StatusDbApi(object):
         #
         return error_message,return_id_list
 
-    def addSite(self, code, site, group_name, main_page, da_group_id):
-        data = { 'group_name' : group_name, 'site' : site, 'main_page' : main_page}
-        self.runUpdate(table = 'da_group', where = { 'code' : code, 'da_group_id' : str(da_group_id)}, data = data)
-        pass
-#                    "UPDATE_SITE" : "update da_group set code = '%s', group_name = '%s', main_page = '%s', da_group_id = %s where " +
-#                                    "code = '%s' and site = '%s'",
+    def deleteSite(self, site):
+        """Deletes a site by retrieving the group id and then deleting users and group"""
 
-#|code        | varchar(20) | NO   |     | NULL    |                |
-#| group_name  | varchar(25) | NO   |     | NULL    |                |
-#| site        | varchar(4)  | NO   |     | NULL    |                |
-#| main_page   | varchar(30) | YES  |     | NULL    |                |
-#| da_group_id | int(10)     | NO   | PRI | NULL    |                |
+        status = 'OK'
+        sitegr = self.getSiteGroup(site) 
+        for s in sitegr:
+            groupid = s['group_id']
         
+            sql  = "delete from da_users where da_group_id = '{}'".format(groupid)
+            ret = self.__dbApi.runUpdateSQL(sql)
+
+            sql = "delete from da_group where da_group_id = '{}'".format(groupid)
+            ret = self.__dbApi.runUpdateSQL(sql)
+            if ret != 'OK':
+                status = ret
+
+        return status
+
+    def addSite(self, site, lead, email, first, last):
+        # First determine new group
+        sites = self.getSites()
+        maxgroup = 0
+        status = 'OK'
+        for s in sites:
+            if s['site'].lower() == site.lower():
+                status = 'Site already exists'
+                return status
+            maxgroup = max(maxgroup, s['da_group_id'])
+
+        for code in ['LANN', 'ANN']:
+            maxgroup += 1
+            if code == 'LANN':
+                group_name = "{} - Lead Annotator".format(site)  
+                main_page = "RCSBLeadAnnotator.html"
+            else:
+                group_name = "{} - Lead Annotator".format(site)  
+                main_page = "Annotators.html"
+
+            data = { 'group_name' : group_name, 'site' : site, 'main_page' : main_page}
+            ret = status = self.runUpdate(table = 'da_group', where = { 'code' : code, 'da_group_id' : str(maxgroup)}, data = data)
+            if ret != 'OK':
+                status = ret
+
+        r = self.getSiteGroupWithCode(site, 'LANN')
+        lann_gr = r['group_id']
+
+
+        data = { 'user_name' : site.upper(), 'password': site.upper(), 'email':email, 'initials': site.upper(), 'first_name':first, 
+                 'last_name': last+"(Lead)"}
+        ret = status = self.runUpdate(table = 'da_users', where = { 'da_group_id' : str(lann_gr)}, data = data)
+        if ret != 'OK':
+            status = ret
+
+        return status
+
 
 if __name__ == '__main__':
     db = StatusDbApi(siteId='WWPDB_DEPLOY_TEST_RU', verbose=True, log=sys.stderr)
