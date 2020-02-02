@@ -40,7 +40,7 @@ class ContentDbApi(object):
                     "CONTACT_AUTHOR_PI_LIST" : "select Structure_ID as id, email, name_first, name_mi, name_last, role, country from pdbx_contact_author where Structure_ID in ( '%s' ) " +
                                                "and role = 'principal investigator/group leader'",
                     "GET_REMINDER_LIST" : "select structure_id from rcsb_status where status_code in ('WAIT','PROC','REPL','AUTH','AUCO') and " +
-                                          "rcsb_annotator = '%s' and initial_deposition_date <= DATE_SUB(curdate(), interval 14 day) order by structure_id",
+                                          "rcsb_annotator = '%s' and initial_deposition_date <= DATE_SUB(curdate(), interval 21 day) order by structure_id",
                     "GET_DAILY_STATS" : "select rcsb_annotator from rcsb_status where status_code not in ('PROC','WAIT','POLC','AUCO') " +
                                         "and date_begin_processing  = '%s'",
                     "GET_RANGE_STATS" : "select rcsb_annotator from rcsb_status where status_code not in ('PROC','WAIT','POLC','AUCO') " +
