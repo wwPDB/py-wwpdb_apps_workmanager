@@ -101,10 +101,11 @@ class DepictGroup(DepictBase):
     def __get_entry_info(self):
         """
         """
-        MaxEntry = 6
         if self.__workFlowFlag:
+             MaxEntry = 6
              entry_tmplt = self._getPageTemplate('entry_tmplt')
         else:
+             MaxEntry = 2
              entry_tmplt = self._getPageTemplate('task_entry_tmplt')
         #
         count = 0
