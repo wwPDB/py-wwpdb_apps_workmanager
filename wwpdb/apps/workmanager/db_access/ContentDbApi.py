@@ -53,7 +53,8 @@ class ContentDbApi(object):
                         "(select d.Structure_id, count(d.Structure_id) as count   from pdbx_audit_revision_details as d, pdbx_audit_revision_history as h where " +
                         "h.Structure_id = d.Structure_id and h.ordinal = d.revision_ordinal and d.type='Coordinate replacement' and DATEDIFF(CURDATE(), h.revision_date) <= 365 " +
                         "group by d.Structure_id  ) s1  where s1.Structure_id = c.Structure_Id and c.role='principal investigator/group leader' " +
-                        "order by c.identifier_ORCID ) s2 group by identifier_ORCID, name order by name"
+                        "order by c.identifier_ORCID ) s2 group by identifier_ORCID, name order by name",
+                 "GET_LIGAND_ID_LIST" : "select Structure_ID, comp_id from pdbx_entity_nonpoly where Structure_ID in ( '%s' )"
                   }
     """
     """
@@ -173,6 +174,13 @@ class ContentDbApi(object):
     def GetReplaceCounts(self):
         #
         return self.__dbApi.selectData(key="GET_REPLACE_COUNTS")
+
+    def getLigandIdList(self, entryIdList=[]):
+        #
+        if not entryIdList:
+            return None
+        #
+        return self.__dbApi.selectData(key="GET_LIGAND_ID_LIST", parameter=("', '".join(entryIdList)))
 
     def runSelectSQL(self, sql):
         return self.__dbApi.runSelectSQL(sql)

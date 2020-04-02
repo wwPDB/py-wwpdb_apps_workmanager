@@ -55,7 +55,6 @@ class SequenceMerger(BaseClass):
         return rList,rList,[]
 
     def __runSingle(self, entry_id):
-        all_message = ''
         message,modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
         if message:
             self._dumpPickle(entry_id + "_SequenceMerger", message)
@@ -79,7 +78,12 @@ class SequenceMerger(BaseClass):
         self._removeFile(os.path.join(self._sessionPath, updatedModelFile))
         logFile = 'SequenceMerger_update_cif_' + entry_id + '.log'
         clogFile = 'SequenceMerger_update_cif_command_' + entry_id + '.log'
-        cmd = self._getCmd('${BINPATH}/MergePolySeqInfo', inputFile, updatedModelFile, logFile, clogFile, ' -example ' + self.__templateFile)
+        option = ' -example ' + self.__templateFile
+        mismatch_flag = str(self._reqObj.getValue("mismatch_flag"))
+        if mismatch_flag:
+            option += ' -rename '
+        #
+        cmd = self._getCmd('${BINPATH}/MergePolySeqInfo', inputFile, updatedModelFile, logFile, clogFile, option)
         self._runCmd(cmd)
         #
         msg = self._getLogMessage(os.path.join(self._sessionPath, logFile))

@@ -54,7 +54,7 @@ class BaseClass(object):
         if not filePath:
             message = "Can not find " + version + " " + contentType + " " + formatType + " file."
         elif not os.access(filePath, os.F_OK):
-            message = "File " + filePath + " not exist."
+            message = "File " + filePath + " does not exist."
         #
         return message,filePath
 

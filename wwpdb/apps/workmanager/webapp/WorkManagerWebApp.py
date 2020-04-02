@@ -46,7 +46,9 @@ from wwpdb.apps.workmanager.file_access.CopyFileToAutoGroup import CopyFileToAut
 from wwpdb.apps.workmanager.file_access.LogFileUtil     import LogFileUtil
 from wwpdb.apps.workmanager.file_access.MileStoneFile   import MileStoneFile
 from wwpdb.apps.workmanager.task_access.CifChecker      import CifChecker
+from wwpdb.apps.workmanager.task_access.LigandFinder    import LigandFinder
 from wwpdb.apps.workmanager.task_access.MetaDataEditor  import MetaDataEditor
+from wwpdb.apps.workmanager.task_access.MetaDataMerger  import MetaDataMerger
 from wwpdb.apps.workmanager.task_access.PdbFileGenerator import PdbFileGenerator
 from wwpdb.apps.workmanager.task_access.SequenceMerger  import SequenceMerger
 from wwpdb.apps.workmanager.task_access.StatusUpdater   import StatusUpdater
@@ -207,6 +209,7 @@ class WorkManagerWebAppWorker(object):
                          '/service/workmanager/changeactiveuser':    '_ChangeActiveUser',
                          '/service/workmanager/start_group_workflow': '_GroupEngineDepictOp',
                          '/service/workmanager/start_group_worktask': '_GroupTaskDepictOp',
+                         '/service/workmanager/get_ligand_list':     '_GetLigandListOp',
                          '/service/workmanager/run_group_engine':    '_RunGroupEngineOp',
                          '/service/workmanager/run_group_tasks':     '_RunGroupTasksOp',
                          '/service/workmanager/open_editing_page':   '_LaunchEditingPageOp',
@@ -922,6 +925,24 @@ class WorkManagerWebAppWorker(object):
         rC.setHtmlText(depictUtil.getPageText(page_id='group_worktask_tmplt'))
         return rC
 
+    def _GetLigandListOp(self):
+        """ Get all ligand IDs associated with the deposited entries in a group
+        """
+        if (self.__verbose):
+            self.__lfh.write("+WorkManagerWebAppWorker._GetLigandListOp() Starting now\n")
+        #
+        ligFinder = LigandFinder(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        returnMap,errMsg = ligFinder.getLigandInfo()
+        #
+        rtrnDict = {}
+        if returnMap:
+            rtrnDict['map'] = returnMap
+        else:
+            rtrnDict['errorflag'] = True
+            rtrnDict['errortext'] = errMsg
+        #
+        return self.__returnJsonDict(rtrnDict)
+
     def _RunGroupEngineOp(self):
         """ Run Workflow Engine for selected entries under group deposition
         """
@@ -1011,33 +1032,10 @@ class WorkManagerWebAppWorker(object):
         elif option == 'sequence':
             self.__getSession()
             #
-            filePath = ''
-            template_identifier = str(self.__reqObj.getValue("template_identifier"))
-            if template_identifier:
-                version = str(self.__reqObj.getValue("template_file_version"))
-                if not version:
-                    version = 'latest'
-                #
-                pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
-                filePath = pI.getFilePath(dataSetId=template_identifier, wfInstanceId=None, contentType='model', formatType='pdbx', \
-                                          fileSource='archive', versionId=version, partNumber='1')
-                #
-                if not filePath:
-                    return self.__returnJsonObject('', 'No template file found for Deposition ID=' + template_identifier + ' with version number=' + version + '.')
-                #
-            else:
-                wuu = WebUploadUtils(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
-                if not wuu.isFileUpload(fileTag='template_file'):
-                    return self.__returnJsonObject('', 'No upload template model file found.')
-                #
-                uploadFileName = wuu.copyToSession(fileTag='template_file')
-                if not os.access(os.path.join(self.__sessionPath, uploadFileName), os.F_OK):
-                    return self.__returnJsonObject('', "Template file '" + os.path.join(self.__sessionPath, uploadFileName) + "' can not be found.")
-                #
-                filePath = os.path.join(self.__sessionPath, 'uploadTemplateFile.cif')
-                os.rename(os.path.join(self.__sessionPath, uploadFileName), filePath)
-            #
-            if not filePath:
+            filePath,errMsg = self.__getTemplateFile()
+            if errMsg:
+                return self.__returnJsonObject('', errMsg)
+            elif not filePath:
                 return self.__returnJsonObject('', 'No template model file found.')
             elif not os.access(filePath, os.F_OK):
                 return self.__returnJsonObject('', "Template file '" + filePath + "' can not be found.")
@@ -1047,6 +1045,39 @@ class WorkManagerWebAppWorker(object):
         elif option == 'status':
             stUpdater = StatusUpdater(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
             successful_msg = stUpdater.run()
+        elif option == 'other':
+            checkList = self.__reqObj.getValueList('checked_list')
+            if len(checkList) == 0:
+                return self.__returnJsonObject('', 'No task selected.')
+            #
+            needTemplateFile = False
+            if (len(checkList) > 1) or (checkList[0] != 'loi'):
+                needTemplateFile = True
+            #
+            self.__getSession()
+            #
+            filePath = ''
+            if needTemplateFile:
+                filePath,errMsg = self.__getTemplateFile()
+                if errMsg:
+                    return self.__returnJsonObject('', errMsg)
+                elif not filePath:
+                    return self.__returnJsonObject('', 'No template model file found.')
+                elif not os.access(filePath, os.F_OK):
+                    return self.__returnJsonObject('', "Template file '" + filePath + "' can not be found.")
+                #
+            #
+            metaMerger = MetaDataMerger(reqObj=self.__reqObj, entryList=entryList, taskList=checkList, templateFile=filePath, \
+                                        verbose=self.__verbose, log=self.__lfh)
+            successful_msg = metaMerger.run()
+        elif option == 'recover':
+            checkList = self.__reqObj.getValueList('checked_list')
+            if len(checkList) == 0:
+                return self.__returnJsonObject('', 'No task selected.')
+            #
+            metaMerger = MetaDataMerger(reqObj=self.__reqObj, entryList=entryList, taskList=checkList, recoverFlag=True, \
+                                        verbose=self.__verbose, log=self.__lfh)
+            successful_msg = metaMerger.run()
         else:
             return self.__returnJsonObject('', 'No task was defined!')
         #
@@ -1206,6 +1237,37 @@ class WorkManagerWebAppWorker(object):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+WorkManagerWebAppWorker.__getSession() - creating/joining session %s\n" % self.__sessionId)
             self.__lfh.write("+WorkManagerWebAppWorker.__getSession() - session path %s\n" % self.__sessionPath)
+
+    def __getTemplateFile(self):
+        """ Get template file for ('sequence', 'other') options
+        """
+        filePath = ''
+        template_identifier = str(self.__reqObj.getValue("template_identifier"))
+        if template_identifier:
+            version = str(self.__reqObj.getValue("template_file_version"))
+            if not version:
+                version = 'latest'
+            #
+            pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
+            filePath = pI.getFilePath(dataSetId=template_identifier, wfInstanceId=None, contentType='model', formatType='pdbx', \
+                                      fileSource='archive', versionId=version, partNumber='1')
+            #
+            if not filePath:
+                return '','No template file found for Deposition ID=' + template_identifier + ' with version number=' + version + '.'
+            #
+        else:
+            wuu = WebUploadUtils(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+            if not wuu.isFileUpload(fileTag='template_file'):
+                return '','No upload template model file found.'
+            #
+            uploadFileName = wuu.copyToSession(fileTag='template_file')
+            if not os.access(os.path.join(self.__sessionPath, uploadFileName), os.F_OK):
+                return '',"Template file '" + os.path.join(self.__sessionPath, uploadFileName) + "' can not be found."
+            #
+            filePath = os.path.join(self.__sessionPath, 'uploadTemplateFile.cif')
+            os.rename(os.path.join(self.__sessionPath, uploadFileName), filePath)
+        #
+        return filePath,''
 
     def __processTemplate(self,fn,parameterDict={}):
         """ Read the input HTML template data file and perform the key/value substitutions in the
