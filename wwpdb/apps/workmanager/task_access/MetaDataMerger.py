@@ -125,8 +125,7 @@ class MetaDataMerger(BaseClass):
         if (entry_id in self.__loiMap) and self.__loiMap[entry_id]:
             option += " -ligand " + ",".join(self.__loiMap[entry_id])
         #
-        cmd = self._getCmd("${BINPATH}/MergeMetaDataInfo", inputFile, updatedModelFile, logFile, clogFile, option)
-        self._lfh.write("cmd="+cmd)
+        cmd = self._getCmd("${BINPATH}/MergeMetaDataApp", inputFile, updatedModelFile, logFile, clogFile, option)
         self._runCmd(cmd)
         #
         msg = self._getLogMessage(os.path.join(self._sessionPath, logFile))
