@@ -1015,7 +1015,7 @@ class WorkManagerWebAppWorker(object):
             return self.__returnJsonObject(successful_msg, failed_msg)
         #
         option = self.__reqObj.getValue('option')
-        if option == 'cifcheck':
+        if (option == 'cifcheck') or (option == 'mischeck'):
             checkUtil = CifChecker(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
             successful_msg = checkUtil.run()
         elif option == 'copy_to_deposition':
