@@ -139,19 +139,33 @@ class DepictContent(DepictBase):
             annSelectMap = {}
             reminderSentMap = {}
             PIInfoMap = {}
-            if ('add_list' in tableMap['data-field']) or ('major_issue' in tableMap['data-field']) or \
-               ('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
-               ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']): 
+            #if ('add_list' in tableMap['data-field']) or ('major_issue' in tableMap['data-field']) or \
+            #        ('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
+            #        ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']):
+
+            if (x for x in tableMap['data-field'] if x in ('add_list',
+                                                           'major_issue',
+                                                           'pi_name',
+                                                           'country',
+                                                           'pi_name_only',
+                                                           'pi_country_only',
+                                                           'received_date')
+                ):
                 if idList and ('add_list' in tableMap['data-field']):
                     return_list = self._statusDB.getAnnoSelection(depositionids=idList)
                     annSelectMap = self.__convertListIntoMap(return_list)
                 #
-                if idList and ('major_issue' in tableMap['data-field']):
+                if idList and (x for x in tableMap['data-field'] if x in ('major_issue',
+                                                                          'received_date')
+                               ):
                     return_list = self._statusDB.getRemindMessageTrack(depositionids=idList)
                     reminderSentMap = self.__convertListIntoMap(return_list)
                 #
-                if idList and (('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
-                   ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field'])):
+                if idList and (x for x in tableMap['data-field'] if x in ('pi_name',
+                                                                          'country',
+                                                                          'pi_name_only',
+                                                                          'pi_country_only')
+                               ):
                     PIInfoMap = self.__getPIInfo(idList)
                 #
             #
