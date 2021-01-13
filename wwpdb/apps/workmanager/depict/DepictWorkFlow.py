@@ -126,7 +126,7 @@ class DepictWorkFlow(DepictBase):
                 myD['inst_status'] = 'notdone'
             #
             myD['run_with_ui'] = ''
-            if wf['classID'] in ( 'LigMod', 'SeqMod' , 'AnnMod'):
+            if wf['classID'] in ( 'TransMod', 'LigMod', 'SeqMod' , 'AnnMod'):
                 myD['run_with_ui'] = single_module_UI_tmplt % myD
             #
             myD['open_interface'] = ''
