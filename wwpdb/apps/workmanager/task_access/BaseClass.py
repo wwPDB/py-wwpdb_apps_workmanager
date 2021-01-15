@@ -163,7 +163,7 @@ class BaseClass(object):
         if not os.access(logfile, os.F_OK):
             return ''
         #
-        f = file(logfile, 'r')
+        f = open(logfile, 'r')
         data = f.read()
         f.close()
         #

@@ -212,7 +212,7 @@ class LoadRemindMessageTrack(object):
         if (not os.access(filename, os.F_OK)):
             return
         #
-        f = file(filename, 'r')
+        f = open(filename, 'r')
         data = f.read()
         f.close()
         #

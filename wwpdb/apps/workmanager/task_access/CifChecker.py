@@ -113,7 +113,7 @@ class CifChecker(BaseClass):
             #
             logFile = os.path.join(self._sessionPath, entry_id + self.__optionDict[self.__option][3])
             if os.access(logFile, os.F_OK):
-                f = file(logFile, "r")
+                f = open(logFile, "r")
                 error += f.read() + "\n"
                 f.close()
             #
