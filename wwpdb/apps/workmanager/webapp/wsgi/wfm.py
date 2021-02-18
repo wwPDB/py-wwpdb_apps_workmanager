@@ -111,11 +111,11 @@ class MyRequestApp(object):
         return myResponse(environment, responseApplication)
 
 
-def application():
+def run_application():
     ##
     ##  NOTE -  Verbose setting is set here ONLY!
     ##
     application = MyRequestApp(textString="doServiceRequest() - WebOb version", verbose=True, log=sys.stderr)
     #
 
-application()
+run_application()
