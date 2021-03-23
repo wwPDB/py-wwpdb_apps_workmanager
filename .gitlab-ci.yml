@@ -1,0 +1,32 @@
+image: python:3.8
+
+stages:
+  - build
+
+wheel_auto:
+  stage: build
+  script:
+    - pip install twine
+    - python setup.py sdist bdist_wheel
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=${CI_REGISTRY_USER} python -m twine upload --repository-url https://${CI_REPOSITORY_PYPI_URL} dist/*
+  artifacts:
+    paths:
+      - dist/
+  only:
+    refs:
+      - master
+
+wheel_adhoc:
+  stage: build
+  script:
+    - pip install twine
+    - python setup.py sdist bdist_wheel
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=${CI_REGISTRY_USER} python -m twine upload --repository-url https://${CI_REPOSITORY_PYPI_URL} dist/*
+  artifacts:
+    paths:
+      - dist/
+  except:
+    refs:
+      - master
+      - develop
+  when: manual
