@@ -1,9 +1,16 @@
-image: python:3.8
 
 stages:
   - build
 
+services:
+  - docker:18-dind
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+
 wheel_auto:
+  image: python:3.8
   stage: build
   script:
     - pip install twine
@@ -17,6 +24,7 @@ wheel_auto:
       - master
 
 wheel_adhoc:
+  image: python:3.8
   stage: build
   script:
     - pip install twine
@@ -29,4 +37,15 @@ wheel_adhoc:
     refs:
       - master
       - develop
+  when: manual
+
+build_adhoc_non_master:
+  stage: build
+  script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker build -t ${IMAGE_TAG} --build-arg CI_REGISTRY_USER=$CI_REGISTRY_USER --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --build-arg CI_PROJECT_ID=$CI_PROJECT_ID --build-arg CI_REPOSITORY_PYPI_URL=$CI_REPOSITORY_PYPI_URL .
+    - docker push ${IMAGE_TAG}
+  except:
+    refs:
+      - master
   when: manual
