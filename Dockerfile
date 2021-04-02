@@ -1,7 +1,6 @@
 FROM python:3.8-alpine as builder
 
-# RUN apk add --update --no-cache cmake make git openssh bash gcc g++ musl-dev linux-headers mariadb-dev libffi-dev rust cargo flex bison
-RUN apk add --update --no-cache cmake make git openssh bash mariadb-dev
+RUN apk add --update --no-cache cmake make git openssh bash gcc g++ musl-dev linux-headers mariadb-dev libffi-dev rust cargo flex bison
 
 ARG CI_REGISTRY_USER
 ARG CI_JOB_TOKEN
@@ -46,9 +45,6 @@ ENV WRITE_SITE_CONFIG_CACHE='ConfigInfoFileExec --siteid $WWPDB_SITE_ID --locid 
 
 WORKDIR ${ONEDEP_PATH}
 COPY --from=builder ${ONEDEP_PATH} .
-
-# allow apache to come through
-EXPOSE 25 80 465 587 443
 
 ENV RUN_SCRIPT=${SITE_CONFIG_PATH}/run_server.sh
 RUN echo "${SITE_CONFIG}" >> ${RUN_SCRIPT} \
