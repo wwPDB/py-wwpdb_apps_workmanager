@@ -1,7 +1,7 @@
 FROM python:3.8-alpine as builder
 
 # RUN apk add --update --no-cache cmake make git openssh bash gcc g++ musl-dev linux-headers mariadb-dev libffi-dev rust cargo flex bison
-RUN apk add --update --no-cache cmake make git openssh bash
+RUN apk add --update --no-cache cmake make git openssh bash mariadb-dev
 
 ARG CI_REGISTRY_USER
 ARG CI_JOB_TOKEN
