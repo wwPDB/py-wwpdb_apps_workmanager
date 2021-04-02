@@ -652,8 +652,7 @@ class WorkManagerWebAppWorker(object):
         if not data:
             data = []
         #
-        rtrnDict = {}
-        rtrnDict['table_rows'] = data
+        rtrnDict = {'table_rows': data}
         return self.__returnJsonDict(rtrnDict)
 
     def _SearchPageOp(self):
@@ -1120,9 +1119,7 @@ class WorkManagerWebAppWorker(object):
         self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
-        myD = {}
-        myD['sessionid'] = self.__sessionId
-        myD['annotator'] = str(self.__reqObj.getValue('annotator'))
+        myD = {'sessionid': self.__sessionId, 'annotator': str(self.__reqObj.getValue('annotator'))}
         rC.setHtmlText(self.__processTemplate('editing_tmplt.html', myD))
         #
         return rC
@@ -1247,10 +1244,9 @@ class WorkManagerWebAppWorker(object):
     def __dump_deposit_storage_pickle(self, storage_pickle_path, reason):
         """
         """
-        data = {}
-        data['annotator_initials'] = str(self.__reqObj.getValue("annotator"))
-        data['reason'] = reason
-        data['date'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        data = {'annotator_initials': str(self.__reqObj.getValue("annotator")),
+                'reason': reason,
+                'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         f = open(storage_pickle_path, 'wb')
         pickle.dump(data, f)
         f.close()
@@ -1281,7 +1277,7 @@ class WorkManagerWebAppWorker(object):
             #
             pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
             filePath = pI.getFilePath(dataSetId=template_identifier, wfInstanceId=None, contentType='model',
-                                      formatType='pdbx', \
+                                      formatType='pdbx',
                                       fileSource='archive', versionId=version, partNumber='1')
             #
             if not filePath:
@@ -1307,11 +1303,11 @@ class WorkManagerWebAppWorker(object):
             
             :Params:
                 ``parameterDict``: dictionary where
-                key = name of subsitution placeholder in the template and
+                key = name of substitution placeholder in the template and
                 value = data to be used to substitute information for the placeholder
                 
             :Returns:
-                string representing entirety of content with subsitution placeholders now replaced with data
+                string representing entirety of content with substitution placeholders now replaced with data
         """
         tPath = self.__reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
