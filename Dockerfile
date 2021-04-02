@@ -7,7 +7,6 @@ ARG CI_JOB_TOKEN
 ARG CI_PROJECT_ID
 ARG CI_REPOSITORY_PYPI_URL
 
-
 # force using bash shell
 SHELL ["/bin/bash", "-c"]
 
@@ -48,7 +47,7 @@ COPY --from=builder ${ONEDEP_PATH} .
 
 ENV RUN_SCRIPT=${SITE_CONFIG_PATH}/run_server.sh
 RUN echo "${SITE_CONFIG}" >> ${RUN_SCRIPT} \
-    && echo "gunicorn wwpdb.apps.workmanager.webapp.wsgi --bind 0.0.0.0:8000 --timeout 0 --threads 4" >> ${RUN_SCRIPT} \
+    && echo "gunicorn wwpdb.apps.workmanager.webapp.wsgi --bind 0.0.0.0:8080 --timeout 0 --threads 4" >> ${RUN_SCRIPT} \
     && chmod a+x ${RUN_SCRIPT}
 
 CMD ${RUN_SCRIPT}
