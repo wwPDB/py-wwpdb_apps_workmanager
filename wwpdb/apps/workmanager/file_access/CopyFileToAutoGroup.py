@@ -23,6 +23,7 @@ __version__   = "V0.07"
 import multiprocessing, os, shutil, sys
 
 from wwpdb.utils.config.ConfigInfo       import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp    import ConfigInfoAppCommon
 from wwpdb.io.locator.DataReference      import DataFileReference
 from rcsb.utils.multiproc.MultiProcUtil  import MultiProcUtil
 from wwpdb.io.locator.PathInfo           import PathInfo
@@ -38,6 +39,7 @@ class CopyFileToAutoGroup(object):
         self.__lfh         = log
         self.__siteId      = str(self.__reqObj.getValue('WWPDB_SITE_ID'))
         self.__cI          = ConfigInfo(self.__siteId)
+        self.__cICommon    = ConfigInfoAppCommon(self.__siteId)
         self.__archivePath = self.__cI.get('SITE_ARCHIVE_STORAGE_PATH')
         self.__identifier  = str(self.__reqObj.getValue('identifier'))
         self.__targetPath  = os.path.join(self.__archivePath, 'autogroup', self.__identifier, 'processed')
@@ -45,9 +47,9 @@ class CopyFileToAutoGroup(object):
         self.__rcsbRoot = self.__cI.get('SITE_ANNOT_TOOLS_PATH')
         self.__compRoot = self.__cI.get('SITE_CC_CVS_PATH')
         self.__dictBinRoot = os.path.join(self.__cI.get('SITE_PACKAGES_PATH'), 'dict', 'bin')
-        self.__dictRoot = self.__cI.get('SITE_PDBX_DICT_PATH')
+        self.__dictRoot = self.__cICommon.get_mmcif_dict_path()
         self.__dictionary_v40 = self.__cI.get('SITE_PDBX_V4_DICT_NAME') + '.sdb'
-        self.__dictionary_v5 = self.__cI.get('SITE_PDBX_DICT_NAME') + '.sdb'
+        self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.sdb'
         #
         self.__sessionId   = None
         self.__sessionPath = None
@@ -89,7 +91,7 @@ class CopyFileToAutoGroup(object):
             self.__dfRef.setSessionPath(processedPath)
             self.__dfRef.setSessionDataSetId(entry_id)
             for fileType in self.__fileTypeList:
-                sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType=fileType[0], formatType=fileType[1], \
+                sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType=fileType[0], formatType=fileType[1],
                                                    fileSource='archive', versionId='latest', partNumber='1')
                 if (not sourceFile) or (not os.access(sourceFile, os.F_OK)):
                     continue
@@ -150,7 +152,7 @@ class CopyFileToAutoGroup(object):
             self.__dfRef.setSessionDataSetId(entry_id)
             found = False
             for fileType in self.__fileTypeList:
-                sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType=fileType[0], formatType=fileType[1], \
+                sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType=fileType[0], formatType=fileType[1],
                                                    fileSource='archive', versionId='latest', partNumber='1')
                 if (not sourceFile) or (not os.access(sourceFile, os.F_OK)):
                     continue

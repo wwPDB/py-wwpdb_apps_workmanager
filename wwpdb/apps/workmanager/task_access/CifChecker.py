@@ -32,13 +32,13 @@ class CifChecker(BaseClass):
         """
         super(CifChecker, self).__init__(reqObj=reqObj, verbose=verbose, log=log)
         self.__entryList = entryList
-        self.__dictRoot = os.path.abspath(self._cI.get("SITE_PDBX_DICT_PATH"))
-        self.__dictName = self._cI.get("SITE_PDBX_DICTIONARY_NAME_DICT")["ARCHIVE_CURRENT"] + ".sdb"
+        self.__dictRoot = os.path.abspath(self._cICommon.get_mmcif_dict_path())
+        self.__dictName = self._cICommon.get_mmcif_archive_current_dict_filename() + ".sdb"
         self.__option = self._reqObj.getValue("option")
         #
-        self.__optionDict = { "cifcheck" : [ "CIF DICTIONARY", "_CifChecker", "_CifChecker.cif", "_CifChecker.cif-diag.log", \
-                                             "_CifChecker.log", "_CifChecker_cmd.log" ], \
-                              "mischeck" : [ "MISCELLANEOUS", "_MisChecker", "_MisChecker.cif", "_MiscChecking.txt", \
+        self.__optionDict = { "cifcheck" : [ "CIF DICTIONARY", "_CifChecker", "_CifChecker.cif", "_CifChecker.cif-diag.log",
+                                             "_CifChecker.log", "_CifChecker_cmd.log" ],
+                              "mischeck" : [ "MISCELLANEOUS", "_MisChecker", "_MisChecker.cif", "_MiscChecking.txt",
                                              "_MisChecker.log", "_MisChecker_cmd.log" ] }
         #
 
