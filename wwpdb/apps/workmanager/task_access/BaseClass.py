@@ -29,6 +29,7 @@ except ImportError:
 import filecmp, os, shutil, sys
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.io.locator.PathInfo   import PathInfo
 
 class BaseClass(object):
@@ -43,6 +44,7 @@ class BaseClass(object):
         self._sessionPath=None
         self._siteId  = str(self._reqObj.getValue("WWPDB_SITE_ID"))
         self._cI=ConfigInfo(self._siteId)
+        self._cICommon = ConfigInfoAppCommon(self._siteId)
         self._archivePath = self._cI.get('SITE_ARCHIVE_STORAGE_PATH')
         #
         self.__getSession()
