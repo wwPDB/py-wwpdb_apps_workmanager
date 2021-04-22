@@ -119,9 +119,13 @@ class DepictOther(DepictBase):
         """
         """
         fu = FileUtils(self._reqObj.getValue("identifier"), reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
-        for item in ( 'archive', 'deposit', 'wf_instance' ):
+        for item in ( 'archive', 'deposit', 'wf-instance' ):
             nFiles, list = fu.renderFileList(fileSource=item)
-            self.__dataD[item] = '\n'.join(list)
+            if item == 'wf-instance':
+                self.__dataD['wf_instance'] = '\n'.join(list)
+            else:
+                self.__dataD[item] = '\n'.join(list)
+            #
         #
         self._dataInfo['allfile_tmplt'] = [ self.__dataD ]
 
