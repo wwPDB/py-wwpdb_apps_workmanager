@@ -25,6 +25,7 @@ import os,sys
 
 from mmcif_utils.trans.InstanceMapper       import InstanceMapper
 from wwpdb.utils.config.ConfigInfo          import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppEm
 from wwpdb.io.file.DataExchange             import DataExchange
 from wwpdb.io.locator.PathInfo              import PathInfo
 
@@ -69,9 +70,9 @@ class MileStoneFile(object):
             return False
         #
         if self.__isEmEntry:
-            self.__cI=ConfigInfo(self.__siteId)
+            self.__cIA=ConfigInfoAppEm(self.__siteId)
             im = InstanceMapper(verbose=self.__verbose, log=self.__lfh)
-            im.setMappingFilePath(self.__cI.get('SITE_EXT_DICT_MAP_EMD_FILE_PATH'))
+            im.setMappingFilePath(self.__cIA.get_emd_mapping_file_path())
             self.__sessionFile = os.path.join(self.__sessionPath, entryId + '.emd.cif')
             im.translate(self.__inputFile, self.__sessionFile, mode="src-dst")
         #
