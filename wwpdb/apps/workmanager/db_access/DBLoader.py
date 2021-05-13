@@ -20,14 +20,17 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing
+import os
+import sys
 
-from wwpdb.utils.config.ConfigInfo     import ConfigInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.db.DBLoadUtil import DBLoadUtil
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
-from wwpdb.io.file.mmCIFUtil      import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 from rcsb.utils.multiproc.MultiProcUtil  import MultiProcUtil
-from wwpdb.io.locator.PathInfo       import PathInfo
+from wwpdb.io.locator.PathInfo import PathInfo
 #
 
 class DBLoader(object):
@@ -39,10 +42,10 @@ class DBLoader(object):
         self.__verbose     = verbose
         self.__lfh         = log
         self.__siteId      = str(self.__reqObj.getValue('WWPDB_SITE_ID'))
-        self.__cI          = ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
-        self.__rcsbRoot = self.__cI.get('SITE_ANNOT_TOOLS_PATH')
-        self.__compRoot = self.__cI.get('SITE_CC_CVS_PATH')
+        self.__rcsbRoot = self.__cICommon.get_site_annot_tools_path()
+        self.__compRoot = self.__cICommon.get_site_cc_cvs_path()
         #
         self.__sessionId   = None
         self.__sessionPath = None
