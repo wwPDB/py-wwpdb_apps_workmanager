@@ -56,7 +56,7 @@ from wwpdb.utils.detach.DetachUtils                     import DetachUtils
 from wwpdb.io.locator.PathInfo                          import PathInfo
 from wwpdb.utils.session.WebRequest                     import InputRequest,ResponseContent
 from wwpdb.utils.session.WebUploadUtils                 import WebUploadUtils
-from wwpdb.apps.site_admin.ProjectVersionInfo import ProjectVersionInfo
+from wwpdb.utils.config.ProjectVersionInfo import ProjectVersionInfo
 #
 
 class WorkManagerWebApp(object):
