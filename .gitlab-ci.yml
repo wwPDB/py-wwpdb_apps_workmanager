@@ -1,32 +1,59 @@
-image: python:3.8
+image: docker:18
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  COMMIT_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 stages:
   - build
 
-wheel_auto:
+services:
+  - docker:18-dind
+
+before_script:
+  - docker info
+  - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+build_auto_master:
   stage: build
   script:
-    - pip install twine
-    - python setup.py sdist bdist_wheel
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=${CI_REGISTRY_USER} python -m twine upload --repository-url https://${CI_REPOSITORY_PYPI_URL} dist/*
-  artifacts:
-    paths:
-      - dist/
+    - docker build -t ${COMMIT_TAG} --build-arg CI_REGISTRY_USER=$CI_REGISTRY_USER --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --build-arg CI_PROJECT_ID=$CI_PROJECT_ID --build-arg CI_REPOSITORY_PYPI_URL=$CI_REPOSITORY_PYPI_URL .
+    - docker push ${COMMIT_TAG}
+    - docker tag ${COMMIT_TAG} ${CONTAINER_RELEASE_IMAGE}
+    - docker push ${CONTAINER_RELEASE_IMAGE}
   only:
     refs:
       - master
 
-wheel_adhoc:
+build_auto_develop:
   stage: build
   script:
-    - pip install twine
-    - python setup.py sdist bdist_wheel
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=${CI_REGISTRY_USER} python -m twine upload --repository-url https://${CI_REPOSITORY_PYPI_URL} dist/*
-  artifacts:
-    paths:
-      - dist/
+    - docker build -t ${IMAGE_TAG} --build-arg CI_REGISTRY_USER=$CI_REGISTRY_USER --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --build-arg CI_PROJECT_ID=$CI_PROJECT_ID --build-arg CI_REPOSITORY_PYPI_URL=$CI_REPOSITORY_PYPI_URL .
+    - docker push ${IMAGE_TAG}
+  only:
+    refs:
+      - develop
+
+
+build_adhoc_master:
+  stage: build
+  script:
+    - docker build -t ${COMMIT_TAG} --build-arg CI_REGISTRY_USER=$CI_REGISTRY_USER --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --build-arg CI_PROJECT_ID=$CI_PROJECT_ID --build-arg CI_REPOSITORY_PYPI_URL=$CI_REPOSITORY_PYPI_URL .
+    - docker push ${COMMIT_TAG}
+    - docker tag ${COMMIT_TAG} ${CONTAINER_RELEASE_IMAGE}
+    - docker push ${CONTAINER_RELEASE_IMAGE}
+  only:
+    refs:
+      - master
+  when: manual
+
+build_adhoc_non_master:
+  stage: build
+  script:
+    - docker build -t ${IMAGE_TAG} --build-arg CI_REGISTRY_USER=$CI_REGISTRY_USER --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --build-arg CI_PROJECT_ID=$CI_PROJECT_ID --build-arg CI_REPOSITORY_PYPI_URL=$CI_REPOSITORY_PYPI_URL .
+    - docker push ${IMAGE_TAG}
   except:
     refs:
       - master
-      - develop
   when: manual

@@ -4,7 +4,6 @@
 # Update:
 #
 import re
-import glob
 
 from setuptools import find_packages
 from setuptools import setup
@@ -18,7 +17,6 @@ with open('wwpdb/apps/workmanager/__init__.py', 'r') as fd:
 
 if not version:
     raise RuntimeError('Cannot find version information')
-
 
 setup(
     name=thisPackage,
@@ -43,17 +41,24 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['wwpdb.utils.config>=0.22.2', 'wwpdb.utils.wf', 'wwpdb.io ~= 0.6',
-                      'rcsb.utils.multiproc', 'wwpdb.apps.wf_engine >= 0.5',
-                      'wwpdb.utils.db >= 0.4', 'wwpdb.utils.session >= 0.3',
-                      'mmcif.utils', 'wwpdb.utils.detach ~= 0.3', 'mysqlclient'],
+    install_requires=['wwpdb.utils.config>=0.22.2',
+                      'wwpdb.utils.wf',
+                      'wwpdb.io ~= 0.6',
+                      'rcsb.utils.multiproc',
+                      'wwpdb.apps.wf_engine >= 0.5',
+                      'wwpdb.utils.db >= 0.4',
+                      'wwpdb.utils.session >= 0.3',
+                      'mmcif.utils',
+                      'wwpdb.utils.detach ~= 0.3',
+                      'mysqlclient'
+                      ],
     packages=find_packages(exclude=['wwpdb.apps.tests-workmanager']),
     # Enables Manifest to be used
-    #include_package_data = True,
+    # include_package_data = True,
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],
-        #'wwpdb': ['apps/deposit/private/countries.pkl'],        
+        # 'wwpdb': ['apps/deposit/private/countries.pkl'],
     },
     #
     # These basic tests require no database services -
