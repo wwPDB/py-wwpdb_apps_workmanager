@@ -43,7 +43,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['wwpdb.utils.config>=0.22.2', 'wwpdb.utils.wf', 'wwpdb.io ~= 0.6',
+    install_requires=['wwpdb.utils.config > =0.24', 'wwpdb.utils.wf', 'wwpdb.io ~= 0.6',
                       'rcsb.utils.multiproc', 'wwpdb.apps.wf_engine >= 0.5',
                       'wwpdb.utils.db >= 0.4', 'wwpdb.utils.session >= 0.3',
                       'mmcif.utils', 'wwpdb.utils.detach ~= 0.3', 'mysqlclient'],
