@@ -56,6 +56,7 @@ from wwpdb.utils.detach.DetachUtils                     import DetachUtils
 from wwpdb.io.locator.PathInfo                          import PathInfo
 from wwpdb.utils.session.WebRequest                     import InputRequest,ResponseContent
 from wwpdb.utils.session.WebUploadUtils                 import WebUploadUtils
+from wwpdb.utils.config.ProjectVersionInfo import ProjectVersionInfo
 #
 
 class WorkManagerWebApp(object):
@@ -102,12 +103,9 @@ class WorkManagerWebApp(object):
         self.__reqObj.setValue("current_dep_url", self.__cI.get('SITE_CURRENT_DEP_URL'))
         os.environ["WWPDB_SITE_ID"]=self.__siteId
         #
-        fName = os.path.join(self.__cI.get('TOP_SOURCE_PATH'), "version.json")
-        if os.access(fName, os.R_OK):
-            f = open(fName)
-            data = json.load(f)
-            f.close()
-            self.__reqObj.setValue("DAVersion", data['Version'])
+        project_version = ProjectVersionInfo(self.__siteId).getVersion()
+        if project_version:
+            self.__reqObj.setValue("DAVersion", project_version)
         #
         self.__reqObj.setReturnFormat(return_format="html")
         #

@@ -83,11 +83,11 @@ class BaseClass(object):
         return ''
 
     def _bashSetting(self):
-        setting = " RCSBROOT=" + self._cI.get('SITE_ANNOT_TOOLS_PATH') + "; export RCSBROOT; " \
-                + " COMP_PATH=" + self._cI.get('SITE_CC_CVS_PATH') + "; export COMP_PATH; " \
+        setting = " RCSBROOT=" + self._cICommon.get_site_annot_tools_path() + "; export RCSBROOT; " \
+                + " COMP_PATH=" + self._cICommon.get_site_cc_cvs_path() + "; export COMP_PATH; " \
                 + " BINPATH=${RCSBROOT}/bin; export BINPATH; " \
-                + " LOCALBINPATH=" + os.path.join(self._cI.get('SITE_LOCAL_APPS_PATH'), 'bin') + "; export LOCALBINPATH; " \
-                + " DICTBINPATH=" + os.path.join(self._cI.get('SITE_PACKAGES_PATH'), 'dict', 'bin') + "; export DICTBINPATH; " 
+                + " LOCALBINPATH=" + os.path.join(self._cICommon.get_site_local_apps_path(), 'bin') + "; export LOCALBINPATH; " \
+                + " DICTBINPATH=" + os.path.join(self._cICommon.get_site_packages_path(), 'dict', 'bin') + "; export DICTBINPATH; "
         return setting
 
     def _getCmd(self, command, inputFile, outputFile, logFile, clogFile, extraOptions):

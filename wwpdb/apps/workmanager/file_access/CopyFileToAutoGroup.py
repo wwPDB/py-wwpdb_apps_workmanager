@@ -44,9 +44,9 @@ class CopyFileToAutoGroup(object):
         self.__identifier  = str(self.__reqObj.getValue('identifier'))
         self.__targetPath  = os.path.join(self.__archivePath, 'autogroup', self.__identifier, 'processed')
         #
-        self.__rcsbRoot = self.__cI.get('SITE_ANNOT_TOOLS_PATH')
-        self.__compRoot = self.__cI.get('SITE_CC_CVS_PATH')
-        self.__dictBinRoot = os.path.join(self.__cI.get('SITE_PACKAGES_PATH'), 'dict', 'bin')
+        self.__rcsbRoot = self.__cICommon.get_site_annot_tools_path()
+        self.__compRoot = self.__cICommon.get_site_cc_cvs_path()
+        self.__dictBinRoot = os.path.join(self.__cICommon.get_site_packages_path(), 'dict', 'bin')
         self.__dictRoot = self.__cICommon.get_mmcif_dict_path()
         self.__dictionary_v40 = self.__cI.get('SITE_PDBX_V4_DICT_NAME') + '.sdb'
         self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.sdb'
