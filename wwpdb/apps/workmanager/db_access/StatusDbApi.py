@@ -699,7 +699,7 @@ class StatusDbApi(object):
                 group_name = "{} - Lead Annotator".format(site)  
                 main_page = "RCSBLeadAnnotator.html"
             else:
-                group_name = "{} - Lead Annotator".format(site)  
+                group_name = "{} - Annotator".format(site)
                 main_page = "Annotators.html"
 
             data = { 'group_name' : group_name, 'site' : site, 'main_page' : main_page}
