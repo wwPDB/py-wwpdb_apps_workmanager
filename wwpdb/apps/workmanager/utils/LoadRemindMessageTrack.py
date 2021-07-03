@@ -16,36 +16,46 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
+import datetime
+import getopt
+import os
+import re
+import sys
+import time
+import traceback
 
-import datetime, getopt, os, re, sys, time, traceback
 import MySQLdb
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.wf.dbapi.DbConnection import DbConnection
 
-from wwpdb.utils.config.ConfigInfo       import ConfigInfo
-from wwpdb.utils.wf.dbapi.DbConnection   import DbConnection
-from wwpdb.io.file.mmCIFUtil             import mmCIFUtil
-from wwpdb.io.locator.PathInfo           import PathInfo
 
 class DbApiUtil(object):
     """ Class for making status database connection
     """
+
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """ Initialization
         """
-        self.__siteId  = siteId
+        self.__siteId = siteId
         self.__verbose = verbose
-        self.__lfh     = log
-        self.__cI      = ConfigInfo(self.__siteId)
-        self.__myDb    = DbConnection(dbServer=self.__cI.get("SITE_DB_SERVER"), dbHost=self.__cI.get("SITE_DB_HOST_NAME"), \
-                                      dbName=self.__cI.get("SITE_DB_DATABASE_NAME"), dbUser=self.__cI.get("SITE_DB_USER_NAME"), \
-                                      dbPw=self.__cI.get("SITE_DB_PASSWORD"), dbPort=int(self.__cI.get("SITE_DB_PORT_NUMBER")), \
-                                      dbSocket=self.__cI.get("SITE_DB_SOCKET"))
-        self.__dbcon   = self.__myDb.connect()
-        self.__Nretry  = 5
+        self.__lfh = log
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__myDb = DbConnection(dbServer=self.__cI.get("SITE_DB_SERVER"),
+                                   dbHost=self.__cI.get("SITE_DB_HOST_NAME"),
+                                   dbName=self.__cI.get("SITE_DB_DATABASE_NAME"),
+                                   dbUser=self.__cI.get("SITE_DB_USER_NAME"),
+                                   dbPw=self.__cI.get("SITE_DB_PASSWORD"),
+                                   dbPort=int(self.__cI.get("SITE_DB_PORT_NUMBER")),
+                                   dbSocket=self.__cI.get("SITE_DB_SOCKET"))
+        self.__dbcon = self.__myDb.connect()
+        self.__Nretry = 5
         self.__dbState = 0
 
     def runUpdate(self, table=None, where=None, data=None):
@@ -59,7 +69,8 @@ class DbApiUtil(object):
         #
         rowExists = False
         if where:
-            sql = "select * from " + str(table) + " where " + ' and '.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in where.items()])
+            sql = "select * from " + str(table) + " where " + ' and '.join(
+                ["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in where.items()])
             rows = self.runSelectSQL(sql)
             if rows and len(rows) > 0:
                 rowExists = True
@@ -69,7 +80,8 @@ class DbApiUtil(object):
             return 'OK'
         #
         if rowExists:
-            sql = "update " + str(table) + " set " + ','.join(["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in data.items()])
+            sql = "update " + str(table) + " set " + ','.join(
+                ["%s = '%s'" % (k, v.replace("'", "\\'")) for k, v in data.items()])
             if "major_issue" not in data:
                 sql += ',major_issue = NULL'
             #
@@ -96,7 +108,7 @@ class DbApiUtil(object):
             ret = self.__runSelectSQL(sql)
             if ret == None:
                 if self.__dbState > 0:
-                    time.sleep(retry*2)
+                    time.sleep(retry * 2)
                     if not self.__reConnect(): return None
                 else:
                     return None
@@ -114,7 +126,7 @@ class DbApiUtil(object):
             ret = self.__runUpdateSQL(sql)
             if ret == None:
                 if self.__dbState > 0:
-                    time.sleep(retry*2)
+                    time.sleep(retry * 2)
                     if not self.__reConnect(): return None
                 else:
                     return None
@@ -170,12 +182,12 @@ class DbApiUtil(object):
         #
         for i in range(1, self.__Nretry):
             try:
-                self.__dbcon   = self.__myDb.connect()
+                self.__dbcon = self.__myDb.connect()
                 self.__dbState = 0
                 return True
             except MySQLdb.Error:
                 self.__lfh.write("+DbApiUtil.reConnect() Cannot get re-connection : trying again\n")
-                time.sleep(2*i)
+                time.sleep(2 * i)
             #
         #
         return False
@@ -184,13 +196,14 @@ class DbApiUtil(object):
 class LoadRemindMessageTrack(object):
     """ Class for loading message receiving/sending information into status database
     """
+
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """ Initialization
         """
-        self.__siteId   = siteId
-        self.__verbose  = verbose
-        self.__lfh      = log
-        self.__pathIo   = PathInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
+        self.__siteId = siteId
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__pathIo = PathInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         self.__statusDB = DbApiUtil(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         #
         """
@@ -231,7 +244,7 @@ class LoadRemindMessageTrack(object):
         if not trackMap:
             return
         #
-        self.__statusDB.runUpdate(table='remind_message_track', where={'dep_set_id':depID}, data=trackMap)
+        self.__statusDB.runUpdate(table='remind_message_track', where={'dep_set_id': depID}, data=trackMap)
 
     def __getRemindMessageTrack(self, depID):
         """ Get remind_message_track table information for giveng depID
@@ -239,12 +252,12 @@ class LoadRemindMessageTrack(object):
         text_re = re.compile('This message is to inform you that your structure.*is still awaiting your input')
         subj_re = re.compile('Still awaiting feedback/new file')
         #
-        typeList = [ [ 'messages-from-depositor', 'last_message_received_date' ], \
-                     [ 'messages-to-depositor',   'last_message_sent_date' ] ]
+        typeList = [['messages-from-depositor', 'last_message_received_date'],
+                    ['messages-to-depositor', 'last_message_sent_date']]
         #
         trackMap = {}
         for type in typeList:
-            FilePath = self.__pathIo.getFilePath(depID, contentType=type[0], formatType='pdbx', fileSource = 'archive')
+            FilePath = self.__pathIo.getFilePath(depID, contentType=type[0], formatType='pdbx', fileSource='archive')
             if (not FilePath) or (not os.access(FilePath, os.F_OK)):
                 continue
             #
@@ -253,7 +266,7 @@ class LoadRemindMessageTrack(object):
             if not message_list:
                 continue
             #
-            trackMap[type[1]] = message_list[len(message_list)-1]['timestamp'][0:10]
+            trackMap[type[1]] = message_list[len(message_list) - 1]['timestamp'][0:10]
             if type[0] != 'messages-to-depositor':
                 continue
             #
@@ -269,7 +282,7 @@ class LoadRemindMessageTrack(object):
             last_validation_report = ''
             for message in message_list:
                 if ('message_text' in message and text_re.search(message['message_text'])) or \
-                   ('message_subject' in message and subj_re.search(message['message_subject'])):
+                        ('message_subject' in message and subj_re.search(message['message_subject'])):
                     trackMap['last_reminder_sent_date'] = message['timestamp'][0:10]
                 #
                 if message['message_id'] in map and map[message['message_id']] == 'validation-report-annotate':
@@ -279,11 +292,12 @@ class LoadRemindMessageTrack(object):
                     #
                 #
             #
-            if last_validation_report and re.search('Some major issues', last_validation_report) != None:
+            if last_validation_report and re.search('Some major issues', last_validation_report) is not None:
                 trackMap['major_issue'] = 'Yes'
             #
         #
         return trackMap
+
 
 if __name__ == '__main__':
     try:
