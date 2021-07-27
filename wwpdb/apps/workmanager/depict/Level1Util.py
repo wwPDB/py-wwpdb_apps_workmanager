@@ -25,6 +25,7 @@ import os, sys, traceback
 from types import *
 
 from wwpdb.utils.config.ConfigInfo                import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp             import ConfigInfoAppCommon
 from wwpdb.io.file.mmCIFUtil                      import mmCIFUtil
 from wwpdb.apps.workmanager.depict.DepictBase     import DepictBase
 from wwpdb.apps.workmanager.depict.DepictContent  import DepictContent
@@ -341,8 +342,8 @@ class Level1Util(DepictBase):
         """
         """
         list = []
-        self.__cI = ConfigInfo(self._siteId)
-        sg_center_file = os.path.join(self.__cI.get('SITE_ANNOT_TOOLS_PATH'), 'data', 'ascii', 'sg_center.cif')
+        self.__cICommon = ConfigInfoAppCommon(self._siteId)
+        sg_center_file = self.__cICommon.get_sg_center_file_path()
         if os.access(sg_center_file, os.F_OK):
             cifObj = mmCIFUtil(filePath=sg_center_file)
             rlist = cifObj.GetValue('pdbx_SG_project')
