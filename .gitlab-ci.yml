@@ -1,9 +1,9 @@
-image: python:3.8
 
 stages:
   - build
 
 wheel_auto:
+  image: python:3.8
   stage: build
   script:
     - pip install twine
@@ -17,6 +17,7 @@ wheel_auto:
       - master
 
 wheel_adhoc:
+  image: python:3.8
   stage: build
   script:
     - pip install twine
