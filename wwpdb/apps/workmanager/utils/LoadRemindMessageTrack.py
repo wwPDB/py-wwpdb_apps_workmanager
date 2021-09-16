@@ -216,6 +216,7 @@ class LoadRemindMessageTrack(object):
         """
         for depID in depIDList.split(','):
             depID = depID.strip()
+            self.__lfh.write('starting {}'.format(depID))
             self.__updateEntry(depID)
         #
 
