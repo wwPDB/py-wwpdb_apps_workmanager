@@ -315,9 +315,11 @@ if __name__ == '__main__':
             siteId = str(os.getenv('WWPDB_SITE_ID'))
             api = LoadRemindMessageTrack(siteId=siteId, verbose=False, log=sys.stderr)
             if idlist:
+                print(idlist)
                 api.UpdateBasedIDList(idlist)
             #
             if filename:
+                print(filename)
                 api.UpdateBasedInputIDfromFile(filename)
             #
         #
