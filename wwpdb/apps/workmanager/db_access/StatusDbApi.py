@@ -36,8 +36,9 @@ class StatusDbApi(object):
                     "SELECT_USER" : "select u.user_name, u.password, u.da_group_id group_id, u.email, u.initials, u.first_name, u.last_name, " +
                                     "g.code, g.group_name, g.site from da_users as u, da_group as g where u.da_group_id = " +
                                     "g.da_group_id and u.user_name = '%s'",
-             "SELECT_ACTIVE_USER" : "select user_name, first_name, last_name, initials from da_users where da_group_id in ( '4', '5' ) " +
-                                    " and initials not in ( 'JY', 'JW') and active = 0",
+             "SELECT_ACTIVE_USER" : "select user_name, first_name, last_name, initials from da_users as dau, da_group as dag where " +
+                                    "dau.da_group_id=dag.da_group_id and code='ANN' and site in ('PDBj', 'RCSB', 'PDBC') " +
+                                    "and initials not in ( 'JY', 'JW') and active = 0",
               "SELECT_USER_EMAIL" : "select u.user_name, u.password, u.da_group_id group_id, u.email, u.initials, u.first_name, u.last_name, " +
                                     "g.code, g.group_name, g.site from da_users as u, da_group as g where u.da_group_id = " +
                                     "g.da_group_id and u.email = '%s'",
