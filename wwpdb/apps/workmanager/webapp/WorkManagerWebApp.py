@@ -520,7 +520,7 @@ class WorkManagerWebAppWorker(object):
             storage_pickle_path = self.__get_deposit_storage_pickle_path('externalUpload.pkl')
             self.__dump_deposit_storage_pickle(storage_pickle_path, 'File upload in depUI failed; FTP upload enabled by Annotator from WFM')
             # send instructions email to depositor
-            frm = 'noreply@mail.wwpdb.org'
+            frm = self.__cI.get("SITE_NOREPLY_EMAIL", "noreply@mail.wwpdb.org")
             email = DepUIgetDepositorEmail(depositionid)
             subject = 'Instructions for wwPDB FTP upload for deposition ' + depositionid
             myD = {}
