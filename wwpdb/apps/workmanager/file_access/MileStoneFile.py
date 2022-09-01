@@ -23,7 +23,7 @@ __version__   = "V0.07"
 
 import os,sys
 
-# from mmcif_utils.trans.InstanceMapper       import InstanceMapper
+from mmcif_utils.trans.InstanceMapper       import InstanceMapper
 from wwpdb.utils.config.ConfigInfo          import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppEm
 from wwpdb.io.file.DataExchange             import DataExchange
@@ -44,7 +44,7 @@ class MileStoneFile(object):
         self.__siteId      = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__inputFile   = ''
         self.__isEmEntry   = False
-        # self.__sessionFile = ''
+        self.__sessionFile = ''
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
 
     def setEmEntry(self):
@@ -69,18 +69,18 @@ class MileStoneFile(object):
         if not self.__inputFile:
             return False
         #
-        # if self.__isEmEntry:
-        #     self.__cIA=ConfigInfoAppEm(self.__siteId)
-        #     im = InstanceMapper(verbose=self.__verbose, log=self.__lfh)
-        #     im.setMappingFilePath(self.__cIA.get_emd_mapping_file_path())
-        #     self.__sessionFile = os.path.join(self.__sessionPath, entryId + '.emd.cif')
-        #     im.translate(self.__inputFile, self.__sessionFile, mode="src-dst")
+        if self.__isEmEntry:
+            self.__cIA=ConfigInfoAppEm(self.__siteId)
+            im = InstanceMapper(verbose=self.__verbose, log=self.__lfh)
+            im.setMappingFilePath(self.__cIA.get_emd_mapping_file_path())
+            self.__sessionFile = os.path.join(self.__sessionPath, entryId + '.emd.cif')
+            im.translate(self.__inputFile, self.__sessionFile, mode="src-dst")
         #
         dE = DataExchange(reqObj=self.__reqObj, depDataSetId=entryId, fileSource=source, verbose=self.__verbose,log=self.__lfh)
-        # if self.__sessionFile and os.access(self.__sessionFile, os.F_OK):
-        #     dE.export(self.__sessionFile, contentType=content, formatType=format, version=version)
-        # else:
-        dE.export(self.__inputFile, contentType=content, formatType=format, version=version)
+        if self.__sessionFile and os.access(self.__sessionFile, os.F_OK):
+            dE.export(self.__sessionFile, contentType=content, formatType=format, version=version)
+        else:
+            dE.export(self.__inputFile, contentType=content, formatType=format, version=version)
         #
         sourcePath = self.__pI.getFilePath(dataSetId=entryId, wfInstanceId=None, contentType=content, formatType=format, \
                                            fileSource=source, versionId='latest', partNumber='1')
