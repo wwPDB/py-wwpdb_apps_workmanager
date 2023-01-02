@@ -309,12 +309,13 @@ class DepictContent(DepictBase):
     def _processWorkFlowAction(self, dataD):
         """
         """
-        if dataD['dep_locking'] == 'WFM':
+        if (dataD['dep_locking'].upper() == 'WFM') or (dataD['inst_status'].upper() == 'DEP'):
             return self.getPageText(page_id='workflow_lock_action_tmplt')
-        elif dataD['inst_status'] == 'init':
+        elif dataD['inst_status'].lower() == 'init':
             return self.getPageText(page_id='workflow_init_action_tmplt')
         else:
             return self.getPageText(page_id='workflow_other_action_tmplt')
+        #
 
     def _processAddList(self, dataD):
         """

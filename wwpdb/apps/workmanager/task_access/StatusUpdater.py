@@ -20,12 +20,13 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing, os, sys, traceback
 
 from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
 from wwpdb.apps.workmanager.db_access.StatusDbApi  import StatusDbApi
 from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
 from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
+from wwpdb.utils.db.StatusHistoryUtils             import StatusHistoryUtils
 from rcsb.utils.multiproc.MultiProcUtil            import MultiProcUtil
 #
 
@@ -58,6 +59,7 @@ class StatusUpdater(BaseClass):
         mpu.set(workerObj = self, workerMethod = "runMulti")
         mpu.setWorkingDir(self._sessionPath)
         ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        self.__updateStatusHistory()
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -129,6 +131,39 @@ class StatusUpdater(BaseClass):
             return '',os.path.join(self._sessionPath, updatedModelFile)
         #
         return "Status update failed.",""
+
+    def __updateStatusHistory(self):
+        """
+        """
+        try:
+            annotator = self._reqObj.getValue("annotator")
+            status_code = self._reqObj.getValue("status_code")
+            if (not annotator) or (not status_code):
+                return
+            #
+            statusHUtils = StatusHistoryUtils(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
+            #
+            for entry_id in self.__entryList:
+                statusHistoryFilePath = self._pI.getStatusHistoryFilePath(dataSetId=entry_id, fileSource="archive", versionId="latest")
+                if os.access(statusHistoryFilePath, os.R_OK):
+                    continue
+                #
+                statusHUtils.createHistory([entry_id])
+            #    
+            okShLoad = False
+            if statusHUtils.updateEntryStatusHistory(entryIdList=self.__entryList, statusCode=status_code, annotatorInitials=annotator, \
+                                                     details="Update by group status update"):
+                okShLoad = statusHUtils.loadEntryStatusHistory(entryIdList=self.__entryList)
+            #
+            if (self._verbose):
+                self._lfh.write("+StatusUpdater.__updateStatusHistory() %r status history database load status %r\n" % (self.__entryList, okShLoad))
+            #
+        except:
+            if (self._verbose):
+                self._lfh.write( "+StatusUpdater.__updateStatusHistory() %s status history update and database load failed with exception\n")
+                traceback.print_exc(file=self._lfh)
+            #
+        #
 
     def __getReturnMessage(self):
         message = ''
