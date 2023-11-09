@@ -372,15 +372,11 @@ class DepictContent(DepictBase):
             dep_locking = dataD['dep_locking']
         #
         if dep_notify.find('R') != -1 and dep_locking == 'WFM':
-            return 'background-orange'
+            return 'background-red'
         elif dep_notify.find('R') != -1:
-            return 'background-medblue'
+            return 'background-lightblue'
         elif dep_locking == 'WFM':
-            return 'background-medpink'
-        # If nothing else fall through
-        if dep_notify.find('A') != -1:
-            return 'background-cyangreen'
-
+            return 'background-pink'
         return ''
 
     def submit_group(self, rows):
