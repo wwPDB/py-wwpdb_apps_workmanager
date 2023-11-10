@@ -357,6 +357,11 @@ class DepictContent(DepictBase):
             imgD['alt'] = 'BMRB Message'
             text += ' ' + self.__commun_image_tmplt % imgD
         #
+        if notify.find('A') != -1:
+            imgD['image'] = 'wfm_approve.png'
+            imgD['alt'] = 'Approve Message'
+            text += ' ' + self.__commun_image_tmplt % imgD
+        #
         myD['commun_image'] = text
         return self.__commun_tmplt % myD
 
@@ -378,8 +383,8 @@ class DepictContent(DepictBase):
         elif dep_locking == 'WFM':
             return 'background-medpink'
         # If nothing else fall through
-        if dep_notify.find('A') != -1:
-            return 'background-cyangreen'
+        #if dep_notify.find('A') != -1:
+        #    return 'background-cyangreen'
 
         return ''
 
