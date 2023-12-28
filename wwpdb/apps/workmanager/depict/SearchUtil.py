@@ -15,17 +15,18 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import sys
 
-from wwpdb.apps.workmanager.db_access.ContentDbApi  import ContentDbApi
-from wwpdb.apps.workmanager.db_access.StatusDbApi   import StatusDbApi
-from wwpdb.apps.workmanager.depict.ReadConFigFile   import ReadConFigFile,dumpPickleFile,loadPickleFile
+from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.depict.ReadConFigFile import ReadConFigFile, dumpPickleFile, loadPickleFile
+
 
 class SearchUtil(object):
     """
@@ -33,18 +34,18 @@ class SearchUtil(object):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj  = reqObj
+        self.__reqObj = reqObj
         self.__verbose = verbose
-        self.__lfh     = log
-        self.__siteId  = self.__reqObj.getValue("WWPDB_SITE_ID")
+        self.__lfh = log
+        self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
         self.__topPath = self.__reqObj.getValue("TemplatePath")
         #
-        self.__statusDB  = None
+        self.__statusDB = None
         self.__contentDB = None
         self.__conFigObj = None
         #
-        self.__sObj        = self.__reqObj.newSessionObj()
-        self.__sessionId   = self.__sObj.getId()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         #
 
@@ -58,12 +59,12 @@ class SearchUtil(object):
             return
         #
         tableContentMap = loadPickleFile(self.__sessionPath, 'TableContentMap.pkl')
-        if (not tableContentMap) or (not index in tableContentMap):
+        if (not tableContentMap) or (index not in tableContentMap):
             return
         #
         self.__readConFigObj()
-        if (not self.__conFigObj) or (not 'ui_input_where_condition_binding' in self.__conFigObj) or \
-           (not search_type in self.__conFigObj['ui_input_where_condition_binding']):
+        if (not self.__conFigObj) or ('ui_input_where_condition_binding' not in self.__conFigObj) or \
+           (search_type not in self.__conFigObj['ui_input_where_condition_binding']):
             return
         #
         myD = {}
@@ -72,7 +73,7 @@ class SearchUtil(object):
             myD['value'] = self.__processDependence(self.__conFigObj['ui_input_where_condition_binding'][search_type]['dependence_id'], value)
         elif search_type == 'entry_by_ids':
             self.__connectStatusDB()
-            error_message,entryIdList= self.__statusDB.getEntryIdListFromInputIdString(value)
+            error_message, entryIdList = self.__statusDB.getEntryIdListFromInputIdString(value)
             myD['value'] = "', '".join(entryIdList)
         elif (search_type == 'user_by_ids') or (search_type == 'dep_by_ids') or (search_type == 'group_by_ids'):
             myList = []
@@ -84,9 +85,9 @@ class SearchUtil(object):
             myD['value'] = value
         #
         where_condition = self.__conFigObj['ui_input_where_condition_binding'][search_type]['where_condition'] % myD
-        tableContentMap[index]['sql'] = tableContentMap[index]['sql_selection'] + ' ' + where_condition  
+        tableContentMap[index]['sql'] = tableContentMap[index]['sql_selection'] + ' ' + where_condition
         dumpPickleFile(self.__sessionPath, 'TableContentMap.pkl', tableContentMap)
- 
+
     def __readConFigObj(self):
         """
         """
@@ -96,7 +97,7 @@ class SearchUtil(object):
     def __processDependence(self, dependence_id, value):
         """
         """
-        if (not self.__conFigObj) or (not 'ui_input_dependence' in self.__conFigObj) or (not dependence_id in self.__conFigObj['ui_input_dependence']):
+        if (not self.__conFigObj) or ('ui_input_dependence' not in self.__conFigObj) or (dependence_id not in self.__conFigObj['ui_input_dependence']):
             return value
         #
         sql = self.__conFigObj['ui_input_dependence'][dependence_id]['sql']
@@ -120,7 +121,7 @@ class SearchUtil(object):
             #
         #
         return "', '".join(idList)
-    
+
     def __connectStatusDB(self):
         """
         """
@@ -134,4 +135,3 @@ class SearchUtil(object):
         if not self.__contentDB:
             self.__contentDB = ContentDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         #
-

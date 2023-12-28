@@ -1,0 +1,10 @@
+mmcif.utils
+mysqlclient
+rcsb.utils.multiproc
+wwpdb.apps.wf_engine
+wwpdb.utils.config
+wwpdb.utils.db
+wwpdb.utils.detach
+wwpdb.utils.session
+wwpdb.utils.wf
+

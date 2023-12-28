@@ -16,16 +16,15 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
-from types import *
+import sys
 
-from wwpdb.utils.config.ConfigInfo                import ConfigInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.apps.workmanager.db_access.DbApiUtil import DbApiUtil
 
 
@@ -55,25 +54,25 @@ class ContentDbApi(object):
                         "group by d.Structure_id  ) s1  where s1.Structure_id = c.Structure_Id and c.role='principal investigator/group leader' " +
                         "order by c.identifier_ORCID ) s2 group by identifier_ORCID, name order by name",
                  "GET_LIGAND_ID_LIST" : "select Structure_ID, comp_id from pdbx_entity_nonpoly where Structure_ID in ( '%s' )"
-                  }
+                   }
     """
     """
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__lfh       = log
-        self.__verbose   = verbose
-        self.__siteId    = siteId
-        self.__cI        = ConfigInfo(self.__siteId)
-        self.__dbServer  = self.__cI.get("SITE_DB_SERVER")
-        self.__dbHost    = self.__cI.get("SITE_DB_HOST_NAME")
-        self.__dbName    = "da_internal"
-        self.__dbUser    = self.__cI.get("SITE_DB_USER_NAME")
-        self.__dbPw      = self.__cI.get("SITE_DB_PASSWORD")
-        self.__dbSocket  = self.__cI.get("SITE_DB_SOCKET")
-        self.__dbPort    = int(self.__cI.get("SITE_DB_PORT_NUMBER"))
+        self.__lfh = log
+        self.__verbose = verbose
+        self.__siteId = siteId
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__dbServer = self.__cI.get("SITE_DB_SERVER")
+        self.__dbHost = self.__cI.get("SITE_DB_HOST_NAME")
+        self.__dbName = "da_internal"
+        self.__dbUser = self.__cI.get("SITE_DB_USER_NAME")
+        self.__dbPw = self.__cI.get("SITE_DB_PASSWORD")
+        self.__dbSocket = self.__cI.get("SITE_DB_SOCKET")
+        self.__dbPort = int(self.__cI.get("SITE_DB_PORT_NUMBER"))
         #
-        self.__dbApi = DbApiUtil(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, dbPw=self.__dbPw, \
+        self.__dbApi = DbApiUtil(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, dbPw=self.__dbPw,
                                  dbSocket=self.__dbSocket, dbPort=self.__dbPort, verbose=self.__verbose, log=self.__lfh)
         self.__dbApi.setSchemaMap(self.__schemaMap)
 
@@ -146,7 +145,7 @@ class ContentDbApi(object):
         em_rows = self.__dbApi.selectData(key='GET_EM_RELEASE_DATE', parameter=(id_string))
         if em_rows:
             for row in em_rows:
-                if (not 'structure_id' in row) or (not row['structure_id']) or (not 'date_of_EM_release' in row) or \
+                if ('structure_id' not in row) or (not row['structure_id']) or ('date_of_EM_release' not in row) or \
                    (not row['date_of_EM_release']):
                     continue
                 #
@@ -157,7 +156,7 @@ class ContentDbApi(object):
         rows = self.__dbApi.selectData(key='GET_RELEASE_DATE', parameter=(id_string))
         if rows:
             for row in rows:
-                if (not 'structure_id' in row) or (not row['structure_id']):
+                if ('structure_id' not in row) or (not row['structure_id']):
                     continue
                 #
                 if ('pdb_id' in row) and row['pdb_id']:

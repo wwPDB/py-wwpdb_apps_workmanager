@@ -15,16 +15,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
+import os
+import sys
 
-import os,sys
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+from wwpdb.io.locator.PathInfo import PathInfo
 
-from wwpdb.io.file.mmCIFUtil                      import mmCIFUtil
-from wwpdb.io.locator.PathInfo                    import PathInfo
 
 class AnnotAssignUtil(object):
     """
@@ -32,13 +33,13 @@ class AnnotAssignUtil(object):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj      = reqObj
-        self.__lfh         = log
-        self.__verbose     = verbose
-        self.__sObj        = self.__reqObj.newSessionObj()
-        self.__sessionId   = self.__sObj.getId()
+        self.__reqObj = reqObj
+        self.__lfh = log
+        self.__verbose = verbose
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__siteId      = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
 
     def updateAnnotatorAssignment(self, assignList=None):
@@ -48,8 +49,8 @@ class AnnotAssignUtil(object):
             return
         #
         for list in assignList:
-            sourcePath = self.__pI.getFilePath(dataSetId=list[0], wfInstanceId=None, contentType='model', formatType='pdbx', \
-                                               fileSource='archive', versionId='latest', partNumber='1') 
+            sourcePath = self.__pI.getFilePath(dataSetId=list[0], wfInstanceId=None, contentType='model', formatType='pdbx',
+                                               fileSource='archive', versionId='latest', partNumber='1')
             if not sourcePath or not os.access(sourcePath, os.F_OK):
                 continue
             #

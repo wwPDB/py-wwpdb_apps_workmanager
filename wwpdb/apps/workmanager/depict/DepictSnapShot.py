@@ -15,18 +15,20 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import os
+import sys
 
-from wwpdb.apps.workmanager.db_access.StatusDbApi    import StatusDbApi
-from wwpdb.apps.workmanager.depict.DepictBase        import processPublicIDs
-from wwpdb.apps.workmanager.depict.ReadConFigFile    import ReadConFigFile
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.depict.DepictBase import processPublicIDs
+from wwpdb.apps.workmanager.depict.ReadConFigFile import ReadConFigFile
 from wwpdb.apps.workmanager.file_access.SnapShotDiff import SnapShotDiff
+
 
 class DepictSnapShot(object):
     """
@@ -34,9 +36,9 @@ class DepictSnapShot(object):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj  = reqObj
+        self.__reqObj = reqObj
         self.__verbose = verbose
-        self.__lfh     = log
+        self.__lfh = log
         self.__depositionid = str(self.__reqObj.getValue("identifier"))
         #
         self.__snapshot_tmplt = ''
@@ -95,7 +97,7 @@ class DepictSnapShot(object):
                 if diffs:
                     myD['diffs'] = str(self.__depictDifference(diffs))
                 #
-            except:
+            except:  # noqa: E722 pylint: disable=bare-except
                 myD['type'] = snap
                 myD['date'] = ''
                 myD['time'] = ''
@@ -130,21 +132,21 @@ class DepictSnapShot(object):
         #
         return text
 
+
 if __name__ == '__main__':
-    from wwpdb.utils.config.ConfigInfo   import ConfigInfo
-    from wwpdb.utils.rcsb.WebRequest   import InputRequest
+    from wwpdb.utils.config.ConfigInfo import ConfigInfo
+    from wwpdb.utils.rcsb.WebRequest import InputRequest
     siteId = 'WWPDB_DEPLOY_TEST_RU'
-    #siteId = 'WWPDB_DEPLOY_PRODUCTION_RU'
+    # siteId = 'WWPDB_DEPLOY_PRODUCTION_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("TemplatePath", os.path.join(cI.get('SITE_WEB_APPS_TOP_PATH'), "htdocs", "wfm", "templates"))
     myReqObj.setValue("TopPath", cI.get('SITE_WEB_APPS_TOP_PATH'))
-    myReqObj.setValue("WWPDB_SITE_ID",  siteId)
+    myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("sessionid", "4f834792f0c20756c57eb8632b4e5d1c5a022f5e")
     myReqObj.setValue("identifier", sys.argv[1])
-    snapshot = DepictSnapShot(reqObj=myReqObj, verbose = True, log = sys.stderr)
+    snapshot = DepictSnapShot(reqObj=myReqObj, verbose=True, log=sys.stderr)
     print(snapshot.getPageText())
-

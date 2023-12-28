@@ -15,10 +15,10 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import multiprocessing
 import os
@@ -29,25 +29,26 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.db.DBLoadUtil import DBLoadUtil
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from rcsb.utils.multiproc.MultiProcUtil  import MultiProcUtil
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 from wwpdb.io.locator.PathInfo import PathInfo
 #
 
+
 class DBLoader(object):
-    def __init__(self, reqObj=None, entryList=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj      = reqObj
-        self.__entryList   = entryList
-        self.__verbose     = verbose
-        self.__lfh         = log
-        self.__siteId      = str(self.__reqObj.getValue('WWPDB_SITE_ID'))
+        self.__reqObj = reqObj
+        self.__entryList = entryList
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__siteId = str(self.__reqObj.getValue('WWPDB_SITE_ID'))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__rcsbRoot = self.__cICommon.get_site_annot_tools_path()
         self.__compRoot = self.__cICommon.get_site_cc_cvs_path()
         #
-        self.__sessionId   = None
+        self.__sessionId = None
         self.__sessionPath = None
         self.__getSession()
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
@@ -57,10 +58,10 @@ class DBLoader(object):
         """
         """
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self.__sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         self.__runDBLoading()
         return self.__returnMessage
 
@@ -69,10 +70,10 @@ class DBLoader(object):
         """
         rList = []
         for entry_id in dataList:
-            sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType='model', formatType='pdbx', \
+            sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType='model', formatType='pdbx',
                                                fileSource='archive', versionId='latest', partNumber='1')
             if (not sourceFile) or (not os.access(sourceFile, os.F_OK)):
-                    continue
+                continue
             #
             cmd = 'cd ' + self.__sessionPath + ' ; RCSBROOT=' + self.__rcsbRoot + ' ; export RCSBROOT ; COMP_PATH=' \
                 + self.__compRoot + ' ; export COMP_PATH ; BINPATH=${RCSBROOT}/bin; export BINPATH; ${BINPATH}/GetDepositionInfo ' \
@@ -81,7 +82,7 @@ class DBLoader(object):
             os.system(cmd)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __runDBLoading(self):
         """
@@ -89,7 +90,7 @@ class DBLoader(object):
         statusDB = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         file_list = []
         for entry_id in self.__entryList:
-            sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType='model', formatType='pdbx', \
+            sourceFile = self.__pI.getFilePath(dataSetId=entry_id, wfInstanceId=None, contentType='model', formatType='pdbx',
                                                fileSource='archive', versionId='latest', partNumber='1')
             if sourceFile and os.access(sourceFile, os.F_OK):
                 file_list.append(sourceFile)
@@ -102,7 +103,7 @@ class DBLoader(object):
                     info_data = vList[0]
                     if info_data:
                         self.__returnMessage += 'Loaded ' + entry_id + ' successfully.\n'
-                        statusDB.runUpdate(table = 'deposition', where = { 'dep_set_id' : entry_id }, data = info_data)
+                        statusDB.runUpdate(table='deposition', where={'dep_set_id' : entry_id}, data=info_data)
                     else:
                         self.__returnMessage += 'Loading ' + entry_id + ' failed.\n'
                     #
@@ -125,17 +126,18 @@ class DBLoader(object):
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
 
+
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002003")
     myReqObj.setValue("sessionid", " b8030220bdf3559c10a2c63618cd85a25256f7c1")
-    entryList = [ 'D_8000200175', 'D_8000200176' ]
-    copyUtil = DBLoader(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
+    entryList = ['D_8000200175', 'D_8000200176']
+    copyUtil = DBLoader(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
     print(copyUtil.run())

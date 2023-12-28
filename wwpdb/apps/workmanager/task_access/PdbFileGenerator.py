@@ -15,19 +15,22 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing
+import os
+import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil               import MultiProcUtil
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 #
 
+
 class PdbFileGenerator(BaseClass):
-    def __init__(self, reqObj=None, entryList=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
         """
         super(PdbFileGenerator, self).__init__(reqObj=reqObj, verbose=verbose, log=log)
@@ -37,10 +40,10 @@ class PdbFileGenerator(BaseClass):
         """
         """
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -51,16 +54,15 @@ class PdbFileGenerator(BaseClass):
             self.__runSingle(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __runSingle(self, entry_id):
-        all_message = ''
-        message,modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
+        message, modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
         if message:
             self._dumpPickle(entry_id + "_PdbFileGenerator", message)
             return
         #
-        message,pdbFile = self.__generatePdbFile(entry_id, modelFile)
+        message, pdbFile = self.__generatePdbFile(entry_id, modelFile)
         if message:
             self._dumpPickle(entry_id + "_PdbFileGenerator", message)
             return
@@ -81,9 +83,9 @@ class PdbFileGenerator(BaseClass):
         cmd = self._getCmd('${BINPATH}/maxit', inputFile, pdbFile, logFile, clogFile, ' -o 2 ')
         self._runCmd(cmd)
         if os.access(os.path.join(self._sessionPath, pdbFile), os.F_OK):
-            return '',os.path.join(self._sessionPath, pdbFile)
+            return '', os.path.join(self._sessionPath, pdbFile)
         #
-        return "Convert PDB file failed.",""
+        return "Convert PDB file failed.", ""
 
     def __getReturnMessage(self):
         message = ''
@@ -98,6 +100,7 @@ class PdbFileGenerator(BaseClass):
         #
         return message
 
+
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -105,11 +108,11 @@ if __name__ == '__main__':
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002030")
     myReqObj.setValue("sessionid", "88626e0cc0b1a1bbd10bb2df8a0d68573fcbd5fe")
-    entryList = [ 'D_8000210285', 'D_8000210286' ]
-    pfGenUtil = PdbFileGenerator(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
+    entryList = ['D_8000210285', 'D_8000210286']
+    pfGenUtil = PdbFileGenerator(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
     print(pfGenUtil.run())

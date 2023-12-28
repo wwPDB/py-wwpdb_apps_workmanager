@@ -15,18 +15,23 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import copy, json, multiprocessing, os, sys
+import copy
+import json
+import multiprocessing
+import os
+import sys
 
-from wwpdb.apps.workmanager.db_access.StatusDbApi  import StatusDbApi
-from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
-from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
-from rcsb.utils.multiproc.MultiProcUtil            import MultiProcUtil
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 #
+
 
 class MetaDataEditor(BaseClass):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
@@ -49,7 +54,7 @@ class MetaDataEditor(BaseClass):
         try:
             self._lfh = log
             return True
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
         #
 
@@ -58,7 +63,7 @@ class MetaDataEditor(BaseClass):
         """
         try:
             getattr(self, "%s" % self.__task)()
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__errorMessage:
                 self.__errorMessage += "\n"
             #
@@ -66,7 +71,7 @@ class MetaDataEditor(BaseClass):
         #
         self.__pickleObj["statuscode"] = self.__statusCode
         self.__pickleObj["selected_datatype"] = self.__dataType
-        for msgType in ( "error", "message" ):
+        for msgType in ("error", "message"):
             if msgType in self.__pickleObj:
                 del self.__pickleObj[msgType]
             #
@@ -135,7 +140,7 @@ class MetaDataEditor(BaseClass):
             return
         #
         statusDB = StatusDbApi(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
-        self.__errorMessage,selectedEntryList = statusDB.getEntryIdListFromInputIdString(entry_ids)
+        self.__errorMessage, selectedEntryList = statusDB.getEntryIdListFromInputIdString(entry_ids)
         if not selectedEntryList:
             self.__statusCode = "failed"
             return
@@ -144,10 +149,10 @@ class MetaDataEditor(BaseClass):
         all_data_type = self.__all_data_type.split(",")
         #
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runGetEntriesInfo")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runGetEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = selectedEntryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=selectedEntryList, numProc=numProc, numResults=1)
         #
         validEntryList = []
         for entry_id in selectedEntryList:
@@ -159,7 +164,7 @@ class MetaDataEditor(BaseClass):
                 self.__errorMessage += entryPickle["error"]
             elif ("file" in entryPickle) and entryPickle["file"] and ("info" in entryPickle) and entryPickle["info"]:
                 infoD = {}
-                infoD["file"] = entryPickle["file"] 
+                infoD["file"] = entryPickle["file"]
                 if ("pdbid" in entryPickle["info"]) and entryPickle["info"]["pdbid"]:
                     infoD["pdbid"] = entryPickle["info"]["pdbid"]
                 #
@@ -203,7 +208,7 @@ class MetaDataEditor(BaseClass):
         #
         for entry_id in entryList:
             value = str(self._reqObj.getValue("current_" + entry_id))
-            updated = False
+            # updated = False
             if (entry_id in self.__pickleObj) and self.__pickleObj[entry_id] and ("current_data" in self.__pickleObj[entry_id]) and \
                self.__pickleObj[entry_id]["current_data"]:
                 self.__pickleObj[entry_id]["current_data"][self.__dataType] = value
@@ -228,10 +233,10 @@ class MetaDataEditor(BaseClass):
             return
         #
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runUpdateEntriesInfo")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runUpdateEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=entryList, numProc=numProc, numResults=1)
         #
         for entry_id in entryList:
             entryPickle = self._loadPickle(entry_id + "_MetaDataEditor")
@@ -257,7 +262,7 @@ class MetaDataEditor(BaseClass):
             self.__runGetEntryInfo(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def runUpdateEntriesInfo(self, dataList, procName, optionsD, workingDir):
         """
@@ -267,20 +272,20 @@ class MetaDataEditor(BaseClass):
             self.__runUpdateEntryInfo(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __runGetEntryInfo(self, entry_id):
         """
         """
         entryPickle = {}
-        message,modelFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "latest")
+        message, modelFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "latest")
         if message:
             entryPickle["error"] = message
             self._dumpPickle(entry_id + "_MetaDataEditor", entryPickle)
             return
         #
         entryPickle["file"] = modelFile
-        message,info = self.__getEntryInfoFromModelFile(entry_id, modelFile)
+        message, info = self.__getEntryInfoFromModelFile(entry_id, modelFile)
         if message:
             entryPickle["error"] = message
             self._dumpPickle(entry_id + "_MetaDataEditor", entryPickle)
@@ -308,15 +313,15 @@ class MetaDataEditor(BaseClass):
             msg += cmsg
         #
         if msg:
-            return msg,{}
+            return msg, {}
         #
         if os.access(os.path.join(self._sessionPath, jsonFile), os.F_OK):
             with open(os.path.join(self._sessionPath, jsonFile), "r") as f:
                 jsonObj = json.load(f)
             #
-            return "",jsonObj
+            return "", jsonObj
         #
-        return "Get entry information failed.",{}
+        return "Get entry information failed.", {}
 
     def __depictEntry(self, entry_id):
         """
@@ -326,20 +331,20 @@ class MetaDataEditor(BaseClass):
         #
         myD = {}
         myD["entry_id"] = entry_id
-        for item in ( "original_data", "current_data", "pdbid", "status_code", "annotator" ):
+        for item in ("original_data", "current_data", "pdbid", "status_code", "annotator"):
             myD[item] = ""
         #
         if (entry_id in self.__pickleObj) and self.__pickleObj[entry_id]:
-            for item in ( "pdbid", "status_code", "annotator" ):
+            for item in ("pdbid", "status_code", "annotator"):
                 if (item in self.__pickleObj[entry_id]) and self.__pickleObj[entry_id][item]:
                     myD[item] = self.__pickleObj[entry_id][item]
                 #
             #
-            for item in ( "original_data", "current_data" ):
-                if (not item in self.__pickleObj[entry_id]) or (not self.__pickleObj[entry_id][item]):
+            for item in ("original_data", "current_data"):
+                if (item not in self.__pickleObj[entry_id]) or (not self.__pickleObj[entry_id][item]):
                     continue
                 #
-                if (not self.__dataType in self.__pickleObj[entry_id][item]) or (not self.__pickleObj[entry_id][item][self.__dataType]):
+                if (self.__dataType not in self.__pickleObj[entry_id][item]) or (not self.__pickleObj[entry_id][item][self.__dataType]):
                     continue
                 #
                 value = self.__pickleObj[entry_id][item][self.__dataType]
@@ -366,15 +371,15 @@ class MetaDataEditor(BaseClass):
         """
         entryPickle = {}
         #
-        if (not entry_id in self.__pickleObj) or (not self.__pickleObj[entry_id]) or (not "current_data" in self.__pickleObj[entry_id]) or \
-           (not self.__pickleObj[entry_id]["current_data"]) or (not "file" in self.__pickleObj[entry_id]) or (not self.__pickleObj[entry_id]["file"]):
+        if (entry_id not in self.__pickleObj) or (not self.__pickleObj[entry_id]) or ("current_data" not in self.__pickleObj[entry_id]) or \
+           (not self.__pickleObj[entry_id]["current_data"]) or ("file" not in self.__pickleObj[entry_id]) or (not self.__pickleObj[entry_id]["file"]):
             entryPickle["error"] = "Updating " + entry_id + " failed."
             self._dumpPickle(entry_id + "_MetaDataEditor", entryPickle)
             return
         #
         dataFile = self.__writeDataCifFile(entry_id, self.__pickleObj[entry_id]["current_data"])
         #
-        message,updatedModelFile = self.__updateModelFile(entry_id, self.__pickleObj[entry_id]["file"], dataFile)
+        message, updatedModelFile = self.__updateModelFile(entry_id, self.__pickleObj[entry_id]["file"], dataFile)
         if message:
             entryPickle["error"] = "Updating " + entry_id + " failed:\n" + message
             self._dumpPickle(entry_id + "_MetaDataEditor", entryPickle)
@@ -396,7 +401,7 @@ class MetaDataEditor(BaseClass):
         cifObj = mmCIFUtil()
         cifObj.AddBlock(entry_id)
         categoryMap = {}
-        for key,v in dataInfo.items():
+        for key, v in dataInfo.items():
             value = v
             if not value:
                 value = "?"
@@ -406,10 +411,10 @@ class MetaDataEditor(BaseClass):
                 categoryMap[cList[0][1:]][0].append(cList[1])
                 categoryMap[cList[0][1:]][1][0].append(value)
             else:
-                categoryMap[cList[0][1:]] = [ [ cList[1] ], [ [ value ] ] ]
+                categoryMap[cList[0][1:]] = [[cList[1]], [[value]]]
             #
         #
-        for key,values in categoryMap.items():
+        for key, values in categoryMap.items():
             cifObj.AddCategory(key, values[0])
             cifObj.InsertData(key, values[1])
         #
@@ -420,7 +425,7 @@ class MetaDataEditor(BaseClass):
         """
         """
         updatedModelFile = entry_id + "_MetaDataEditor.cif"
-        jsonFile = entry_id + "_MetaDataEditor.json"
+        # jsonFile = entry_id + "_MetaDataEditor.json"
         logFile = "MetaDataEditor_" + entry_id + ".log"
         clogFile = "MetaDataEditor_command_" + entry_id + ".log"
         extraOption = " -data_file " + dataFile + " "
@@ -436,9 +441,9 @@ class MetaDataEditor(BaseClass):
             msg += cmsg
         #
         if msg:
-            return msg,''
+            return msg, ''
         #
         if os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
-            return "",os.path.join(self._sessionPath, updatedModelFile)
+            return "", os.path.join(self._sessionPath, updatedModelFile)
         #
-        return "Merge metadata information failed.",""
+        return "Merge metadata information failed.", ""

@@ -15,34 +15,38 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, shutil, sys
+import multiprocessing
+import os
+import shutil
+import sys
 
-from wwpdb.utils.config.ConfigInfo       import ConfigInfo
-from wwpdb.utils.config.ConfigInfoApp    import ConfigInfoAppCommon
-from wwpdb.io.locator.DataReference      import DataFileReference
-from rcsb.utils.multiproc.MultiProcUtil  import MultiProcUtil
-from wwpdb.io.locator.PathInfo           import PathInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.io.locator.DataReference import DataFileReference
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
+from wwpdb.io.locator.PathInfo import PathInfo
 #
 
+
 class CopyFileToAutoGroup(object):
-    def __init__(self, reqObj=None, entryList=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj      = reqObj
-        self.__entryList   = entryList
-        self.__verbose     = verbose
-        self.__lfh         = log
-        self.__siteId      = str(self.__reqObj.getValue('WWPDB_SITE_ID'))
-        self.__cI          = ConfigInfo(self.__siteId)
-        self.__cICommon    = ConfigInfoAppCommon(self.__siteId)
+        self.__reqObj = reqObj
+        self.__entryList = entryList
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__siteId = str(self.__reqObj.getValue('WWPDB_SITE_ID'))
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.__archivePath = self.__cI.get('SITE_ARCHIVE_STORAGE_PATH')
-        self.__identifier  = str(self.__reqObj.getValue('identifier'))
-        self.__targetPath  = os.path.join(self.__archivePath, 'autogroup', self.__identifier, 'processed')
+        self.__identifier = str(self.__reqObj.getValue('identifier'))
+        self.__targetPath = os.path.join(self.__archivePath, 'autogroup', self.__identifier, 'processed')
         #
         self.__rcsbRoot = self.__cICommon.get_site_annot_tools_path()
         self.__compRoot = self.__cICommon.get_site_cc_cvs_path()
@@ -51,7 +55,7 @@ class CopyFileToAutoGroup(object):
         self.__dictionary_v40 = self.__cI.get('SITE_PDBX_V4_DICT_NAME') + '.sdb'
         self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.sdb'
         #
-        self.__sessionId   = None
+        self.__sessionId = None
         self.__sessionPath = None
         #
         self.__dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
@@ -62,21 +66,21 @@ class CopyFileToAutoGroup(object):
         self.__getSession()
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
         #
-        self.__fileTypeList = [ [ 'model',                  'pdbx' ],
-                                [ 'structure-factors',      'pdbx' ],
-                                [ 'validation-report-full', 'pdf'  ],
-                                [ 'validation-report',      'pdf'  ],
-                                [ 'validation-data',        'xml'  ] ]
+        self.__fileTypeList = [ [ 'model',                  'pdbx' ],  # noqa: E201,E202,E241
+                                [ 'structure-factors',      'pdbx' ],  # noqa: E201,E202,E241
+                                [ 'validation-report-full', 'pdf'  ],  # noqa: E201,E202,E241
+                                [ 'validation-report',      'pdf'  ],  # noqa: E201,E202,E241
+                                [ 'validation-data',        'xml'  ] ]  # noqa: E201,E202,E241
         #
 
     def run(self):
         """
         """
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self.__sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -117,7 +121,7 @@ class CopyFileToAutoGroup(object):
             #
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __getSession(self):
         """
@@ -180,17 +184,18 @@ class CopyFileToAutoGroup(object):
         #
         return message
 
+
 if __name__ == '__main__':
     from wwpdb.utils.rcsb.WebRequest import InputRequest
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002003")
     myReqObj.setValue("sessionid", " b8030220bdf3559c10a2c63618cd85a25256f7c1")
-    entryList = [ 'D_8000200001', 'D_8000200003', 'D_8000200027', 'D_8000200040' ]
-    copyUtil = CopyFileToAutoGroup(reqObj=myReqObj, entryList=entryList, verbose=False,log=sys.stderr)
+    entryList = ['D_8000200001', 'D_8000200003', 'D_8000200027', 'D_8000200040']
+    copyUtil = CopyFileToAutoGroup(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
     copyUtil.run()

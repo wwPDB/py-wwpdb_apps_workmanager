@@ -4,7 +4,6 @@
 # Update:
 #
 import re
-import glob
 
 from setuptools import find_packages
 from setuptools import setup
@@ -49,11 +48,10 @@ setup(
                       'mmcif.utils', 'wwpdb.utils.detach ~= 0.3', 'mysqlclient'],
     packages=find_packages(exclude=['wwpdb.apps.tests-workmanager']),
     # Enables Manifest to be used
-    #include_package_data = True,
+    # include_package_data = True,
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],
-        #'wwpdb': ['apps/deposit/private/countries.pkl'],        
     },
     #
     # These basic tests require no database services -

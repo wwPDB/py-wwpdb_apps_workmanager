@@ -15,16 +15,18 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os, sys
+import os
+import sys
 
-from wwpdb.utils.config.ConfigInfo                              import ConfigInfo
-from wwpdb.apps.workmanager.db_access.StatusDbApi             import StatusDbApi
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+
 
 class LogFileUtil(object):
     """
@@ -32,24 +34,24 @@ class LogFileUtil(object):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__reqObj       = reqObj
-        self.__verbose      = verbose
-        self.__lfh          = log
-        self.__siteId       = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI           = ConfigInfo(self.__siteId)
+        self.__reqObj = reqObj
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         self.__depositionid = str(self.__reqObj.getValue("identifier"))
-        self.__instanceid   = str(self.__reqObj.getValue("instance"))
-        self.__classid      = str(self.__reqObj.getValue("classID"))
-        self.__taskid       = str(self.__reqObj.getValue("taskID"))
-        self.__reference    = str(self.__reqObj.getValue("reference"))
-        self.__logPath      = os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', self.__depositionid, 'log')
+        self.__instanceid = str(self.__reqObj.getValue("instance"))
+        self.__classid = str(self.__reqObj.getValue("classID"))
+        self.__taskid = str(self.__reqObj.getValue("taskID"))
+        self.__reference = str(self.__reqObj.getValue("reference"))
+        self.__logPath = os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', self.__depositionid, 'log')
 
     def getLogFile(self):
         """
         """
         if self.__taskid:
             filename = self.__reference + '_' + self.__depositionid + '_' + self.__classid + '_' + self.__instanceid \
-                     + '_' + self.__taskid + '.log'
+                + '_' + self.__taskid + '.log'
         else:
             statusDB = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
             classInfo = statusDB.getWfClassByID(classID=self.__classid)

@@ -14,7 +14,8 @@ __version__ = "V0.01"
 
 import unittest
 
-from wwpdb.apps.workmanager.utils.LoadRemindMessageTrack import LoadRemindMessageTrack
+from wwpdb.apps.workmanager.utils.LoadRemindMessageTrack import LoadRemindMessageTrack  # noqa: F401
+
 
 class ImportTests(unittest.TestCase):
     def setUp(self):
@@ -22,9 +23,7 @@ class ImportTests(unittest.TestCase):
 
     def testInstantiate(self):
         pass
-    
+
+
 if __name__ == '__main__':
     unittest.main()
-
-
-    

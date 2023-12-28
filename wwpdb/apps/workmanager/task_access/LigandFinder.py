@@ -15,16 +15,18 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys
+import os
+import sys
 
 from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
-from wwpdb.apps.workmanager.db_access.StatusDbApi  import StatusDbApi
-from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
+
 
 class LigandFinder(BaseClass):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
@@ -41,7 +43,7 @@ class LigandFinder(BaseClass):
         """
         """
         if not self.__entryList:
-            return {},"No entry found."
+            return {}, "No entry found."
         #
         entryIdList = []
         for entry in self.__entryList:
@@ -50,11 +52,11 @@ class LigandFinder(BaseClass):
             #
         #
         if not entryIdList:
-            return {},"No entry found."
+            return {}, "No entry found."
         #
         ligList = self.__contentDB.getLigandIdList(entryIdList=entryIdList)
         if not ligList:
-            return {},"No ligand found."
+            return {}, "No ligand found."
         #
         ligMap = {}
         for ligDir in ligList:
@@ -65,13 +67,14 @@ class LigandFinder(BaseClass):
             if ligDir["Structure_ID"] in ligMap:
                 ligMap[ligDir["Structure_ID"]].append(ligDir["comp_id"].upper())
             else:
-                ligMap[ligDir["Structure_ID"]] = [ ligDir["comp_id"].upper() ]
+                ligMap[ligDir["Structure_ID"]] = [ligDir["comp_id"].upper()]
             #
         #
         if not ligMap:
-            return {},"No ligand found."
+            return {}, "No ligand found."
         #
-        return ligMap,"OK"
+        return ligMap, "OK"
+
 
 if __name__ == '__main__':
     from wwpdb.utils.session.WebRequest import InputRequest
@@ -79,12 +82,12 @@ if __name__ == '__main__':
     siteId = os.getenv("WWPDB_SITE_ID")
     cI = ConfigInfo(siteId)
     #
-    myReqObj = InputRequest({}, verbose = True, log = sys.stderr)
+    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
     myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002010")
     myReqObj.setValue("sessionid", "79ae0371518fe08d9d3e1fb8fdd001055632d48a")
-    ligFinder = LigandFinder(reqObj=myReqObj, verbose=False,log=sys.stderr)
-    retMap,errMsg = ligFinder.getLigandInfo()
+    ligFinder = LigandFinder(reqObj=myReqObj, verbose=False, log=sys.stderr)
+    retMap, errMsg = ligFinder.getLigandInfo()
     print(errMsg)
     print(retMap)

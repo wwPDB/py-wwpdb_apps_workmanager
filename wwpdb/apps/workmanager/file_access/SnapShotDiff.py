@@ -15,15 +15,18 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys,pickle
+import os
+import sys
+import pickle
 
 from wwpdb.apps.wf_engine.engine.WFEapplications import getPicklePath
+
 
 class SnapShotDiff(object):
     """
@@ -31,9 +34,9 @@ class SnapShotDiff(object):
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__siteId     = siteId
-        self.__verbose    = verbose
-        self.__lfh        = log
+        self.__siteId = siteId
+        self.__verbose = verbose
+        self.__lfh = log
 
     def getSnap(self, depID):
         """ Method to return the file handle path for a file system snapshot
@@ -44,7 +47,7 @@ class SnapShotDiff(object):
         if not os.access(path, os.F_OK):
             return None
         #
-        snap = [ temp for temp in os.listdir(path) if os.path.isdir(os.path.join(path, temp)) and temp.startswith('reset') ]
+        snap = [temp for temp in os.listdir(path) if os.path.isdir(os.path.join(path, temp)) and temp.startswith('reset')]
         #
         if not snap:
             return None
@@ -101,9 +104,9 @@ class SnapShotDiff(object):
                 ints2 = len(items2)
                 if ints1 == ints2:
                     n = 0
-                    for (i1,i2) in zip(items1,items2):
+                    for (i1, i2) in zip(items1, items2):
                         n = n + 1
-                        for item1,value1 in i1.items():
+                        for item1, value1 in i1.items():
                             if not (item1.endswith('_ordinal') or item1 == 'id') :
                                 if item1 in i2.keys():
                                     value2 = i2[item1]
@@ -143,7 +146,8 @@ class SnapShotDiff(object):
             self.__lfh.write("Exception=%s\n" % str(e))
         #
         return ret
-  
+
+
 if __name__ == '__main__':
     ssd = SnapShotDiff(siteId="WWPDB_DEPLOY_INTERNAL")
     snap = ssd.getSnap('D_1100209960')

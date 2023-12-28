@@ -15,17 +15,18 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import sys
 
-from wwpdb.apps.workmanager.depict.DepictBase     import DepictBase
-from wwpdb.apps.workmanager.depict.Level1Util     import Level1Util
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
+from wwpdb.apps.workmanager.depict.Level1Util import Level1Util
 from wwpdb.apps.workmanager.depict.ServerInfoUtil import ServerInfoUtil
+
 
 class DepictLevel1(DepictBase):
     """
@@ -59,7 +60,7 @@ class DepictLevel1(DepictBase):
             dataD['comment_start'] = '<!--'
             dataD['comment_end'] = '-->'
         #
-        self._dataInfo['level1_tmplt'] = [ dataD ]
+        self._dataInfo['level1_tmplt'] = [dataD]
         level1Util = Level1Util(reqObj=self._reqObj, statusDB=self._statusDB, conFigObj=self._conFigObj, verbose=self._verbose, log=self._lfh)
         self._UtilClass['Level1Util'] = level1Util
         sInfoUtil = ServerInfoUtil(reqObj=self._reqObj, statusDB=self._statusDB, conFigObj=self._conFigObj, verbose=self._verbose, log=self._lfh)

@@ -15,20 +15,21 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os, sys
+import sys
 try:
     from urllib.parse import quote as u_quote
 except ImportError:
-    from urllib import quote  as u_quote
+    from urllib import quote as u_quote
 
-from wwpdb.apps.workmanager.depict.DepictBase     import DepictBase,processPublicIDs
-from wwpdb.apps.workmanager.depict.ReadConFigFile import dumpPickleFile,loadPickleFile
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase, processPublicIDs
+from wwpdb.apps.workmanager.depict.ReadConFigFile import dumpPickleFile, loadPickleFile
+
 
 class DepictContent(DepictBase):
     """
@@ -47,8 +48,8 @@ class DepictContent(DepictBase):
         if 'table_data_field_binding' in self._conFigObj:
             self.__dataFieldMap = self._conFigObj['table_data_field_binding']
         #
-        self.__sObj        = self._reqObj.newSessionObj()
-        self.__sessionId   = self.__sObj.getId()
+        self.__sObj = self._reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
 
     def depictTableContent(self, index):
@@ -68,21 +69,21 @@ class DepictContent(DepictBase):
     def _depictTableContent(self, tableMap):
         """
         """
-        if (not tableMap) or (not 'pkl' in tableMap):
+        if (not tableMap) or ('pkl' not in tableMap):
             return
         #
         if 'binding_function' in tableMap:
             if 'binding_class' in tableMap:
                 self._processBindingClass(tableMap['binding_class'])
                 classUtil = self._UtilClass[tableMap['binding_class']]
-                columnDef,contentResults = getattr(classUtil, '%s' % tableMap['binding_function'])()
+                columnDef, contentResults = getattr(classUtil, '%s' % tableMap['binding_function'])()
             else:
-                columnDef,contentResults = getattr(self, '%s' % tableMap['binding_function'])()
+                columnDef, contentResults = getattr(self, '%s' % tableMap['binding_function'])()
             #
             dumpPickleFile(self.__sessionPath, tableMap['pkl'], contentResults)
             return
         #
-        if (not 'sql' in tableMap) or (not 'data-field' in tableMap):
+        if ('sql' not in tableMap) or ('data-field' not in tableMap):
             return
         #
         count_map = self.__initializeStatusCount(tableMap)
@@ -93,7 +94,6 @@ class DepictContent(DepictBase):
         #
         if rows:
             groupIdMap = {}
-            combDateMap = {}
             idList = self.__getEntryIDList(rows, 'D_')
             if idList:
                 return_list = self._statusDB.getGroupIds(depositionids=idList)
@@ -106,7 +106,7 @@ class DepictContent(DepictBase):
                 #
                 foundCombDateItem = False
                 for field_item in tableMap['data-field']:
-                    if not field_item in self.__dataFieldMap:
+                    if field_item not in self.__dataFieldMap:
                         continue
                     #
                     value = self.__dataFieldMap[field_item]['value']
@@ -120,7 +120,7 @@ class DepictContent(DepictBase):
                     releaseDateMap = self._contentDB.getReleaseDate("', '".join(sorted(set(idList))))
                     for dataD in rows:
                         dataD['deposition_release_dates'] = ''
-                        if (not 'dep_set_id' in dataD) or (not dataD['dep_set_id']):
+                        if ('dep_set_id' not in dataD) or (not dataD['dep_set_id']):
                             continue
                         #
                         if ('dep_initial_deposition_date' in dataD) and dataD['dep_initial_deposition_date']:
@@ -139,18 +139,19 @@ class DepictContent(DepictBase):
             annSelectMap = {}
             reminderSentMap = {}
             PIInfoMap = {}
-            #if ('add_list' in tableMap['data-field']) or ('major_issue' in tableMap['data-field']) or \
+            # if ('add_list' in tableMap['data-field']) or ('major_issue' in tableMap['data-field']) or \
             #        ('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
             #        ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']):
 
-            if (x for x in tableMap['data-field'] if x in ('add_list',
-                                                           'major_issue',
-                                                           'pi_name',
-                                                           'country',
-                                                           'pi_name_only',
-                                                           'pi_country_only',
-                                                           'received_date')
-                ):
+            if (
+                    x for x in tableMap['data-field'] if x in ('add_list',
+                                                               'major_issue',
+                                                               'pi_name',
+                                                               'country',
+                                                               'pi_name_only',
+                                                               'pi_country_only',
+                                                               'received_date')
+            ):
                 if idList and ('add_list' in tableMap['data-field']):
                     return_list = self._statusDB.getAnnoSelection(depositionids=idList)
                     annSelectMap = self.__convertListIntoMap(return_list)
@@ -224,8 +225,11 @@ class DepictContent(DepictBase):
                         dataD['abbrv_method'] = 'NEUTRON'
                     elif dataD['method'].upper() == 'FIBER DIFFRACTION' or dataD['method'].upper() == 'FIBRE DIFFRACTION':
                         dataD['abbrv_method'] = 'FIBER'
-                    elif dataD['method'].upper() == 'CRYO-ELECTRON MICROSCOPY' or dataD['method'].upper() == 'ELECTRON MICROSCOPY' or \
-                         dataD['method'].upper() == 'ELECTRON TOMOGRAPHY':
+                    elif (
+                            dataD['method'].upper() == 'CRYO-ELECTRON MICROSCOPY'
+                            or dataD['method'].upper() == 'ELECTRON MICROSCOPY'
+                            or dataD['method'].upper() == 'ELECTRON TOMOGRAPHY'
+                    ):
                         dataD['abbrv_method'] = 'EM'
                     elif dataD['method'].upper() == 'ELECTRON CRYSTALLOGRAPHY':
                         dataD['abbrv_method'] = 'EL. CRYS.'
@@ -240,7 +244,7 @@ class DepictContent(DepictBase):
                 if ('pdb_ids' in tableMap['data-field']) or ('user_pdb_id' in tableMap['data-field']):
                     dataD = processPublicIDs(dataD)
                     if ('coor_status' in tableMap['data-field']) or ('author_status' in tableMap['data-field']):
-                        dataD['comb_status_code'],dataD['comb_author_release_status_code'],titleEM,authorListEM = self.__processStatusCode(dataD)
+                        dataD['comb_status_code'], dataD['comb_author_release_status_code'], titleEM, authorListEM = self.__processStatusCode(dataD)
                         if titleEM:
                             dataD['dep_title'] = titleEM
                         #
@@ -249,11 +253,11 @@ class DepictContent(DepictBase):
                         #
                     #
                 #
-                self._dataInfo['data_for_all'] = [ dataD ]
+                self._dataInfo['data_for_all'] = [dataD]
                 resultD = {}
                 for field_item in tableMap['data-field']:
                     resultD[field_item] = ''
-                    if not field_item in self.__dataFieldMap:
+                    if field_item not in self.__dataFieldMap:
                         continue
                     #
                     value = self.__dataFieldMap[field_item]['value']
@@ -275,7 +279,7 @@ class DepictContent(DepictBase):
         dumpPickleFile(self.__sessionPath, tableMap['pkl'], contentResults)
         #
         if 'entry_count' in tableMap:
-            for type,list in tableMap['entry_count'].items():
+            for type, list in tableMap['entry_count'].items():
                 for item in list:
                     count = 0
                     if item == 'num_entries':
@@ -406,13 +410,13 @@ class DepictContent(DepictBase):
         groupIdMap = {}
         entryIdList = []
         for dataD in return_rows:
-            if (not 'group_id' in dataD) or (not dataD['group_id']) or (not 'dep_set_id' in dataD) or (not dataD['dep_set_id']):
+            if ('group_id' not in dataD) or (not dataD['group_id']) or ('dep_set_id' not in dataD) or (not dataD['dep_set_id']):
                 continue
             #
             if dataD['group_id'] in groupIdMap:
                 groupIdMap[dataD['group_id']].append(dataD['dep_set_id'])
             else:
-                groupIdMap[dataD['group_id']] = [ dataD['dep_set_id'] ]
+                groupIdMap[dataD['group_id']] = [dataD['dep_set_id']]
                 entryIdList.append(dataD['dep_set_id'])
             #
         #
@@ -428,12 +432,13 @@ class DepictContent(DepictBase):
             infoMap[dataD['dep_set_id']] = dataD
         #
         groupInfoMap = {}
-        for group_id,entry_ids in groupIdMap.items():
+        for group_id, entry_ids in groupIdMap.items():
             if not entry_ids[0] in infoMap:
                 continue
             #
-            if ((not 'annotator_initials' in infoMap[entry_ids[0]]) or (not infoMap[entry_ids[0]]['annotator_initials']) or \
-                (infoMap[entry_ids[0]]['annotator_initials'] != self._getUserInfo('initials'))) and filter_by_annotator_flag:
+            if (
+                    ('annotator_initials' not in infoMap[entry_ids[0]]) or (not infoMap[entry_ids[0]]['annotator_initials'])
+                    or (infoMap[entry_ids[0]]['annotator_initials'] != self._getUserInfo('initials'))) and filter_by_annotator_flag:
                 continue
             #
             groupInfoMap[group_id] = {}
@@ -445,15 +450,15 @@ class DepictContent(DepictBase):
         #
         group_rows = []
         for dataD in rows:
-            if (not 'dep_set_id' in dataD) or (not dataD['dep_set_id']) or (not dataD['dep_set_id'] in groupInfoMap):
+            if ('dep_set_id' not in dataD) or (not dataD['dep_set_id']) or (dataD['dep_set_id'] not in groupInfoMap):
                 continue
             #
-            for item in ( 'initial_deposition_date', 'status_code' ):
+            for item in ('initial_deposition_date', 'status_code'):
                 dataD[item] = groupInfoMap[dataD['dep_set_id']][item]
             #
             group_rows.append(dataD)
         #
-        return group_rows;
+        return group_rows
 
     def unsubmit_group(self, rows):
         """ further process un-submitted group deposition
@@ -484,7 +489,7 @@ class DepictContent(DepictBase):
         if rRows:
             nRows.extend(rRows)
         #
-        return nRows;
+        return nRows
 
     def __initializeStatusCount(self, tableMap):
         """
@@ -531,7 +536,7 @@ class DepictContent(DepictBase):
         Map = self.__getPIInfoFromCotentDB(rList)
         foundMissing = False
         for depId in rList:
-            if not depId in Map:
+            if depId not in Map:
                 foundMissing = True
                 break
             #
@@ -568,12 +573,12 @@ class DepictContent(DepictBase):
         """
         """
         self._connectContentDB()
-        return self.__processPIInfo(self._contentDB.ContactAuthorPI(rList), [ 'name_first', 'name_mi', 'name_last' ])
+        return self.__processPIInfo(self._contentDB.ContactAuthorPI(rList), ['name_first', 'name_mi', 'name_last'])
 
     def __getPIInfoFromStatusDB(self, rList):
         """
         """
-        return self.__processPIInfo(self._statusDB.ContactAuthorPI(rList), [ 'last_name' ])
+        return self.__processPIInfo(self._statusDB.ContactAuthorPI(rList), ['last_name'])
 
     def __processPIInfo(self, rows, name_items):
         """
@@ -599,7 +604,7 @@ class DepictContent(DepictBase):
             #
             pi_name = ''
             for item in name_items:
-                if (not item in dataD) or (not dataD[item]):
+                if (item not in dataD) or (not dataD[item]):
                     continue
                 #
                 if pi_name:
@@ -616,7 +621,7 @@ class DepictContent(DepictBase):
                 Map[dep_id]['pi_name_only'] += ", <br/>" + pi_name
                 Map[dep_id]['pi_country_only'] += ", <br/>" + country
             else:
-                Map[dep_id] = { 'pi_name': pi_name, 'country': country, 'pi_name_only': pi_name, 'pi_country_only': country }
+                Map[dep_id] = {'pi_name': pi_name, 'country': country, 'pi_name_only': pi_name, 'pi_country_only': country}
             #
         #
         return Map
@@ -654,8 +659,8 @@ class DepictContent(DepictBase):
         # dep_status_code and dep_locking must be present.
         # Must be unlocked
         # Must not be DEP, OBS, or WDRN status (author initiated post_relase allows REL if pdb_id present (i.e. not map onlu)
-        if (not 'dep_status_code' in dataDict) or (not 'dep_locking' in dataDict) or (str(dataDict['dep_locking']).upper() == 'WFM') or \
-           (str(dataDict['dep_status_code']).upper() in ( 'DEP', 'OBS', 'WDRN')):
+        if ('dep_status_code' not in dataDict) or ('dep_locking' not in dataDict) or (str(dataDict['dep_locking']).upper() == 'WFM') or \
+           (str(dataDict['dep_status_code']).upper() in ('DEP', 'OBS', 'WDRN')):
             return ''
 
         # Check for map only
@@ -674,14 +679,14 @@ class DepictContent(DepictBase):
         if 'dep_status_code' in dataDict and dataDict['dep_status_code']:
             baseStatusCode = dataDict['dep_status_code']
             if 'dep_post_rel_status' in dataDict and dataDict['dep_post_rel_status']:
-                baseStatusCode = dataDict['dep_post_rel_status'] + '(' + baseStatusCode + ')';
+                baseStatusCode = dataDict['dep_post_rel_status'] + '(' + baseStatusCode + ')'
 
         if dataDict['emdb_id'] != '-':
             # EMDB ID
             if dataDict['pdb_id'] != '-':
                 # PDB ID present
                 if ('dep_status_code' in dataDict) and dataDict['dep_status_code'] and ('dep_status_code_emdb' in dataDict) and dataDict['dep_status_code_emdb']:
-                    statusCode =  baseStatusCode + '/' + dataDict['dep_status_code_emdb']
+                    statusCode = baseStatusCode + '/' + dataDict['dep_status_code_emdb']
                 else:
                     statusCode = baseStatusCode
                 #
@@ -714,7 +719,7 @@ class DepictContent(DepictBase):
                 authorReleaseStatusCode = dataDict['dep_author_release_status_code']
             #
         #
-        return statusCode,authorReleaseStatusCode,titleEM,authorListEM
+        return statusCode, authorReleaseStatusCode, titleEM, authorListEM
 
     def __getGroupStatusCode(self, entryIdList):
         status_code = 'unknown'
@@ -725,7 +730,7 @@ class DepictContent(DepictBase):
         #
         statusMap = {}
         for dataD in info_rows:
-            if (not 'status_code' in dataD) or (not dataD['status_code']):
+            if ('status_code' not in dataD) or (not dataD['status_code']):
                 continue
             #
             code = str(dataD['status_code']).strip().upper()
@@ -735,7 +740,7 @@ class DepictContent(DepictBase):
                 statusMap[code] = 1
             #
         #
-        for code,val in statusMap.items():
+        for code, val in statusMap.items():
             if val > count:
                 count = val
                 status_code = code

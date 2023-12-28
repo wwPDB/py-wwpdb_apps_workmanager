@@ -15,16 +15,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import sys
 
-from wwpdb.utils.wf.dbapi.WFEtime           import getTimeNow
+from wwpdb.utils.wf.dbapi.WFEtime import getTimeNow
 from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
+
 
 class ServerInfoUtil(DepictBase):
     """
@@ -46,7 +47,7 @@ class ServerInfoUtil(DepictBase):
             for server in serverList:
                 dataD = {}
                 dataD['host'] = server['hostname']
-                dif = (round(float(timeNow) - float(server['status_timestamp'])))/10.0
+                dif = (round(float(timeNow) - float(server['status_timestamp']))) / 10.0
                 dataD['time'] = str(dif)
                 if dif < 1.1:
                     dataD['comment'] = 'Good'
@@ -55,9 +56,9 @@ class ServerInfoUtil(DepictBase):
                 elif dif < 5.1:
                     dataD['comment'] = 'Poor'
                 else:
-                    dataD['comment'] =  'Unavailable'
+                    dataD['comment'] = 'Unavailable'
                 #
-                self._dataInfo['server_info_tmplt'] = [ dataD ]
+                self._dataInfo['server_info_tmplt'] = [dataD]
                 text += self.getPageText(page_id='server_info_tmplt')
             #
         #

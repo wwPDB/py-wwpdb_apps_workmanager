@@ -15,16 +15,19 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys
+import multiprocessing
+import os
+import sys
 
-from wwpdb.apps.workmanager.task_access.BaseClass  import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil            import MultiProcUtil
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
 #
+
 
 class MetaDataMerger(BaseClass):
     def __init__(self, reqObj=None, entryList=None, taskList=None, recoverFlag=False, templateFile=None, verbose=False, log=sys.stderr):
@@ -45,10 +48,10 @@ class MetaDataMerger(BaseClass):
             self.__getLOIMap()
         #
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runMulti")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList = self.__entryList, numProc = numProc, numResults = 1)
+        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):
@@ -59,7 +62,7 @@ class MetaDataMerger(BaseClass):
             self.__runSingle(entry_id)
             rList.append(entry_id)
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __getLOIMap(self):
         """
@@ -77,24 +80,24 @@ class MetaDataMerger(BaseClass):
     def __runSingle(self, entry_id):
         """
         """
-        message,modelFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "latest")
+        message, modelFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "latest")
         if message:
             self._dumpPickle(entry_id + "_MetaDataMerger", message)
             return
         #
         if self.__recoverFlag:
             if "revision" in self.__taskList:
-                message,templateFile = self._getExistingArchiveFile(entry_id, "model-release", "pdbx", "latest")
+                message, templateFile = self._getExistingArchiveFile(entry_id, "model-release", "pdbx", "latest")
             else:
-                message,templateFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "1")
+                message, templateFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "1")
             #
             if message:
                 self._dumpPickle(entry_id + "_MetaDataMerger", message)
                 return
             #
-            message,updatedModelFile = self.__updateModelFile(entry_id, modelFile, templateFile)
+            message, updatedModelFile = self.__updateModelFile(entry_id, modelFile, templateFile)
         else:
-            message,updatedModelFile = self.__updateModelFile(entry_id, modelFile, self.__templateFile)
+            message, updatedModelFile = self.__updateModelFile(entry_id, modelFile, self.__templateFile)
         #
         if message:
             self._dumpPickle(entry_id + "_MetaDataMerger", message)
@@ -137,12 +140,12 @@ class MetaDataMerger(BaseClass):
             msg += cmsg
         #
         if msg:
-            return msg,""
+            return msg, ""
         #
         if os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
-            return "",os.path.join(self._sessionPath, updatedModelFile)
+            return "", os.path.join(self._sessionPath, updatedModelFile)
         #
-        return "Merge meta data failed.",""
+        return "Merge meta data failed.", ""
 
     def __getReturnMessage(self):
         message = self.__loiMsg

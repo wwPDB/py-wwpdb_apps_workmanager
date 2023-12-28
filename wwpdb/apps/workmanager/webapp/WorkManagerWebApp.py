@@ -16,54 +16,59 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 try:
     import cPickle as pickle
 except ImportError:
     import pickle as pickle
 
-import datetime, json, os, string, subprocess, sys, time, traceback, types
+import datetime
+import os
+import subprocess
+import sys
+import time
+import traceback
 
-from wwpdb.utils.config.ConfigInfo                        import ConfigInfo
-from wwpdb.utils.wf.dbapi.WFEtime                     import getTimeNow
-from wwpdb.apps.wf_engine.engine.WFEapplications        import reRunWorkflow, DepUIgetDepositorEmail, WFEsendEmail, getPicklePath, getNotesEmailAddr
-from wwpdb.apps.workmanager.db_access.DBLoader          import DBLoader
-from wwpdb.apps.workmanager.db_access.StatusDbApi       import StatusDbApi
-from wwpdb.apps.workmanager.depict.DepictBase           import DepictBase
-from wwpdb.apps.workmanager.depict.DepictContent        import DepictContent
-from wwpdb.apps.workmanager.depict.DepictGroup          import DepictGroup
-from wwpdb.apps.workmanager.depict.DepictLevel1         import DepictLevel1
-from wwpdb.apps.workmanager.depict.DepictOther          import DepictOther
-from wwpdb.apps.workmanager.depict.DepictSnapShot       import DepictSnapShot
-from wwpdb.apps.workmanager.depict.SearchUtil           import SearchUtil
-from wwpdb.apps.workmanager.depict.ReadConFigFile       import ReadConFigFile,dumpPickleFile,loadPickleFile
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.apps.wf_engine.engine.WFEapplications import reRunWorkflow, DepUIgetDepositorEmail, WFEsendEmail, getPicklePath, getNotesEmailAddr
+from wwpdb.apps.workmanager.db_access.DBLoader import DBLoader
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
+from wwpdb.apps.workmanager.depict.DepictContent import DepictContent
+from wwpdb.apps.workmanager.depict.DepictGroup import DepictGroup
+from wwpdb.apps.workmanager.depict.DepictLevel1 import DepictLevel1
+from wwpdb.apps.workmanager.depict.DepictOther import DepictOther
+from wwpdb.apps.workmanager.depict.DepictSnapShot import DepictSnapShot
+from wwpdb.apps.workmanager.depict.SearchUtil import SearchUtil
+from wwpdb.apps.workmanager.depict.ReadConFigFile import ReadConFigFile, loadPickleFile
 from wwpdb.apps.workmanager.file_access.AnnotAssignUtil import AnnotAssignUtil
 from wwpdb.apps.workmanager.file_access.CopyFileToAutoGroup import CopyFileToAutoGroup
-from wwpdb.apps.workmanager.file_access.LogFileUtil     import LogFileUtil
-from wwpdb.apps.workmanager.file_access.MileStoneFile   import MileStoneFile
-from wwpdb.apps.workmanager.task_access.CifChecker      import CifChecker
-from wwpdb.apps.workmanager.task_access.LigandFinder    import LigandFinder
-from wwpdb.apps.workmanager.task_access.MetaDataEditor  import MetaDataEditor
-from wwpdb.apps.workmanager.task_access.MetaDataMerger  import MetaDataMerger
+from wwpdb.apps.workmanager.file_access.LogFileUtil import LogFileUtil
+from wwpdb.apps.workmanager.file_access.MileStoneFile import MileStoneFile
+from wwpdb.apps.workmanager.task_access.CifChecker import CifChecker
+from wwpdb.apps.workmanager.task_access.LigandFinder import LigandFinder
+from wwpdb.apps.workmanager.task_access.MetaDataEditor import MetaDataEditor
+from wwpdb.apps.workmanager.task_access.MetaDataMerger import MetaDataMerger
 from wwpdb.apps.workmanager.task_access.PdbFileGenerator import PdbFileGenerator
-from wwpdb.apps.workmanager.task_access.SequenceMerger  import SequenceMerger
-from wwpdb.apps.workmanager.task_access.StatusUpdater   import StatusUpdater
-from wwpdb.utils.detach.DetachUtils                     import DetachUtils
-from wwpdb.io.locator.PathInfo                          import PathInfo
-from wwpdb.utils.session.WebRequest                     import InputRequest,ResponseContent
-from wwpdb.utils.session.WebUploadUtils                 import WebUploadUtils
+from wwpdb.apps.workmanager.task_access.SequenceMerger import SequenceMerger
+from wwpdb.apps.workmanager.task_access.StatusUpdater import StatusUpdater
+from wwpdb.utils.detach.DetachUtils import DetachUtils
+from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent
+from wwpdb.utils.session.WebUploadUtils import WebUploadUtils
 from wwpdb.utils.config.ProjectVersionInfo import ProjectVersionInfo
 #
 
+
 class WorkManagerWebApp(object):
     """Handle request and response object processing for release module web application.
-    
+
     """
-    def __init__(self,parameterDict={},verbose=False,log=sys.stderr,siteId="WWPDB_DEV"):
+    def __init__(self, parameterDict={}, verbose=False, log=sys.stderr, siteId="WWPDB_DEV"):
         """
         Create an instance of `WorkManagerWebApp` to manage a release module web request.
 
@@ -71,37 +76,37 @@ class WorkManagerWebApp(object):
              Storage model for GET and POST parameter data is a dictionary of lists.
          :param `verbose`:  boolean flag to activate verbose logging.
          :param `log`:      stream for logging.
-          
+
         """
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__debug=False
-        self.__siteId=siteId
-        self.__cI=ConfigInfo(self.__siteId)
-        self.__topPath=self.__cI.get('SITE_WEB_APPS_TOP_PATH')
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__debug = False
+        self.__siteId = siteId
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__topPath = self.__cI.get('SITE_WEB_APPS_TOP_PATH')
         #
 
-        if type( parameterDict ) == dict:
-            self.__myParameterDict=parameterDict
+        if type(parameterDict) == dict:  # noqa: E721
+            self.__myParameterDict = parameterDict
         else:
-            self.__myParameterDict={}
+            self.__myParameterDict = {}
 
         if (self.__verbose):
-            self.__lfh.write("+WorkManagerWebApp.__init() - REQUEST STARTING ------------------------------------\n" )
-            self.__lfh.write("+WorkManagerWebApp.__init() - dumping input parameter dictionary \n" )                        
+            self.__lfh.write("+WorkManagerWebApp.__init() - REQUEST STARTING ------------------------------------\n")
+            self.__lfh.write("+WorkManagerWebApp.__init() - dumping input parameter dictionary \n")
             self.__lfh.write("%s" % (''.join(self.__dumpRequest())))
-            
-        self.__reqObj=InputRequest(self.__myParameterDict,verbose=self.__verbose,log=self.__lfh)
-        
-        self.__topSessionPath  = self.__cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH')
-        self.__templatePath = os.path.join(self.__topPath,"htdocs","wfm","templates")
+
+        self.__reqObj = InputRequest(self.__myParameterDict, verbose=self.__verbose, log=self.__lfh)
+
+        self.__topSessionPath = self.__cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH')
+        self.__templatePath = os.path.join(self.__topPath, "htdocs", "wfm", "templates")
         #
         self.__reqObj.setValue("TopSessionPath", self.__topSessionPath)
-        self.__reqObj.setValue("TemplatePath",   self.__templatePath)
-        self.__reqObj.setValue("TopPath",        self.__topPath)
-        self.__reqObj.setValue("WWPDB_SITE_ID",  self.__siteId)
+        self.__reqObj.setValue("TemplatePath", self.__templatePath)
+        self.__reqObj.setValue("TopPath", self.__topPath)
+        self.__reqObj.setValue("WWPDB_SITE_ID", self.__siteId)
         self.__reqObj.setValue("current_dep_url", self.__cI.get('SITE_CURRENT_DEP_URL'))
-        os.environ["WWPDB_SITE_ID"]=self.__siteId
+        os.environ["WWPDB_SITE_ID"] = self.__siteId  # EP: Why is this being set?
         #
         project_version = ProjectVersionInfo(self.__siteId).getVersion()
         if project_version:
@@ -111,11 +116,11 @@ class WorkManagerWebApp(object):
         #
         if (self.__verbose):
             self.__lfh.write("-----------------------------------------------------\n")
-            self.__lfh.write("+WorkManagerWebApp.__init() Leaving _init with request contents\n" )            
+            self.__lfh.write("+WorkManagerWebApp.__init() Leaving _init with request contents\n")
             self.__reqObj.printIt(ofh=self.__lfh)
-            self.__lfh.write("---------------WorkManagerWebApp - done -------------------------------\n")   
+            self.__lfh.write("---------------WorkManagerWebApp - done -------------------------------\n")
             self.__lfh.flush()
-            
+
     def doOp(self):
         """ Execute request and package results in response dictionary.
 
@@ -124,17 +129,17 @@ class WorkManagerWebApp(object):
              Minimally, the content of this dictionary will include the
              keys: CONTENT_TYPE and REQUEST_STRING.
         """
-        stw=WorkManagerWebAppWorker(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
-        rC=stw.doOp()
+        stw = WorkManagerWebAppWorker(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        rC = stw.doOp()
         if (self.__debug):
-            rqp=self.__reqObj.getRequestPath()
+            rqp = self.__reqObj.getRequestPath()
             self.__lfh.write("+WorkManagerWebApp.doOp() operation %s\n" % rqp)
             self.__lfh.write("+WorkManagerWebApp.doOp() return format %s\n" % self.__reqObj.getReturnFormat())
             if rC is not None:
                 self.__lfh.write("%s" % (''.join(rC.dump())))
             else:
                 self.__lfh.write("+WorkManagerWebApp.doOp() return object is empty\n")
-                
+
         #
         # Package return according to the request return_format -
         #
@@ -145,125 +150,126 @@ class WorkManagerWebApp(object):
            containing data from the input web request.
 
            :Returns:
-               ``list`` of formatted text lines 
+               ``list`` of formatted text lines
         """
-        retL=[]
-        retL.append("\n\-----------------WorkManagerWebApp().__dumpRequest()-----------------------------\n")
-        retL.append("Parameter dictionary length = %d\n" % len(self.__myParameterDict))            
-        for k,vL in self.__myParameterDict.items():
+        retL = []
+        retL.append("\n-----------------WorkManagerWebApp().__dumpRequest()-----------------------------\n")
+        retL.append("Parameter dictionary length = %d\n" % len(self.__myParameterDict))
+        for k, vL in self.__myParameterDict.items():
             retL.append("Parameter %30s :" % k)
             for v in vL:
                 retL.append(" ->  %s\n" % v)
-        retL.append("-------------------------------------------------------------\n")                
+        retL.append("-------------------------------------------------------------\n")
         return retL
 
+
 class WorkManagerWebAppWorker(object):
-    def __init__(self, reqObj=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
          Worker methods for the chemical component editor application
 
          Performs URL - application mapping and application launching
          for chemical component editor tool.
-         
+
          All operations can be driven from this interface which can
          supplied with control information from web application request
          or from a testing application.
         """
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         #
-        self.__appPathD={'/service/environment/dump':                '_dumpOp',
-                         '/service/workmanager/login':               '_LoginOp',
-                         '/service/workmanager/logout':              '_LogoutOp',
-                         '/service/workmanager/summary':             '_SummaryOp',
-                         '/service/workmanager/replacementhist':     '_ReplacementHistOp',
-                         '/service/workmanager/snapshotdiff':        '_SnapshotDiffOp',
-                         '/service/workmanager/getpassword':         '_PasswordOp',
-                         '/service/workmanager/milestonearchive':    '_MilestoneOp',
-                         '/service/workmanager/milestonereset':      '_MilestoneResetOp',
-                         '/service/workmanager/allowupload':         '_AllowUploadOp',
-                         '/service/workmanager/preventupload':       '_PreventUploadOp',
-                         '/service/workmanager/enableftpupload':     '_EnableFtpUploadOp',
-                         '/service/workmanager/allowsubmit':         '_AllowSubmitOp',
-                         '/service/workmanager/preventsubmit':       '_PreventSubmitOp',
-                         '/service/workmanager/rerunworkflow':       '_RerunWorkFlowOp',
-                         '/service/workmanager/killworkflow':        '_KillWorkFlowOp',
-                         '/service/workmanager/ciffile':             '_DownloadCifFileOp',
-                         '/service/workmanager/logfile':             '_DownloadLogFileOp',
-                         '/service/workmanager/filereports':         '_ViewAllFileOp',
-                         '/service/workmanager/gettabledata':        '_GetTableDataOp',
-                         '/service/workmanager/search':              '_SearchPageOp',
-                         '/service/workmanager/edit_my_list':        '_EditMyListOp',
-                         '/service/workmanager/refresh':             '_RefreshOp',
-                         '/service/workmanager/runengine':           '_RunEngineOp',
-                         '/service/workmanager/assign':              '_AssignOp',
-                         '/service/workmanager/level2':              '_Level2PageOp',
-                         '/service/workmanager/edituserdata':        '_EditUserOp',
-                         '/service/workmanager/saveuserdata':        '_SaveUserOp',
-                         '/service/workmanager/changeprivilege':     '_ChangePrivilege',
-                         '/service/workmanager/changeactiveuser':    '_ChangeActiveUser',
-                         '/service/workmanager/start_group_workflow': '_GroupEngineDepictOp',
-                         '/service/workmanager/start_group_worktask': '_GroupTaskDepictOp',
-                         '/service/workmanager/get_ligand_list':     '_GetLigandListOp',
-                         '/service/workmanager/run_group_engine':    '_RunGroupEngineOp',
-                         '/service/workmanager/run_group_tasks':     '_RunGroupTasksOp',
-                         '/service/workmanager/open_editing_page':   '_LaunchEditingPageOp',
-                         '/service/workmanager/submit_editing_form': '_ProcessEditingFormOp',
-                         '/service/workmanager/check_editing_form_status': '_CheckEditingFormStatusOp',
-                         }
-        
+        self.__appPathD = {'/service/environment/dump': '_dumpOp',
+                           '/service/workmanager/login': '_LoginOp',
+                           '/service/workmanager/logout': '_LogoutOp',
+                           '/service/workmanager/summary': '_SummaryOp',
+                           '/service/workmanager/replacementhist': '_ReplacementHistOp',
+                           '/service/workmanager/snapshotdiff': '_SnapshotDiffOp',
+                           '/service/workmanager/getpassword': '_PasswordOp',
+                           '/service/workmanager/milestonearchive': '_MilestoneOp',
+                           '/service/workmanager/milestonereset': '_MilestoneResetOp',
+                           '/service/workmanager/allowupload': '_AllowUploadOp',
+                           '/service/workmanager/preventupload': '_PreventUploadOp',
+                           '/service/workmanager/enableftpupload': '_EnableFtpUploadOp',
+                           '/service/workmanager/allowsubmit': '_AllowSubmitOp',
+                           '/service/workmanager/preventsubmit': '_PreventSubmitOp',
+                           '/service/workmanager/rerunworkflow': '_RerunWorkFlowOp',
+                           '/service/workmanager/killworkflow': '_KillWorkFlowOp',
+                           '/service/workmanager/ciffile': '_DownloadCifFileOp',
+                           '/service/workmanager/logfile': '_DownloadLogFileOp',
+                           '/service/workmanager/filereports': '_ViewAllFileOp',
+                           '/service/workmanager/gettabledata': '_GetTableDataOp',
+                           '/service/workmanager/search': '_SearchPageOp',
+                           '/service/workmanager/edit_my_list': '_EditMyListOp',
+                           '/service/workmanager/refresh': '_RefreshOp',
+                           '/service/workmanager/runengine': '_RunEngineOp',
+                           '/service/workmanager/assign': '_AssignOp',
+                           '/service/workmanager/level2': '_Level2PageOp',
+                           '/service/workmanager/edituserdata': '_EditUserOp',
+                           '/service/workmanager/saveuserdata': '_SaveUserOp',
+                           '/service/workmanager/changeprivilege': '_ChangePrivilege',
+                           '/service/workmanager/changeactiveuser': '_ChangeActiveUser',
+                           '/service/workmanager/start_group_workflow': '_GroupEngineDepictOp',
+                           '/service/workmanager/start_group_worktask': '_GroupTaskDepictOp',
+                           '/service/workmanager/get_ligand_list': '_GetLigandListOp',
+                           '/service/workmanager/run_group_engine': '_RunGroupEngineOp',
+                           '/service/workmanager/run_group_tasks': '_RunGroupTasksOp',
+                           '/service/workmanager/open_editing_page': '_LaunchEditingPageOp',
+                           '/service/workmanager/submit_editing_form': '_ProcessEditingFormOp',
+                           '/service/workmanager/check_editing_form_status': '_CheckEditingFormStatusOp',
+                           }
+
     def doOp(self):
-        """Map operation to path and invoke operation.  
-        
+        """Map operation to path and invoke operation.
+
             :Returns:
 
             Operation output is packaged in a ResponseContent() object.
         """
         return self.__doOpException()
-    
+
     def __doOpNoException(self):
         """Map operation to path and invoke operation.  No exception handling is performed.
-        
+
             :Returns:
 
             Operation output is packaged in a ResponseContent() object.
         """
         #
-        reqPath=self.__reqObj.getRequestPath()
-        if not reqPath in self.__appPathD:
+        reqPath = self.__reqObj.getRequestPath()
+        if reqPath not in self.__appPathD:
             # bail out if operation is unknown -
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             rC.setError(errMsg='Unknown operation')
             return rC
         else:
-            mth=getattr(self,self.__appPathD[reqPath],None)
-            rC=mth()
+            mth = getattr(self, self.__appPathD[reqPath], None)
+            rC = mth()
         return rC
 
     def __doOpException(self):
         """Map operation to path and invoke operation.  Exceptions are caught within this method.
-        
+
             :Returns:
 
             Operation output is packaged in a ResponseContent() object.
         """
         #
         try:
-            reqPath=self.__reqObj.getRequestPath()
-            if not reqPath in self.__appPathD:
+            reqPath = self.__reqObj.getRequestPath()
+            if reqPath not in self.__appPathD:
                 # bail out if operation is unknown -
-                rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+                rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
                 rC.setError(errMsg='Unknown operation')
             else:
-                mth=getattr(self,self.__appPathD[reqPath],None)
-                rC=mth()
+                mth = getattr(self, self.__appPathD[reqPath], None)
+                rC = mth()
             return rC
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             rC.setError(errMsg='Operation failure')
             return rC
 
@@ -273,7 +279,7 @@ class WorkManagerWebAppWorker(object):
     # ------------------------------------------------------------------------------------------------------------
     #
     def _dumpOp(self):
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlList(self.__reqObj.dump(format='html'))
         return rC
 
@@ -285,7 +291,7 @@ class WorkManagerWebAppWorker(object):
         #
         self.__getSession()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         username = str(self.__reqObj.getValue('username'))
@@ -299,7 +305,7 @@ class WorkManagerWebAppWorker(object):
             rC.setHtmlText(depictUtil.getPageText(page_id='level1_tmplt'))
         else:
             myD = {}
-            myD['sessionid']  = self.__sessionId
+            myD['sessionid'] = self.__sessionId
             myD['message'] = 'Invalid Login'
             rC.setHtmlText(self.__processTemplate('login_tmplt.html', myD))
         #
@@ -313,11 +319,11 @@ class WorkManagerWebAppWorker(object):
         #
         self.__getSession()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
-        myD['sessionid']  = ''
+        myD['sessionid'] = ''
         myD['message'] = ''
         rC.setHtmlText(self.__processTemplate('login_tmplt.html', myD))
         #
@@ -329,7 +335,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._SummaryOp() Starting now\n")
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='summary_config.cif', verbose=self.__verbose, log=self.__lfh)
         configDict = readUtil.read()
@@ -345,7 +351,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._ReplacementHistOp() Starting now\n")
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='replacement_config.cif', verbose=self.__verbose, log=self.__lfh)
         configDict = readUtil.read()
@@ -361,7 +367,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._SnapshotDiffOp() Starting now\n")
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         snapshot = DepictSnapShot(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlText(snapshot.getPageText())
@@ -377,14 +383,14 @@ class WorkManagerWebAppWorker(object):
         self.__getSession()
         #
         depositionid = str(self.__reqObj.getValue("identifier"))
-        deppw,error = self.__getPassword(depositionid)
+        deppw, error = self.__getPassword(depositionid)
         return self.__returnJsonObject(deppw, error)
 
     def __getPassword(self, depositionid):
         """ Get password for entry depositionid
         """
         db = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        depInfo = db.getDepInfo(depositionid = depositionid)
+        depInfo = db.getDepInfo(depositionid=depositionid)
         #
         deppw = ''
         if depInfo and ('deppw' in depInfo) and depInfo['deppw']:
@@ -394,7 +400,7 @@ class WorkManagerWebAppWorker(object):
         if not deppw:
             error = "Can't find password for entry " + depositionid
         #
-        return deppw,error
+        return deppw, error
 
     def _MilestoneOp(self):
         """ Copy model milestone file
@@ -408,7 +414,7 @@ class WorkManagerWebAppWorker(object):
         msf = MileStoneFile(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         error = ''
         if not msf.getInputFile(depositionid, 'archive', 'model', 'pdbx', 'latest'):
-            error = "Can't find model file for entry " + depositionid + ' in archive directory.' 
+            error = "Can't find model file for entry " + depositionid + ' in archive directory.'
         elif not msf.getOutputFile(depositionid, 'archive', 'model-annotate', 'pdbx', 'next'):
             error = 'Copy model-annotate file failed for entry ' + depositionid + '.'
         #
@@ -427,12 +433,12 @@ class WorkManagerWebAppWorker(object):
         db = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         lastInst = db.getLastInstance(depositionid=depositionid)
         if lastInst and ('dep_exp_method' in lastInst) and str(lastInst['dep_exp_method']).upper() in \
-           ( 'ELECTRON CRYSTALLOGRAPHY', 'CRYO-ELECTRON MICROSCOPY', 'ELECTRON TOMOGRAPHY', 'ELECTRON MICROSCOPY'):
+           ('ELECTRON CRYSTALLOGRAPHY', 'CRYO-ELECTRON MICROSCOPY', 'ELECTRON TOMOGRAPHY', 'ELECTRON MICROSCOPY'):
             msf.setEmEntry()
-        # 
+        #
         error = ''
         if not msf.getInputFile(depositionid, 'archive', 'model', 'pdbx', 'latest'):
-            error = "Can't find model file for entry " + depositionid + ' in archive directory.' 
+            error = "Can't find model file for entry " + depositionid + ' in archive directory.'
         elif not msf.getOutputFile(depositionid, 'deposit', 'model', 'pdbx', 'next'):
             error = 'Copy model file to deposit failed for entry ' + depositionid + '.'
         #
@@ -441,28 +447,28 @@ class WorkManagerWebAppWorker(object):
     def _AllowUploadOp(self):
         """ Allow file to be uploaded in DepUI
         """
-        return self.__allow_or_prevent_op('allow', '_AllowUploadOp()', 'uploadOK.pkl', \
-                       'You have set this deposition to allow bad uploads !', \
-                       'Failed to allow incomplete upload !')
+        return self.__allow_or_prevent_op('allow', '_AllowUploadOp()', 'uploadOK.pkl',
+                                          'You have set this deposition to allow bad uploads !',
+                                          'Failed to allow incomplete upload !')
 
     def _PreventUploadOp(self):
         """ Prevent file to be uploaded in DepUI
         """
-        return self.__allow_or_prevent_op('prevent', '_PreventUploadOp()', 'uploadOK.pkl', \
-                       'You have prevented bad uploads !', 'Failed to block incomplete upload !')
+        return self.__allow_or_prevent_op('prevent', '_PreventUploadOp()', 'uploadOK.pkl',
+                                          'You have prevented bad uploads !', 'Failed to block incomplete upload !')
 
     def _AllowSubmitOp(self):
         """ Allow entry to be submit in DepUI
         """
-        return self.__allow_or_prevent_op('allow', '_AllowSubmitOp()', 'submitOK.pkl', \
-                       'You have set this deposition to allow incomplete Deposition !', \
-                       'Failed to allow incomplete submission !')
+        return self.__allow_or_prevent_op('allow', '_AllowSubmitOp()', 'submitOK.pkl',
+                                          'You have set this deposition to allow incomplete Deposition !',
+                                          'Failed to allow incomplete submission !')
 
     def _PreventSubmitOp(self):
         """ Prevent entry to be submit in DepUI
         """
-        return self.__allow_or_prevent_op('prevent', '_PreventSubmitOp()', 'submitOK.pkl', \
-                       'You have prevented incomplete Deposition !', 'Failed to block incomplete submission !')
+        return self.__allow_or_prevent_op('prevent', '_PreventSubmitOp()', 'submitOK.pkl',
+                                          'You have prevented incomplete Deposition !', 'Failed to block incomplete submission !')
 
     def _EnableFtpUploadOp(self):
         """ Allow ftp upload file
@@ -489,7 +495,7 @@ class WorkManagerWebAppWorker(object):
             with open(userFile, 'r') as infile:
                 data = infile.read()
                 if depositionid not in data:
-                    depPW,err = self.__getPassword(depositionid) 
+                    depPW, err = self.__getPassword(depositionid)
                     if depPW:
                         outfile = open(userFile, 'a')
                         outfile.write(depositionid + '\n' + depPW + '\n')
@@ -505,7 +511,7 @@ class WorkManagerWebAppWorker(object):
                 #
             #
         except Exception as e:
-            self.__lfh.write("+WorkManagerWebAppWorker._EnableFtpUploadOp() Failed to add FTP user %s : %s\n" % (depositionid, str(e))) 
+            self.__lfh.write("+WorkManagerWebAppWorker._EnableFtpUploadOp() Failed to add FTP user %s : %s\n" % (depositionid, str(e)))
             if error:
                 error += '; '
             #
@@ -564,7 +570,7 @@ class WorkManagerWebAppWorker(object):
         #
         depositionid = str(self.__reqObj.getValue("identifier"))
         db = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        status = db.killWorkFlow(depositionid = depositionid)
+        status = db.killWorkFlow(depositionid=depositionid)
         error = ''
         if not status == 'OK':
             error = status
@@ -585,12 +591,12 @@ class WorkManagerWebAppWorker(object):
         instance = str(self.__reqObj.getValue("instance"))
         #
         pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
-        filePath = pI.getFilePath(dataSetId=depositionid, wfInstanceId=instance, contentType='model', formatType='pdbx', \
+        filePath = pI.getFilePath(dataSetId=depositionid, wfInstanceId=instance, contentType='model', formatType='pdbx',
                                   fileSource=filesource, versionId=version, partNumber='1')
         #
         self.__reqObj.setReturnFormat(return_format="binary")
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
-        rC.setBinaryFile(filePath, attachmentFlag = True, serveCompressed = False)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        rC.setBinaryFile(filePath, attachmentFlag=True, serveCompressed=False)
         return rC
 
     def _DownloadLogFileOp(self):
@@ -603,8 +609,8 @@ class WorkManagerWebAppWorker(object):
         filePath = logUtil.getLogFile()
         #
         self.__reqObj.setReturnFormat(return_format="binary")
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
-        rC.setBinaryFile(filePath, attachmentFlag = True, serveCompressed = False)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        rC.setBinaryFile(filePath, attachmentFlag=True, serveCompressed=False)
         return rC
 
     def _ViewAllFileOp(self):
@@ -613,7 +619,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._ViewAllFileOp() Starting now\n")
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='allfile_config.cif', verbose=self.__verbose, log=self.__lfh)
         configDict = readUtil.read()
@@ -686,7 +692,7 @@ class WorkManagerWebAppWorker(object):
         classid = str(self.__reqObj.getValue("classID"))
         command = str(self.__reqObj.getValue("command"))
         version = str(self.__reqObj.getValue("version"))
-        method = str(self.__reqObj.getValue("method"))
+        # method = str(self.__reqObj.getValue("method"))
         #
         sdb = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         if type == 'kill':
@@ -727,7 +733,7 @@ class WorkManagerWebAppWorker(object):
             return self.__returnJsonObject('OK', '')
         #
         time.sleep(0.5)
-        msg = sdb.insertCommunicationCommand(depositionid=depositionid, instid=instanceid, classid=classid, command=command, \
+        msg = sdb.insertCommunicationCommand(depositionid=depositionid, instid=instanceid, classid=classid, command=command,
                                              classname=classFileName, dataversion=version)
         if msg != 'OK':
             return self.__returnJsonObject('', msg)
@@ -766,7 +772,7 @@ class WorkManagerWebAppWorker(object):
         configDict = readUtil.read()
         depictUtil = DepictOther(reqObj=self.__reqObj, conFigObj=configDict, verbose=self.__verbose, log=self.__lfh)
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         level = str(self.__reqObj.getValue("level"))
         if level == 'level3':
@@ -784,7 +790,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._EditUserOp() Starting now\n")
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         user = str(self.__reqObj.getValue('user'))
@@ -810,7 +816,7 @@ class WorkManagerWebAppWorker(object):
         failed_msg = ''
         user_name = self.__reqObj.getValue('user_name')
         data = {}
-        for item in ( 'password', 'email', 'initials', 'first_name', 'last_name', 'da_group_id'):
+        for item in ('password', 'email', 'initials', 'first_name', 'last_name', 'da_group_id'):
             val = self.__reqObj.getValue(item)
             if val:
                 data[item] = val
@@ -818,11 +824,11 @@ class WorkManagerWebAppWorker(object):
         #
         if user_name and data:
             db = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-            ret = db.runUpdate(table='da_users', where={'user_name':user_name}, data=data)
+            ret = db.runUpdate(table='da_users', where={'user_name': user_name}, data=data)
             if not ret or ret != 'OK':
                 failed_msg = 'Update user information failed.'
             else:
-                 successful_msg = 'User Information Updated.'
+                successful_msg = 'User Information Updated.'
             #
         else:
             failed_msg = 'Update user information failed.'
@@ -831,7 +837,7 @@ class WorkManagerWebAppWorker(object):
         if tab_id:
             return self.__returnJsonObject(successful_msg, failed_msg)
         else:
-            self.__reqObj.setReturnFormat(return_format="html")        
+            self.__reqObj.setReturnFormat(return_format="html")
             rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             myD = {}
             if failed_msg:
@@ -860,7 +866,7 @@ class WorkManagerWebAppWorker(object):
                 GroupInfo = db.getSiteGroupWithCode(site=UserInfo['site'], code=self.__reqObj.getValue('code'))
                 if GroupInfo and ('group_id' in GroupInfo):
                     for user_name in user_name_list:
-                        ret = db.runUpdate(table='da_users', where={'user_name':user_name}, data={'da_group_id':str(GroupInfo['group_id'])})
+                        _ret = db.runUpdate(table='da_users', where={'user_name': user_name}, data={'da_group_id': str(GroupInfo['group_id'])})  # noqa: F841
                     #
                 else:
                     return self.__returnJsonObject('', 'Change privilege failed.')
@@ -889,7 +895,7 @@ class WorkManagerWebAppWorker(object):
             if not active:
                 continue
             #
-            ret = db.runUpdate(table='da_users', where={'user_name':user_name}, data={'active':active})
+            _ret = db.runUpdate(table='da_users', where={'user_name': user_name}, data={'active': active})  # noqa: F841
         #
         return self.__returnUpdatePage(db)
 
@@ -903,7 +909,7 @@ class WorkManagerWebAppWorker(object):
         configDict = readUtil.read()
         depictUtil = DepictGroup(reqObj=self.__reqObj, conFigObj=configDict, workFlow=True, verbose=self.__verbose, log=self.__lfh)
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlText(depictUtil.getPageText(page_id='group_workflow_tmplt'))
         return rC
@@ -918,7 +924,7 @@ class WorkManagerWebAppWorker(object):
         configDict = readUtil.read()
         depictUtil = DepictGroup(reqObj=self.__reqObj, conFigObj=configDict, workFlow=False, verbose=self.__verbose, log=self.__lfh)
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlText(depictUtil.getPageText(page_id='group_worktask_tmplt'))
         return rC
@@ -930,7 +936,7 @@ class WorkManagerWebAppWorker(object):
             self.__lfh.write("+WorkManagerWebAppWorker._GetLigandListOp() Starting now\n")
         #
         ligFinder = LigandFinder(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
-        returnMap,errMsg = ligFinder.getLigandInfo()
+        returnMap, errMsg = ligFinder.getLigandInfo()
         #
         rtrnDict = {}
         if returnMap:
@@ -984,8 +990,8 @@ class WorkManagerWebAppWorker(object):
             if lastWFInstance and ('wf_inst_id' in lastWFInstance) and lastWFInstance['wf_inst_id']:
                 instanceid = lastWFInstance['wf_inst_id']
             #
-            msg = sdb.insertCommunicationCommand(depositionid=entry_id, instid=instanceid, classid=classid, \
-                                   command=command, classname=classInfo['class_file'], dataversion=version)
+            msg = sdb.insertCommunicationCommand(depositionid=entry_id, instid=instanceid, classid=classid,
+                                                 command=command, classname=classInfo['class_file'], dataversion=version)
             if msg != 'OK':
                 successful_msg += msg
             else:
@@ -1030,7 +1036,7 @@ class WorkManagerWebAppWorker(object):
         elif option == 'sequence':
             self.__getSession()
             #
-            filePath,errMsg = self.__getTemplateFile()
+            filePath, errMsg = self.__getTemplateFile()
             if errMsg:
                 return self.__returnJsonObject('', errMsg)
             elif not filePath:
@@ -1056,7 +1062,7 @@ class WorkManagerWebAppWorker(object):
             #
             filePath = ''
             if needTemplateFile:
-                filePath,errMsg = self.__getTemplateFile()
+                filePath, errMsg = self.__getTemplateFile()
                 if errMsg:
                     return self.__returnJsonObject('', errMsg)
                 elif not filePath:
@@ -1065,7 +1071,7 @@ class WorkManagerWebAppWorker(object):
                     return self.__returnJsonObject('', "Template file '" + filePath + "' can not be found.")
                 #
             #
-            metaMerger = MetaDataMerger(reqObj=self.__reqObj, entryList=entryList, taskList=checkList, templateFile=filePath, \
+            metaMerger = MetaDataMerger(reqObj=self.__reqObj, entryList=entryList, taskList=checkList, templateFile=filePath,
                                         verbose=self.__verbose, log=self.__lfh)
             successful_msg = metaMerger.run()
         elif option == 'recover':
@@ -1073,7 +1079,7 @@ class WorkManagerWebAppWorker(object):
             if len(checkList) == 0:
                 return self.__returnJsonObject('', 'No task selected.')
             #
-            metaMerger = MetaDataMerger(reqObj=self.__reqObj, entryList=entryList, taskList=checkList, recoverFlag=True, \
+            metaMerger = MetaDataMerger(reqObj=self.__reqObj, entryList=entryList, taskList=checkList, recoverFlag=True,
                                         verbose=self.__verbose, log=self.__lfh)
             successful_msg = metaMerger.run()
         else:
@@ -1089,7 +1095,7 @@ class WorkManagerWebAppWorker(object):
         #
         self.__getSession()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
+        self.__reqObj.setReturnFormat(return_format="html")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
@@ -1113,7 +1119,7 @@ class WorkManagerWebAppWorker(object):
         dU.runDetach()
         #
         self.__reqObj.setReturnFormat(return_format="json")
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setStatusCode('running')
         return rC
 
@@ -1126,7 +1132,7 @@ class WorkManagerWebAppWorker(object):
         self.__getSession()
         #
         self.__reqObj.setReturnFormat(return_format="json")
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         sph = self.__reqObj.getSemaphore()
         dU = DetachUtils(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
@@ -1145,13 +1151,13 @@ class WorkManagerWebAppWorker(object):
         readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='level1_config.cif', verbose=self.__verbose, log=self.__lfh)
         configDict = readUtil.read()
         depictUtil = DepictBase(reqObj=self.__reqObj, statusDB=db, conFigObj=configDict, verbose=self.__verbose, log=self.__lfh)
-        return_page = depictUtil.getPageText(page_id=self.__reqObj.getValue('return_page'))
+        _return_page = depictUtil.getPageText(page_id=self.__reqObj.getValue('return_page'))  # noqa: F841
         return self.__returnJsonObject(depictUtil.getPageText(page_id=self.__reqObj.getValue('return_page')), '')
 
     def __returnJsonObject(self, successful_msg, failed_msg):
         """ return json object
         """
-        self.__reqObj.setReturnFormat(return_format="json")        
+        self.__reqObj.setReturnFormat(return_format="json")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         if failed_msg:
             rC.setError(errMsg=failed_msg)
@@ -1161,7 +1167,7 @@ class WorkManagerWebAppWorker(object):
         return rC
 
     def __returnJsonDict(self, rtrnDict):
-        self.__reqObj.setReturnFormat(return_format="json")        
+        self.__reqObj.setReturnFormat(return_format="json")
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.addDictionaryItems(rtrnDict)
         return rC
@@ -1198,7 +1204,7 @@ class WorkManagerWebAppWorker(object):
                 #
             #
             text = successful_msg
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             error = failed_msg
         #
         return self.__returnJsonObject(text, error)
@@ -1227,10 +1233,10 @@ class WorkManagerWebAppWorker(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+WorkManagerWebAppWorker.__getSession() - creating/joining session %s\n" % self.__sessionId)
@@ -1247,42 +1253,41 @@ class WorkManagerWebAppWorker(object):
                 version = 'latest'
             #
             pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
-            filePath = pI.getFilePath(dataSetId=template_identifier, wfInstanceId=None, contentType='model', formatType='pdbx', \
+            filePath = pI.getFilePath(dataSetId=template_identifier, wfInstanceId=None, contentType='model', formatType='pdbx',
                                       fileSource='archive', versionId=version, partNumber='1')
             #
             if not filePath:
-                return '','No template file found for Deposition ID=' + template_identifier + ' with version number=' + version + '.'
+                return '', 'No template file found for Deposition ID=' + template_identifier + ' with version number=' + version + '.'
             #
         else:
             wuu = WebUploadUtils(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             if not wuu.isFileUpload(fileTag='template_file'):
-                return '','No upload template model file found.'
+                return '', 'No upload template model file found.'
             #
             uploadFileName = wuu.copyToSession(fileTag='template_file')
             if not os.access(os.path.join(self.__sessionPath, uploadFileName), os.F_OK):
-                return '',"Template file '" + os.path.join(self.__sessionPath, uploadFileName) + "' can not be found."
+                return '', "Template file '" + os.path.join(self.__sessionPath, uploadFileName) + "' can not be found."
             #
             filePath = os.path.join(self.__sessionPath, 'uploadTemplateFile.cif')
             os.rename(os.path.join(self.__sessionPath, uploadFileName), filePath)
         #
-        return filePath,''
+        return filePath, ''
 
-    def __processTemplate(self,fn,parameterDict={}):
+    def __processTemplate(self, fn, parameterDict={}):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
-            
+
             :Params:
                 ``parameterDict``: dictionary where
                 key = name of subsitution placeholder in the template and
                 value = data to be used to substitute information for the placeholder
-                
+
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
-        tPath =self.__reqObj.getValue("TemplatePath")
-        fPath=os.path.join(tPath,fn)
-        ifh=open(fPath,'r')
-        sIn=ifh.read()
+        tPath = self.__reqObj.getValue("TemplatePath")
+        fPath = os.path.join(tPath, fn)
+        ifh = open(fPath, 'r')
+        sIn = ifh.read()
         ifh.close()
-        return (  sIn % parameterDict )
-
+        return (sIn % parameterDict)

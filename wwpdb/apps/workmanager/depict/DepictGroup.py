@@ -15,16 +15,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os, sys
+import sys
 
-from wwpdb.apps.workmanager.depict.DepictBase                 import DepictBase
+from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
 from wwpdb.apps.workmanager.workflow_access.WorkflowXMLLoader import WorkflowXMLLoader
+
 
 class DepictGroup(DepictBase):
     """
@@ -48,15 +49,15 @@ class DepictGroup(DepictBase):
         self._getUserInfoDict()
         #
         if self.__workFlowFlag:
-            self.__wfTaskList.append({ 'name' : 'run Annotation', 'classID' : 'runWF_Annotate'})
-            self.__wfTaskList.append({ 'name' : 'restart Annotation', 'classID' : 'restartGoWF_Annotate'})
+            self.__wfTaskList.append({'name' : 'run Annotation', 'classID' : 'runWF_Annotate'})
+            self.__wfTaskList.append({'name' : 'restart Annotation', 'classID' : 'restartGoWF_Annotate'})
             self.__classInfo = self._statusDB.getWfClassByID(classID='Annotate')
             wfloader = WorkflowXMLLoader(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
             wfloader.loadWorkFlowXMLFile(self.__classInfo['class_file'])
             wfWorkFlowInfo = wfloader.getWorkFlowInfo()
             self.__wfFlow = wfWorkFlowInfo.values()
             for wf in wfWorkFlowInfo.values():
-                if not 'classID' in wf:
+                if 'classID' not in wf:
                     continue
                 #
                 myD = {}
@@ -67,15 +68,15 @@ class DepictGroup(DepictBase):
         #
         entryIdList = self._statusDB.getEntryListForGroup(groupids=[self._reqObj.getValue("identifier")])
         if entryIdList:
-            for entry in entryIdList: 
+            for entry in entryIdList:
                 if self.__workFlowFlag:
-                    for item in ( 'sessionid', 'annotator' ):
+                    for item in ('sessionid', 'annotator'):
                         entry[item] = self._reqObj.getValue(item)
                     #
                 #
                 self.__entryList.append(entry)
             #
-        # 
+        #
 
     def __get_workflow_info(self):
         """
@@ -102,11 +103,11 @@ class DepictGroup(DepictBase):
         """
         """
         if self.__workFlowFlag:
-             MaxEntry = 6
-             entry_tmplt = self._getPageTemplate('entry_tmplt')
+            MaxEntry = 6
+            entry_tmplt = self._getPageTemplate('entry_tmplt')
         else:
-             MaxEntry = 2
-             entry_tmplt = self._getPageTemplate('task_entry_tmplt')
+            MaxEntry = 2
+            entry_tmplt = self._getPageTemplate('task_entry_tmplt')
         #
         count = 0
         entry_info = '<tr>\n'

@@ -16,16 +16,16 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 
-import os,sys
+import sys
 
-from wwpdb.utils.config.ConfigInfo                import ConfigInfo
-from wwpdb.utils.wf.dbapi.WFEtime             import getTimeNow
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.wf.dbapi.WFEtime import getTimeNow
 from wwpdb.apps.workmanager.db_access.DbApiUtil import DbApiUtil
 
 
@@ -99,28 +99,28 @@ class StatusDbApi(object):
                 "SELECT_GROUP_ID" : "select dep_set_id, group_id from group_deposition_information where dep_set_id in ( '%s' )",
                  "GET_ENTRY_INFO" : "select dep_set_id, initial_deposition_date, annotator_initials, status_code from deposition where dep_set_id in ( '%s' ) " +
                                     "order by dep_set_id",
-                  }
+                   }
     #
-    __comm_items = [ 'sender', 'receiver', 'dep_set_id', 'wf_class_id', 'wf_inst_id', 'wf_class_file', 'command', 'status', 'actual_timestamp',
-                     'parent_dep_set_id', 'parent_wf_class_id', 'parent_wf_inst_id', 'data_version' ]
+    __comm_items = ['sender', 'receiver', 'dep_set_id', 'wf_class_id', 'wf_inst_id', 'wf_class_file', 'command', 'status', 'actual_timestamp',
+                    'parent_dep_set_id', 'parent_wf_class_id', 'parent_wf_inst_id', 'data_version']
     """
     """
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__lfh       = log
-        self.__verbose   = verbose
-        self.__siteId    = siteId
-        self.__cI        = ConfigInfo(self.__siteId)
-        self.__dbServer  = self.__cI.get("SITE_DB_SERVER")
-        self.__dbHost    = self.__cI.get("SITE_DB_HOST_NAME")
-        self.__dbName    = self.__cI.get("SITE_DB_DATABASE_NAME")
-        self.__dbUser    = self.__cI.get("SITE_DB_USER_NAME")
-        self.__dbPw      = self.__cI.get("SITE_DB_PASSWORD")
-        self.__dbSocket  = self.__cI.get("SITE_DB_SOCKET")
-        self.__dbPort    = int(self.__cI.get("SITE_DB_PORT_NUMBER"))
+        self.__lfh = log
+        self.__verbose = verbose
+        self.__siteId = siteId
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__dbServer = self.__cI.get("SITE_DB_SERVER")
+        self.__dbHost = self.__cI.get("SITE_DB_HOST_NAME")
+        self.__dbName = self.__cI.get("SITE_DB_DATABASE_NAME")
+        self.__dbUser = self.__cI.get("SITE_DB_USER_NAME")
+        self.__dbPw = self.__cI.get("SITE_DB_PASSWORD")
+        self.__dbSocket = self.__cI.get("SITE_DB_SOCKET")
+        self.__dbPort = int(self.__cI.get("SITE_DB_PORT_NUMBER"))
         #
-        self.__dbApi = DbApiUtil(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, dbPw=self.__dbPw, \
+        self.__dbApi = DbApiUtil(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, dbPw=self.__dbPw,
                                  dbSocket=self.__dbSocket, dbPort=self.__dbPort, verbose=self.__verbose, log=self.__lfh)
         self.__dbApi.setSchemaMap(self.__schemaMap)
 
@@ -145,24 +145,24 @@ class StatusDbApi(object):
 
     def getActiveAnnoList(self):
         return self.__dbApi.selectData(key="SELECT_ACTIVE_USER", parameter=())
-  
+
     def getUserByEmail(self, email=None):
         if not email:
             return None
         #
         return self.__getDataDir("SELECT_USER_EMAIL", (email), 0)
-  
+
     def getUserByInitial(self, initial=None):
         if not initial:
             return None
         #
         return self.__getDataDir("SELECT_USER_INITIAL", (initial), 0)
 
-    def updateUser(self, password=None, email=None, first_name=None, last_name=None, user_name=None):  
+    def updateUser(self, password=None, email=None, first_name=None, last_name=None, user_name=None):
         if not password or not email or not first_name or not last_name or not user_name:
             return 'Update user information failed.'
         #
-        sql = self.__schemaMap['UPDATE_USER'] % ( password, email, first_name, last_name, user_name)
+        sql = self.__schemaMap['UPDATE_USER'] % (password, email, first_name, last_name, user_name)
         ret = self.__dbApi.runUpdateSQL(sql)
         if ret != 'OK':
             return 'Update user information failed.'
@@ -282,17 +282,17 @@ class StatusDbApi(object):
     def getSimpleEntryInfo(self, depositionids=None):
         return self.__getSelectionResult(depositionids, 'GET_ENTRY_INFO')
 
-#   def updateInstStatus(self, status=None, owner=None, depositionid=None, instanceid=None, classID=None):  
-#       if not status or not owner or not depositionid or not instanceid or not classID:
-#           return 'Start Annotate workflow failed.'
-#       #
-#       sql = self.__schemaMap['UP_INST_STATUS'] % ( status, owner, depositionid, instanceid, classID)
-#       ret = self.__dbApi.runUpdateSQL(sql)
-#       if ret != 'OK':
-#           return 'Start Annotate workflow failed.'
-#       else:
-#           return 'OK'
-#       #
+    #   def updateInstStatus(self, status=None, owner=None, depositionid=None, instanceid=None, classID=None):
+    #       if not status or not owner or not depositionid or not instanceid or not classID:
+    #           return 'Start Annotate workflow failed.'
+    #       #
+    #       sql = self.__schemaMap['UP_INST_STATUS'] % ( status, owner, depositionid, instanceid, classID)
+    #       ret = self.__dbApi.runUpdateSQL(sql)
+    #       if ret != 'OK':
+    #           return 'Start Annotate workflow failed.'
+    #       else:
+    #           return 'OK'
+    #       #
 
     def getRemindMessageTrack(self, depositionids=None):
         return self.__getSelectionResult(depositionids, 'SELECT_MULTIPLE_MESSAGE_TRACK')
@@ -310,11 +310,11 @@ class StatusDbApi(object):
         values = []
         key.append('dep_set_id')
         values.append("'" + depositionid + "'")
-        for k,v in dataMap.items():
+        for k, v in dataMap.items():
             key.append(k)
             values.append("'" + v + "'")
         #
-        sql = 'insert into remind_message_track ( ' + ', '.join(key) + ' ) values ( ' + ', '.join(values) + ' ) ' 
+        sql = 'insert into remind_message_track ( ' + ', '.join(key) + ' ) values ( ' + ', '.join(values) + ' ) '
         self.__dbApi.runUpdateSQL(sql)
 
     def updateAnnotatorAssignment(self, assignList=None):
@@ -323,15 +323,15 @@ class StatusDbApi(object):
         if not assignList:
             return
         #
-        for list in assignList: 
-            sql = self.__schemaMap['UPDATE_ANN_DEPOSITION'] % ( list[1], list[0] )
-            ret = self.__dbApi.runUpdateSQL(sql)
-            #if rows < 1:
-            # catch error
-            sql = self.__schemaMap['UPDATE_ANN_LAST_INST'] % ( list[1], list[0] )
-            ret = self.__dbApi.runUpdateSQL(sql)
-            #if rows < 1:
-            # catch error
+        for list in assignList:
+            sql = self.__schemaMap['UPDATE_ANN_DEPOSITION'] % (list[1], list[0])
+            _ret = self.__dbApi.runUpdateSQL(sql)  # noqa: F841
+            # if rows < 1:
+            #   catch error
+            sql = self.__schemaMap['UPDATE_ANN_LAST_INST'] % (list[1], list[0])
+            _ret = self.__dbApi.runUpdateSQL(sql)  # noqa: F841
+            # if rows < 1:
+            #   catch error
         #
 
     def getLastWFInstance(self, depositionid=None, classid=None):
@@ -432,14 +432,14 @@ class StatusDbApi(object):
             items = ''
             values = ''
             for item in self.__comm_items:
-                if not item in myD:
+                if item not in myD:
                     continue
                 #
                 if items:
                     items += ', '
                     values += ', '
                 #
-                items += item;
+                items += item
                 values += "'" + str(myD[item]) + "'"
             #
             if items and values:
@@ -485,7 +485,7 @@ class StatusDbApi(object):
         if not groupids:
             return None
         #
-        #return self.__dbApi.selectData(key="GET_ENTRY_LIST_FROM_GROUP", parameter=(groupid))
+        # return self.__dbApi.selectData(key="GET_ENTRY_LIST_FROM_GROUP", parameter=(groupid))
         return self.__getSelectionResult(groupids, 'GET_ENTRY_LIST_FROM_GROUP')
 
     def getGroupIds(self, depositionids=None):
@@ -493,7 +493,7 @@ class StatusDbApi(object):
 
     def __getSetCommand(self, dir):
         command = ''
-        for k,v in dir.items():
+        for k, v in dir.items():
             if command:
                 command += ', '
             #
@@ -539,7 +539,7 @@ class StatusDbApi(object):
                 continue
             #
             rtList.append(ai)
-        # 
+        #
         return rtList
 
     def getEntryIdListFromInputIdString(self, entry_id_string):
@@ -577,7 +577,7 @@ class StatusDbApi(object):
                 if id_type in id_type_map:
                     id_type_map[id_type].append(input_id)
                 else:
-                    id_type_map[id_type] = [ input_id ]
+                    id_type_map[id_type] = [input_id]
                 #
             #
         #
@@ -585,16 +585,16 @@ class StatusDbApi(object):
             if not error_message:
                 error_message = "No Entry IDs defined."
             #
-            return error_message,[]
+            return error_message, []
         #
-        group_error_message,entryList = self.__getDepIDFromGroupID(group_ids)
+        group_error_message, entryList = self.__getDepIDFromGroupID(group_ids)
         if group_error_message:
             if error_message:
                 error_message += "\n"
             #
             error_message += group_error_message
         #
-        entry_error_message,other_entry_list = self.__getDepIDFromFromIdTypeMap(id_type_map)
+        entry_error_message, other_entry_list = self.__getDepIDFromFromIdTypeMap(id_type_map)
         if entry_error_message:
             if error_message:
                 error_message += "\n"
@@ -605,24 +605,24 @@ class StatusDbApi(object):
             entryList.extend(other_entry_list)
             entryList = sorted(set(entryList))
         #
-        return error_message,entryList
+        return error_message, entryList
 
     def __getDepIDFromGroupID(self, group_ids):
         if not group_ids:
-            return '',[]
+            return '', []
         #
         group_ids = sorted(set(group_ids))
-        return self.__processGetEntryListResult(self.getEntryListForGroup(groupids=group_ids), group_ids, [ 'group_id' ] )
+        return self.__processGetEntryListResult(self.getEntryListForGroup(groupids=group_ids), group_ids, ['group_id'])
 
     def __getDepIDFromFromIdTypeMap(self, id_type_map):
         if not id_type_map:
-            return '',[]
+            return '', []
         #
         parameter = ''
         input_id_list = []
         id_type_list = []
-        for id_type in ( 'dep_set_id', 'pdb_id', 'bmrb_id', 'emdb_id' ):
-            if (not id_type in id_type_map) or (not id_type_map[id_type]):
+        for id_type in ('dep_set_id', 'pdb_id', 'bmrb_id', 'emdb_id'):
+            if (id_type not in id_type_map) or (not id_type_map[id_type]):
                 continue
             #
             id_type_map[id_type] = sorted(set(id_type_map[id_type]))
@@ -634,7 +634,7 @@ class StatusDbApi(object):
             parameter += " " + id_type + " in ( '" + "', '".join(id_type_map[id_type]) + "' ) "
         #
         if not parameter:
-            return '',[]
+            return '', []
         #
         return self.__processGetEntryListResult(self.__dbApi.selectData(key='GET_ENTRY_LIST', parameter=(parameter)), input_id_list, id_type_list)
 
@@ -647,9 +647,9 @@ class StatusDbApi(object):
                     return_id_list.append(myD['dep_set_id'].upper())
                 #
                 for id_type in id_type_list:
-                   if (id_type in myD) and myD[id_type]:
-                       found_id_map[myD[id_type].upper()] = 'yes'
-                   #
+                    if (id_type in myD) and myD[id_type]:
+                        found_id_map[myD[id_type].upper()] = 'yes'
+                    #
                 #
             #
         #
@@ -661,19 +661,19 @@ class StatusDbApi(object):
             if error_message:
                 error_message += "\n"
             #
-            error_message += "'" +  input_id + "' is not a valid ID."
+            error_message += "'" + input_id + "' is not a valid ID."
         #
-        return error_message,return_id_list
+        return error_message, return_id_list
 
     def deleteSite(self, site):
         """Deletes a site by retrieving the group id and then deleting users and group"""
 
         status = 'OK'
-        sitegr = self.getSiteGroup(site) 
+        sitegr = self.getSiteGroup(site)
         for s in sitegr:
             groupid = s['group_id']
-        
-            sql  = "delete from da_users where da_group_id = '{}'".format(groupid)
+
+            sql = "delete from da_users where da_group_id = '{}'".format(groupid)
             ret = self.__dbApi.runUpdateSQL(sql)
 
             sql = "delete from da_group where da_group_id = '{}'".format(groupid)
@@ -697,24 +697,23 @@ class StatusDbApi(object):
         for code in ['LANN', 'ANN']:
             maxgroup += 1
             if code == 'LANN':
-                group_name = "{} - Lead Annotator".format(site)  
+                group_name = "{} - Lead Annotator".format(site)
                 main_page = "RCSBLeadAnnotator.html"
             else:
                 group_name = "{} - Annotator".format(site)
                 main_page = "Annotators.html"
 
-            data = { 'group_name' : group_name, 'site' : site, 'main_page' : main_page}
-            ret = status = self.runUpdate(table = 'da_group', where = { 'code' : code, 'da_group_id' : str(maxgroup)}, data = data)
+            data = {'group_name' : group_name, 'site' : site, 'main_page' : main_page}
+            ret = status = self.runUpdate(table='da_group', where={'code' : code, 'da_group_id' : str(maxgroup)}, data=data)
             if ret != 'OK':
                 status = ret
 
         r = self.getSiteGroupWithCode(site, 'LANN')
         lann_gr = r['group_id']
 
-
-        data = { 'user_name' : site.upper(), 'password': site.upper(), 'email':email, 'initials': site.upper(), 'first_name':first, 
-                 'last_name': last+"(Lead)"}
-        ret = status = self.runUpdate(table = 'da_users', where = { 'da_group_id' : str(lann_gr)}, data = data)
+        data = {'user_name' : site.upper(), 'password': site.upper(), 'email': email, 'initials': site.upper(), 'first_name': first,
+                'last_name': last + "(Lead)"}
+        ret = status = self.runUpdate(table='da_users', where={'da_group_id' : str(lann_gr)}, data=data)
         if ret != 'OK':
             status = ret
 
@@ -723,7 +722,7 @@ class StatusDbApi(object):
 
 if __name__ == '__main__':
     db = StatusDbApi(siteId='WWPDB_DEPLOY_TEST_RU', verbose=True, log=sys.stderr)
-    message,entryList = db.getEntryIdListFromInputIdString("G_1002014, G_10020,D_8000210666,1abc,D_8000210646,D_1000210646")
+    message, entryList = db.getEntryIdListFromInputIdString("G_1002014, G_10020,D_8000210666,1abc,D_8000210646,D_1000210646")
     print(message)
     print(entryList)
     """

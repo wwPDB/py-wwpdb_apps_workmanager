@@ -16,45 +16,46 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os,sys
+import os
+import sys
 import time
 import datetime
 import MySQLdb
 #
-from wwpdb.utils.wf.dbapi.DbConnection import DbConnection    
+from wwpdb.utils.wf.dbapi.DbConnection import DbConnection
+
 
 class DbApiUtil(object):
     def __init__(self, dbServer=None, dbHost=None, dbName=None, dbUser=None, dbPw=None, dbSocket=None, dbPort=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__debug=False
+        self.__debug = False
         self.__Nretry = 5
-        self.__dbServer  = dbServer
-        self.__dbHost    = dbHost
-        self.__dbName    = dbName
-        self.__dbUser    = dbUser
-        self.__dbPw      = dbPw
-        self.__dbSocket  = dbSocket
-        self.__dbPort    = dbPort
-        self.__verbose   = verbose
-        self.__lfh       = log
+        self.__dbServer = dbServer
+        self.__dbHost = dbHost
+        self.__dbName = dbName
+        self.__dbUser = dbUser
+        self.__dbPw = dbPw
+        self.__dbSocket = dbSocket
+        self.__dbPort = dbPort
+        self.__verbose = verbose
+        self.__lfh = log
         self.__schemaMap = {}
-        self.__dbState   = 0
+        self.__dbState = 0
 
         if (self.__debug):
             self.__lfh.write("\n+DbApiUtil.__init__() using socket %r\n" % self.__dbSocket)
-            self.__lfh.write("+DbApiUtil.__init__() using socket environment reference %r\n" % os.getenv("SITE_DB_SOCKET",None))
+            self.__lfh.write("+DbApiUtil.__init__() using socket environment reference %r\n" % os.getenv("SITE_DB_SOCKET", None))
 
+        self.__myDb = DbConnection(dbServer=self.__dbServer, dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser,
+                                   dbPw=self.__dbPw, dbPort=self.__dbPort, dbSocket=self.__dbSocket)
 
-        self.__myDb  = DbConnection(dbServer=self.__dbServer,dbHost=self.__dbHost, dbName=self.__dbName, dbUser=self.__dbUser, \
-                                    dbPw=self.__dbPw, dbPort=self.__dbPort, dbSocket=self.__dbSocket) 
-        
-        self.__dbcon = self.__myDb.connect()          
+        self.__dbcon = self.__myDb.connect()
 
     def __reConnect(self):
         """
@@ -67,13 +68,13 @@ class DbApiUtil(object):
             self.__lfh.write("+DbApiUtil.reConnect() UTC time = %s\n" % datetime.datetime.utcnow())
 
         for i in range(1, self.__Nretry):
-          try:
-              self.__dbcon   = self.__myDb.connect()
-              self.__dbState = 0
-              return True
-          except MySQLdb.Error:
-              self.__lfh.write("+DbApiUtil.reConnect() Cannot get re-connection : trying again\n")
-              time.sleep(2*i)
+            try:
+                self.__dbcon = self.__myDb.connect()
+                self.__dbState = 0
+                return True
+            except MySQLdb.Error:
+                self.__lfh.write("+DbApiUtil.reConnect() Cannot get re-connection : trying again\n")
+                time.sleep(2 * i)
 
         return False
 
@@ -98,7 +99,7 @@ class DbApiUtil(object):
         try:
             curs = self.__dbcon.cursor()
             curs.execute("set autocommit=0")
-            nrows = curs.execute(query)
+            _nrows = curs.execute(query)  # noqa: F841
             self.__dbcon.commit()
             curs.execute("set autocommit=1")
             curs.close()
@@ -109,7 +110,7 @@ class DbApiUtil(object):
             self.__lfh.write("Database error %d: %s\n" % (e.args[0], e.args[1]))
         #
         return None
-    
+
     def setSchemaMap(self, schemaMap):
         """
         """
@@ -120,10 +121,11 @@ class DbApiUtil(object):
         """
         for retry in range(1, self.__Nretry):
             ret = self.__runSelectSQL(sql)
-            if ret == None:
+            if ret is None:
                 if self.__dbState > 0:
-                    time.sleep(retry*2)
-                    if not self.__reConnect(): return None
+                    time.sleep(retry * 2)
+                    if not self.__reConnect():
+                        return None
                 else:
                     return None
                 #
@@ -138,10 +140,11 @@ class DbApiUtil(object):
         """
         for retry in range(1, self.__Nretry):
             ret = self.__runUpdateSQL(sql)
-            if ret == None:
+            if ret is None:
                 if self.__dbState > 0:
-                    time.sleep(retry*2)
-                    if not self.__reConnect(): return None
+                    time.sleep(retry * 2)
+                    if not self.__reConnect():
+                        return None
                 else:
                     return None
                 #
@@ -190,7 +193,7 @@ class DbApiUtil(object):
     def runUpdateSQLwithKey(self, key=None, parameter=()):
         """
         """
-        if not key or not self.__schemaMap or (not key in self.__schemaMap):
+        if not key or not self.__schemaMap or (key not in self.__schemaMap):
             return None
         #
         sql = self.__schemaMap[key]
@@ -202,7 +205,7 @@ class DbApiUtil(object):
     def selectData(self, key=None, parameter=()):
         """
         """
-        if not key or not self.__schemaMap or (not key in self.__schemaMap):
+        if not key or not self.__schemaMap or (key not in self.__schemaMap):
             return None
         #
         sql = self.__schemaMap[key]

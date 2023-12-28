@@ -106,10 +106,11 @@ class DbApiUtil(object):
         """
         for retry in range(1, self.__Nretry):
             ret = self.__runSelectSQL(sql)
-            if ret == None:
+            if ret is None:
                 if self.__dbState > 0:
                     time.sleep(retry * 2)
-                    if not self.__reConnect(): return None
+                    if not self.__reConnect():
+                        return None
                 else:
                     return None
                 #
@@ -124,10 +125,11 @@ class DbApiUtil(object):
         """
         for retry in range(1, self.__Nretry):
             ret = self.__runUpdateSQL(sql)
-            if ret == None:
+            if ret is None:
                 if self.__dbState > 0:
                     time.sleep(retry * 2)
-                    if not self.__reConnect(): return None
+                    if not self.__reConnect():
+                        return None
                 else:
                     return None
                 #
@@ -158,7 +160,7 @@ class DbApiUtil(object):
         try:
             curs = self.__dbcon.cursor()
             curs.execute("set autocommit=0")
-            nrows = curs.execute(query)
+            _nrows = curs.execute(query)  # noqa: F841
             self.__dbcon.commit()
             curs.execute("set autocommit=1")
             curs.close()
@@ -321,6 +323,6 @@ if __name__ == '__main__':
                 api.UpdateBasedInputIDfromFile(filename)
             #
         #
-    except:
+    except:  # noqa: E722 pylint: disable=bare-except
         traceback.print_exc(file=sys.stderr)
     #
