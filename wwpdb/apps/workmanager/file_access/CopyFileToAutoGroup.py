@@ -55,7 +55,7 @@ class CopyFileToAutoGroup(object):
         self.__dictionary_v40 = self.__cI.get('SITE_PDBX_V4_DICT_NAME') + '.sdb'
         self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.sdb'
         #
-        self.__sessionId = None
+        # self.__sessionId = None
         self.__sessionPath = None
         #
         self.__dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
@@ -80,10 +80,10 @@ class CopyFileToAutoGroup(object):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self.__sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
-    def runMulti(self, dataList, procName, optionsD, workingDir):
+    def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -127,7 +127,7 @@ class CopyFileToAutoGroup(object):
         """
         """
         self.__sObj = self.__reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
 
     def __generateV4PdbxFile(self, inputFile, outputFileName, commandLogFile):
@@ -185,8 +185,8 @@ class CopyFileToAutoGroup(object):
         return message
 
 
-if __name__ == '__main__':
-    from wwpdb.utils.rcsb.WebRequest import InputRequest
+def main_copy():
+    from wwpdb.utils.session.WebRequest import InputRequest
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
@@ -199,3 +199,7 @@ if __name__ == '__main__':
     entryList = ['D_8000200001', 'D_8000200003', 'D_8000200027', 'D_8000200040']
     copyUtil = CopyFileToAutoGroup(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
     copyUtil.run()
+
+
+if __name__ == '__main__':
+    main_copy()

@@ -51,10 +51,10 @@ class MetaDataMerger(BaseClass):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
-    def runMulti(self, dataList, procName, optionsD, workingDir):
+    def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []

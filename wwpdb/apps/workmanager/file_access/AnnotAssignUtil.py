@@ -37,7 +37,7 @@ class AnnotAssignUtil(object):
         self.__lfh = log
         self.__verbose = verbose
         self.__sObj = self.__reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
@@ -48,13 +48,13 @@ class AnnotAssignUtil(object):
         if not assignList:
             return
         #
-        for list in assignList:
-            sourcePath = self.__pI.getFilePath(dataSetId=list[0], wfInstanceId=None, contentType='model', formatType='pdbx',
+        for alist in assignList:
+            sourcePath = self.__pI.getFilePath(dataSetId=alist[0], wfInstanceId=None, contentType='model', formatType='pdbx',
                                                fileSource='archive', versionId='latest', partNumber='1')
             if not sourcePath or not os.access(sourcePath, os.F_OK):
                 continue
             #
             cifObj = mmCIFUtil(filePath=sourcePath)
-            cifObj.UpdateSingleRowValue('pdbx_database_status', 'pdbx_annotator', 0, list[1].upper())
+            cifObj.UpdateSingleRowValue('pdbx_database_status', 'pdbx_annotator', 0, alist[1].upper())
             cifObj.WriteCif(outputFilePath=sourcePath)
         #

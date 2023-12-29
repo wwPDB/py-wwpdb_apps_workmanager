@@ -14,7 +14,7 @@ __version__ = "V0.01"
 
 import unittest
 
-from wwpdb.apps.workmanager.utils.LoadRemindMessageTrack import LoadRemindMessageTrack  # noqa: F401
+from wwpdb.apps.workmanager.utils.LoadRemindMessageTrack import LoadRemindMessageTrack  # noqa: F401 pylint: disable=unused-import
 
 
 class ImportTests(unittest.TestCase):

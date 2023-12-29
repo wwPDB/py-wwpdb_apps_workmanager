@@ -48,7 +48,7 @@ class DBLoader(object):
         self.__rcsbRoot = self.__cICommon.get_site_annot_tools_path()
         self.__compRoot = self.__cICommon.get_site_cc_cvs_path()
         #
-        self.__sessionId = None
+        # self.__sessionId = None
         self.__sessionPath = None
         self.__getSession()
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
@@ -61,11 +61,11 @@ class DBLoader(object):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self.__sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         self.__runDBLoading()
         return self.__returnMessage
 
-    def runMulti(self, dataList, procName, optionsD, workingDir):
+    def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -123,12 +123,12 @@ class DBLoader(object):
         """
         """
         self.__sObj = self.__reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
 
 
 if __name__ == '__main__':
-    from wwpdb.utils.rcsb.WebRequest import InputRequest
+    from wwpdb.utils.session.WebRequest import InputRequest
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
     cI = ConfigInfo(siteId)
@@ -138,6 +138,6 @@ if __name__ == '__main__':
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002003")
     myReqObj.setValue("sessionid", " b8030220bdf3559c10a2c63618cd85a25256f7c1")
-    entryList = ['D_8000200175', 'D_8000200176']
-    copyUtil = DBLoader(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
+    myentryList = ['D_8000200175', 'D_8000200176']
+    copyUtil = DBLoader(reqObj=myReqObj, entryList=myentryList, verbose=False, log=sys.stderr)
     print(copyUtil.run())

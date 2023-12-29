@@ -40,20 +40,21 @@ class MileStoneFile(object):
         self.__lfh = log
         self.__verbose = verbose
         self.__sObj = self.__reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__inputFile = ''
-        self.__isEmEntry = False
+        # self.__isEmEntry = False
         # self.__sessionFile = ''
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
 
     def setEmEntry(self):
         """
         """
-        self.__isEmEntry = True
+        # self.__isEmEntry = True
+        pass  # We do not care anymore - but leave API  pylint: disable=unnecessary-pass
 
-    def getInputFile(self, entryId, source, content, format, version):
+    def getInputFile(self, entryId, source, content, format, version):  # pylint: disable=redefined-builtin
         """
         """
         sourcePath = self.__pI.getFilePath(dataSetId=entryId, wfInstanceId=None, contentType=content, formatType=format,
@@ -64,7 +65,7 @@ class MileStoneFile(object):
         #
         return False
 
-    def getOutputFile(self, entryId, source, content, format, version):
+    def getOutputFile(self, entryId, source, content, format, version):  # pylint: disable=redefined-builtin
         """
         """
         if not self.__inputFile:

@@ -62,11 +62,11 @@ class StatusUpdater(BaseClass):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         self.__updateStatusHistory()
         return self.__getReturnMessage()
 
-    def runMulti(self, dataList, procName, optionsD, workingDir):
+    def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -199,7 +199,7 @@ class StatusUpdater(BaseClass):
 
 
 if __name__ == '__main__':
-    from wwpdb.utils.rcsb.WebRequest import InputRequest
+    from wwpdb.utils.session.WebRequest import InputRequest
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
@@ -215,6 +215,6 @@ if __name__ == '__main__':
     myReqObj.setValue("date_hold_coordinates", "2017-04-25")
     myReqObj.setValue("pdbx_annotator", "LD")
     myReqObj.setValue("author_approval_type", "implicit")
-    entryList = ['D_8000210285', 'D_8000210286']
-    pfGenUtil = StatusUpdater(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
+    myentryList = ['D_8000210285', 'D_8000210286']
+    pfGenUtil = StatusUpdater(reqObj=myReqObj, entryList=myentryList, verbose=False, log=sys.stderr)
     print(pfGenUtil.run())

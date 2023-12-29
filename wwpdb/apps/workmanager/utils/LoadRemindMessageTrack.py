@@ -40,11 +40,11 @@ class DbApiUtil(object):
     """ Class for making status database connection
     """
 
-    def __init__(self, siteId=None, verbose=False, log=sys.stderr):
+    def __init__(self, siteId=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         """ Initialization
         """
         self.__siteId = siteId
-        self.__verbose = verbose
+        # self.__verbose = verbose
         self.__lfh = log
         self.__cI = ConfigInfo(self.__siteId)
         self.__myDb = DbConnection(dbServer=self.__cI.get("SITE_DB_SERVER"),
@@ -258,7 +258,7 @@ class LoadRemindMessageTrack(object):
                     ['messages-to-depositor', 'last_message_sent_date']]
         #
         trackMap = {}
-        for type in typeList:
+        for type in typeList:  # pylint: disable=redefined-builtin
             FilePath = self.__pathIo.getFilePath(depID, contentType=type[0], formatType='pdbx', fileSource='archive')
             if (not FilePath) or (not os.access(FilePath, os.F_OK)):
                 continue
@@ -272,7 +272,7 @@ class LoadRemindMessageTrack(object):
             if type[0] != 'messages-to-depositor':
                 continue
             #
-            map = {}
+            map = {}  # pylint: disable=redefined-builtin
             reference_list = cifObj.GetValue('pdbx_deposition_message_file_reference')
             if reference_list:
                 for ref in reference_list:
@@ -301,9 +301,9 @@ class LoadRemindMessageTrack(object):
         return trackMap
 
 
-if __name__ == '__main__':
+def load_main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "i:f:")
+        opts, _args = getopt.getopt(sys.argv[1:], "i:f:")
         idlist = ''
         filename = ''
         for opt, arg in opts:
@@ -326,3 +326,7 @@ if __name__ == '__main__':
     except:  # noqa: E722 pylint: disable=bare-except
         traceback.print_exc(file=sys.stderr)
     #
+
+
+if __name__ == '__main__':
+    load_main()

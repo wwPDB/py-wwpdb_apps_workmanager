@@ -125,9 +125,9 @@ class StatusDbApi(object):
         self.__dbApi.setSchemaMap(self.__schemaMap)
 
     def __getDataDir(self, key, parameter, idx):
-        list = self.__dbApi.selectData(key=key, parameter=parameter)
-        if list:
-            return list[idx]
+        dlist = self.__dbApi.selectData(key=key, parameter=parameter)
+        if dlist:
+            return dlist[idx]
         #
         return None
 
@@ -323,12 +323,12 @@ class StatusDbApi(object):
         if not assignList:
             return
         #
-        for list in assignList:
-            sql = self.__schemaMap['UPDATE_ANN_DEPOSITION'] % (list[1], list[0])
+        for alist in assignList:
+            sql = self.__schemaMap['UPDATE_ANN_DEPOSITION'] % (alist[1], alist[0])
             _ret = self.__dbApi.runUpdateSQL(sql)  # noqa: F841
             # if rows < 1:
             #   catch error
-            sql = self.__schemaMap['UPDATE_ANN_LAST_INST'] % (list[1], list[0])
+            sql = self.__schemaMap['UPDATE_ANN_LAST_INST'] % (alist[1], alist[0])
             _ret = self.__dbApi.runUpdateSQL(sql)  # noqa: F841
             # if rows < 1:
             #   catch error
@@ -357,9 +357,9 @@ class StatusDbApi(object):
         if not depositionid or not classid or not instid:
             return status
         #
-        dir = self.__getDataDir("SELECT_DEP_WF_STATUS", (depositionid, instid, classid), 0)
-        if dir:
-            status = dir['inst_status'].upper()
+        data = self.__getDataDir("SELECT_DEP_WF_STATUS", (depositionid, instid, classid), 0)
+        if data:
+            status = data['inst_status'].upper()
         #
         return status
 
@@ -386,9 +386,9 @@ class StatusDbApi(object):
         if not depositionid:
             return status
         #
-        dir = self.getLastWFCommunication(depositionid=depositionid)
-        if dir and ('status' in dir):
-            status = dir['status'].upper()
+        data = self.getLastWFCommunication(depositionid=depositionid)
+        if data and ('status' in data):
+            status = data['status'].upper()
         #
         return status
 
@@ -491,9 +491,9 @@ class StatusDbApi(object):
     def getGroupIds(self, depositionids=None):
         return self.__getSelectionResult(depositionids, 'SELECT_GROUP_ID')
 
-    def __getSetCommand(self, dir):
+    def __getSetCommand(self, data):
         command = ''
-        for k, v in dir.items():
+        for k, v in data.items():
             if command:
                 command += ', '
             #
@@ -683,7 +683,7 @@ class StatusDbApi(object):
 
         return status
 
-    def addSite(self, site, lead, email, first, last):
+    def addSite(self, site, lead, email, first, last):  # pylint: disable=unused-argument
         # First determine new group
         sites = self.getSites()
         maxgroup = 0
@@ -722,32 +722,32 @@ class StatusDbApi(object):
 
 if __name__ == '__main__':
     db = StatusDbApi(siteId='WWPDB_DEPLOY_TEST_RU', verbose=True, log=sys.stderr)
-    message, entryList = db.getEntryIdListFromInputIdString("G_1002014, G_10020,D_8000210666,1abc,D_8000210646,D_1000210646")
+    message, tentryList = db.getEntryIdListFromInputIdString("G_1002014, G_10020,D_8000210666,1abc,D_8000210646,D_1000210646")
     print(message)
-    print(entryList)
-    """
-    alList = db.getDistinctAnnotatorInitials()
-    print(alList)
-    aaiList = db.getActiveAnnotatorInitials()
-    print aaiList
-    rtList = db.getRetiredAnnotatorInitials()
-    print rtList
-    depids = [ 'D_8000210373', 'D_8000210372' ]
-    rows = db.getGroupIds([ 'D_8000210373', 'D_8000210372' ])
-    print rows
-    ok = db.isTableValid(table=sys.argv[1])
-    if ok:
-        print 'Table ' + sys.argv[1] + ' exist.'
-    else:
-        print 'Table ' + sys.argv[1] + ' does not exist.'
-    dir = db.Autenticate(username='JY', password='JY')
-    print dir
-    dir = db.getUserByName(username='JY')
-    print dir
-    dir = db.getUserByEmail(email='jasmin@rcsb.rutgers.edu')
-    print dir
-    ss = str(dir)
-    print 'ss='+ss
-    list = db.getServerInfo()
-    print list
-    """
+    print(tentryList)
+    # """
+    # alList = db.getDistinctAnnotatorInitials()
+    # print(alList)
+    # aaiList = db.getActiveAnnotatorInitials()
+    # print aaiList
+    # rtList = db.getRetiredAnnotatorInitials()
+    # print rtList
+    # depids = [ 'D_8000210373', 'D_8000210372' ]
+    # rows = db.getGroupIds([ 'D_8000210373', 'D_8000210372' ])
+    # print rows
+    # ok = db.isTableValid(table=sys.argv[1])
+    # if ok:
+    #     print 'Table ' + sys.argv[1] + ' exist.'
+    # else:
+    #     print 'Table ' + sys.argv[1] + ' does not exist.'
+    # dir = db.Autenticate(username='JY', password='JY')
+    # print dir
+    # dir = db.getUserByName(username='JY')
+    # print dir
+    # dir = db.getUserByEmail(email='jasmin@rcsb.rutgers.edu')
+    # print dir
+    # ss = str(dir)
+    # print 'ss='+ss
+    # list = db.getServerInfo()
+    # print list
+    # """

@@ -146,7 +146,7 @@ class BaseClass(object):
     def _removePickle(self, pickleFile):
         self._removeFile(os.path.join(self._sessionPath, pickleFile + '.pickle'))
 
-    def _processTemplate(self, fn, parameterDict={}):
+    def _processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
 
@@ -158,6 +158,8 @@ class BaseClass(object):
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
+        if parameterDict is None:
+            parameterDict = {}
         tPath = self._reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
         ifh = open(fPath, 'r')

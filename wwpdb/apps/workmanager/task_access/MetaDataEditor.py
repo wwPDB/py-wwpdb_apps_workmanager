@@ -145,14 +145,14 @@ class MetaDataEditor(BaseClass):
             self.__statusCode = "failed"
             return
         #
-        self.__all_data_type = str(self._reqObj.getValue("all_data_type"))
+        self.__all_data_type = str(self._reqObj.getValue("all_data_type"))  # pylint: disable=attribute-defined-outside-init
         all_data_type = self.__all_data_type.split(",")
         #
         numProc = int(multiprocessing.cpu_count() / 2)
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runGetEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=selectedEntryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=selectedEntryList, numProc=numProc, numResults=1)
         #
         validEntryList = []
         for entry_id in selectedEntryList:
@@ -236,7 +236,7 @@ class MetaDataEditor(BaseClass):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runUpdateEntriesInfo")
         mpu.setWorkingDir(self._sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=entryList, numProc=numProc, numResults=1)
         #
         for entry_id in entryList:
             entryPickle = self._loadPickle(entry_id + "_MetaDataEditor")
@@ -254,7 +254,7 @@ class MetaDataEditor(BaseClass):
             self._removePickle(entry_id + "_MetaDataEditor")
         #
 
-    def runGetEntriesInfo(self, dataList, procName, optionsD, workingDir):
+    def runGetEntriesInfo(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -264,7 +264,7 @@ class MetaDataEditor(BaseClass):
         #
         return rList, rList, []
 
-    def runUpdateEntriesInfo(self, dataList, procName, optionsD, workingDir):
+    def runUpdateEntriesInfo(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []

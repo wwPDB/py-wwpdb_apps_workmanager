@@ -45,7 +45,7 @@ class DepictWorkFlow(DepictBase):
         super(DepictWorkFlow, self).__init__(reqObj=reqObj, statusDB=statusDB, conFigObj=conFigObj, verbose=verbose, log=log)
         #
         self.__sObj = self._reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         self.__MaxBox = 7
         self.__MaxBoxTask = 4
@@ -78,7 +78,7 @@ class DepictWorkFlow(DepictBase):
         dataD['wf_exit_name'] = self.__wfFlow[-1]['name']
         self._dataInfo['workflow_tmplt'] = [dataD]
         #
-        self.__download_tmplt = self._getPageTemplate('download_tmplt')
+        self.__download_tmplt = self._getPageTemplate('download_tmplt')  # pylint: disable=attribute-defined-outside-init
         self.__depictLevel2WorkFlow()
         self.__depictRunWorkFlowInfo()
 
@@ -164,7 +164,7 @@ class DepictWorkFlow(DepictBase):
         contents = '<tr>\n'
         count = 0
         hasValue = False
-        for dir in wf_list:
+        for dir in wf_list:  # pylint: disable=redefined-builtin
             if ('inst_status' in dir) and dir['inst_status'] == 'aborted':
                 continue
             #
@@ -199,7 +199,7 @@ class DepictWorkFlow(DepictBase):
         #
         contents = '<tr>\n'
         count = 0
-        for dir in realFlowList:
+        for dir in realFlowList:  # pylint: disable=redefined-builtin
             if count == self.__MaxBoxTask:
                 count = 0
                 contents += '</tr>\n<tr>\n'

@@ -33,20 +33,20 @@ from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 class ReadConFigFile(object):
     """
     """
-    def __init__(self, reqObj=None, configFile=None, verbose=False, log=sys.stderr):
+    def __init__(self, reqObj=None, configFile=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         """
         """
         self.__reqObj = reqObj
         self.__configFile = configFile
-        self.__verbose = verbose
-        self.__lfh = log
+        # self.__verbose = verbose
+        # self.__lfh = log
         self.__topPath = self.__reqObj.getValue("TemplatePath")
         self.__configPath = os.path.join(self.__topPath, self.__configFile)
         #
         self.__sObj = self.__reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        (base, ext) = os.path.splitext(self.__configFile)
+        (base, _ext) = os.path.splitext(self.__configFile)
         self.__pickleFile = base + '.pkl'
         self.__picklePath = os.path.join(self.__sessionPath, self.__pickleFile)
         #

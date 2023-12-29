@@ -44,10 +44,10 @@ class SequenceMerger(BaseClass):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
-    def runMulti(self, dataList, procName, optionsD, workingDir):
+    def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -120,7 +120,7 @@ class SequenceMerger(BaseClass):
 
 
 if __name__ == '__main__':
-    from wwpdb.utils.rcsb.WebRequest import InputRequest
+    from wwpdb.utils.session.WebRequest import InputRequest
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002030")
     myReqObj.setValue("sessionid", "fc3d934eb200f2f817eb1a8f2c608640cd3b1ba1")
-    entryList = ['D_8000210285', 'D_8000210286']
+    myEntryList = ['D_8000210285', 'D_8000210286']
     tempFile = '/wwpdb_da/da_top/data_test/archive/D_8000210285/D_8000210285_model_P1.cif.V10'
-    pfGenUtil = SequenceMerger(reqObj=myReqObj, entryList=entryList, templateFile=tempFile, verbose=False, log=sys.stderr)
+    pfGenUtil = SequenceMerger(reqObj=myReqObj, entryList=myEntryList, templateFile=tempFile, verbose=False, log=sys.stderr)
     print(pfGenUtil.run())

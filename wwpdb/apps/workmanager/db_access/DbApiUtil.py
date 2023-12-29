@@ -31,7 +31,7 @@ from wwpdb.utils.wf.dbapi.DbConnection import DbConnection
 
 
 class DbApiUtil(object):
-    def __init__(self, dbServer=None, dbHost=None, dbName=None, dbUser=None, dbPw=None, dbSocket=None, dbPort=None, verbose=False, log=sys.stderr):
+    def __init__(self, dbServer=None, dbHost=None, dbName=None, dbUser=None, dbPw=None, dbSocket=None, dbPort=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         """
         """
         self.__debug = False
@@ -43,7 +43,7 @@ class DbApiUtil(object):
         self.__dbPw = dbPw
         self.__dbSocket = dbSocket
         self.__dbPort = dbPort
-        self.__verbose = verbose
+        # self.__verbose = verbose
         self.__lfh = log
         self.__schemaMap = {}
         self.__dbState = 0

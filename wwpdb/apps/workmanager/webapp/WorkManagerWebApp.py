@@ -68,7 +68,7 @@ class WorkManagerWebApp(object):
     """Handle request and response object processing for release module web application.
 
     """
-    def __init__(self, parameterDict={}, verbose=False, log=sys.stderr, siteId="WWPDB_DEV"):
+    def __init__(self, parameterDict=None, verbose=False, log=sys.stderr, siteId="WWPDB_DEV"):
         """
         Create an instance of `WorkManagerWebApp` to manage a release module web request.
 
@@ -78,6 +78,8 @@ class WorkManagerWebApp(object):
          :param `log`:      stream for logging.
 
         """
+        if parameterDict is None:
+            parameterDict = {}
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -230,24 +232,24 @@ class WorkManagerWebAppWorker(object):
         """
         return self.__doOpException()
 
-    def __doOpNoException(self):
-        """Map operation to path and invoke operation.  No exception handling is performed.
+    # def __doOpNoException(self):
+    #     """Map operation to path and invoke operation.  No exception handling is performed.
 
-            :Returns:
+    #         :Returns:
 
-            Operation output is packaged in a ResponseContent() object.
-        """
-        #
-        reqPath = self.__reqObj.getRequestPath()
-        if reqPath not in self.__appPathD:
-            # bail out if operation is unknown -
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
-            rC.setError(errMsg='Unknown operation')
-            return rC
-        else:
-            mth = getattr(self, self.__appPathD[reqPath], None)
-            rC = mth()
-        return rC
+    #         Operation output is packaged in a ResponseContent() object.
+    #     """
+    #     #
+    #     reqPath = self.__reqObj.getRequestPath()
+    #     if reqPath not in self.__appPathD:
+    #         # bail out if operation is unknown -
+    #         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+    #         rC.setError(errMsg='Unknown operation')
+    #         return rC
+    #     else:
+    #         mth = getattr(self, self.__appPathD[reqPath], None)
+    #         rC = mth()
+    #     return rC
 
     def __doOpException(self):
         """Map operation to path and invoke operation.  Exceptions are caught within this method.
@@ -495,7 +497,7 @@ class WorkManagerWebAppWorker(object):
             with open(userFile, 'r') as infile:
                 data = infile.read()
                 if depositionid not in data:
-                    depPW, err = self.__getPassword(depositionid)
+                    depPW, _err = self.__getPassword(depositionid)
                     if depPW:
                         outfile = open(userFile, 'a')
                         outfile.write(depositionid + '\n' + depPW + '\n')
@@ -663,7 +665,7 @@ class WorkManagerWebAppWorker(object):
         #
         depositionid = self.__reqObj.getValue("identifier")
         annotator = self.__reqObj.getValue("annotator")
-        type = self.__reqObj.getValue("type")
+        type = self.__reqObj.getValue("type")  # pylint: disable=redefined-builtin
         sdb = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         if type == 'add':
             sdb.addToMyList(depositionid, annotator)
@@ -686,7 +688,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._RunEngineOp() Starting now\n")
         #
-        type = str(self.__reqObj.getValue("type"))
+        type = str(self.__reqObj.getValue("type"))  # pylint: disable=redefined-builtin
         depositionid = str(self.__reqObj.getValue("identifier"))
         instanceid = str(self.__reqObj.getValue("instance"))
         classid = str(self.__reqObj.getValue("classID"))
@@ -749,8 +751,8 @@ class WorkManagerWebAppWorker(object):
         #
         assign_pair_list = []
         assigned_data = str(self.__reqObj.getValue("assigned_data")).replace(' ', '').strip()
-        list = assigned_data.split(',')
-        for pair in list:
+        slist = assigned_data.split(',')
+        for pair in slist:
             list1 = pair.split(':')
             assign_pair_list.append(list1)
         #
@@ -1233,10 +1235,12 @@ class WorkManagerWebAppWorker(object):
         """ Join existing session or create new session as required.
         """
         #
+        # pylint: disable=attribute-defined-outside-init
         self.__sObj = self.__reqObj.newSessionObj()
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__rltvSessionPath = self.__sObj.getRelativePath()
+        # self.__rltvSessionPath = self.__sObj.getRelativePath()
+        # pylint: enable=attribute-defined-outside-init
         if (self.__verbose):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+WorkManagerWebAppWorker.__getSession() - creating/joining session %s\n" % self.__sessionId)
@@ -1273,7 +1277,7 @@ class WorkManagerWebAppWorker(object):
         #
         return filePath, ''
 
-    def __processTemplate(self, fn, parameterDict={}):
+    def __processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
 
@@ -1285,6 +1289,8 @@ class WorkManagerWebAppWorker(object):
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
+        if parameterDict is None:
+            parameterDict = {}
         tPath = self.__reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
         ifh = open(fPath, 'r')

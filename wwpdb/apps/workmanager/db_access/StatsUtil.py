@@ -53,9 +53,9 @@ class StatsUtil(object):
         #
         one_day = timedelta(1)
         start_date = self.__today - timedelta(6)
-        for i in range(7):
-            list = self.__contentDB.getDailyStatsList(date=start_date)
-            TableData, total_dir = self.__getProcessCount(list, TableData, total_dir, index)
+        for _i in range(7):
+            plist = self.__contentDB.getDailyStatsList(date=start_date)
+            TableData, total_dir = self.__getProcessCount(plist, TableData, total_dir, index)
             date_string = self.__week_day[start_date.weekday()] + ' (' + str(start_date)[5:].replace('-', '/') + ')'
             TableColumn.insert(index, str(index), {'label' : date_string, 'data-field': str(index)})
             start_date += one_day
@@ -88,8 +88,8 @@ class StatsUtil(object):
         total_dir = {}
         #
         for dates in dates_list:
-            list = self.__contentDB.getRangeStatsList(startdate=dates[0], enddate=dates[1])
-            TableData, total_dir = self.__getProcessCount(list, TableData, total_dir, index)
+            slist = self.__contentDB.getRangeStatsList(startdate=dates[0], enddate=dates[1])
+            TableData, total_dir = self.__getProcessCount(slist, TableData, total_dir, index)
             date_string = self.__week_day[dates[0].weekday()] + '(' + str(dates[0])[5:].replace('-', '/') + ') - ' \
                 + self.__week_day[dates[1].weekday()] + '(' + str(dates[1])[5:].replace('-', '/') + ')'
             TableColumn.insert(index, str(index), {'label' : date_string, 'data-field': str(index)})
@@ -107,22 +107,22 @@ class StatsUtil(object):
         """
         return_list = self.__contentDB.getInProcessStatsList()
         return_dir = {}
-        for dir in return_list:
-            if dir['status_code'] in return_dir:
-                return_dir[dir['status_code']].append(dir['rcsb_annotator'])
+        for row in return_list:
+            if row['status_code'] in return_dir:
+                return_dir[row['status_code']].append(row['rcsb_annotator'])
             else:
-                return_dir[dir['status_code']] = [dir['rcsb_annotator']]
+                return_dir[row['status_code']] = [row['rcsb_annotator']]
             #
         #
         index, TableColumn, TableData = self.__getInitialTableDef()
         total_dir = {}
         #
         for status in ('WAIT', 'PROC', 'AUTH', 'POLC', 'REPL'):
-            list = []
+            found_list = []
             if status in return_dir:
-                list = return_dir[status]
+                found_list = return_dir[status]
             #
-            TableData, total_dir = self.__getProcessCount(list, TableData, total_dir, index)
+            TableData, total_dir = self.__getProcessCount(found_list, TableData, total_dir, index)
             TableColumn.insert(index, str(index), {'label' : status, 'data-field': str(index)})
             index += 1
         #
@@ -149,7 +149,7 @@ class StatsUtil(object):
     def __getProcessCount(self, found_list, TableData, total_dir, index):
         """
         """
-        dir = {}
+        dir = {}  # pylint: disable=redefined-builtin
         for anno in self.__annoList:
             dir[anno['initials']] = 0
         #
@@ -175,18 +175,18 @@ class StatsUtil(object):
         #
         return TableData, total_dir
 
-    def __processTotalCount(self, TableData, dir, index):
+    def __processTotalCount(self, TableData, total_dir, index):
         """
         """
-        for k, v in dir.items():
+        for k, v in total_dir.items():
             TableData[k][str(index)] = str(v)
         #
         return TableData
 
-    def __processAverageCount(self, TableData, dir, index, denominator):
+    def __processAverageCount(self, TableData, total_dir, index, denominator):
         """
         """
-        for k, v in dir.items():
+        for k, v in total_dir.items():
             TableData[k][str(index)] = '%.2f' % (v / denominator)
         #
         return TableData

@@ -41,7 +41,7 @@ class Level1Util(DepictBase):
         super(Level1Util, self).__init__(reqObj=reqObj, statusDB=statusDB, conFigObj=conFigObj, verbose=verbose, log=log)
         #
         self.__sObj = self._reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         self.__userID = self._reqObj.getValue('username').upper()
         self.__tab_def_id = ''
@@ -59,7 +59,7 @@ class Level1Util(DepictBase):
         if not tabList:
             return ''
         #
-        self.__countMap = {}
+        self.__countMap = {}  # pylint: disable=attribute-defined-outside-init
         self._getUserInfoDict()
         #
         self._dataInfo['ann_selection'] = self._getAnnotatorSelection()
@@ -79,7 +79,7 @@ class Level1Util(DepictBase):
         #
         self.__resultMap['all_tab_ids'] = ','.join(all_tab_ids)
         #
-        for k, v in self.__tableContentMap.items():
+        for _k, v in self.__tableContentMap.items():
             if not v['tab_count_id'] in self.__countMap:
                 continue
             #
@@ -183,9 +183,9 @@ class Level1Util(DepictBase):
                     tableMap['binding_class'] = tableDef['binding_class']
                     self._processBindingClass(tableDef['binding_class'])
                     classUtil = self._UtilClass[tableDef['binding_class']]
-                    columnDef, data = getattr(classUtil, '%s' % tableDef['binding_function'])()
+                    columnDef, _data = getattr(classUtil, '%s' % tableDef['binding_function'])()
                 else:
-                    columnDef, data = getattr(self, '%s' % tableDef['binding_function'])()
+                    columnDef, _data = getattr(self, '%s' % tableDef['binding_function'])()
                 #
                 self.__tableContentMap[self.__tab_count_id + '_' + tableDef['table_id']] = tableMap
                 columnList, dataField = self.__getColumnListandDataField(tableDef['table_id'], columnDef)
@@ -342,15 +342,15 @@ class Level1Util(DepictBase):
     def _get_entry_by_sg_center_enum_list(self):
         """
         """
-        list = []
-        self.__cICommon = ConfigInfoAppCommon(self._siteId)
-        sg_center_file = self.__cICommon.get_sg_center_file_path()
+        list = []  # pylint: disable=redefined-builtin
+        cICommon = ConfigInfoAppCommon(self._siteId)
+        sg_center_file = cICommon.get_sg_center_file_path()
         if os.access(sg_center_file, os.F_OK):
             cifObj = mmCIFUtil(filePath=sg_center_file)
-            rlist = cifObj.GetValue('pdbx_SG_project')
+            dlist = cifObj.GetValue('pdbx_SG_project')
             list.append(['', ''])
-            for dir in rlist:
-                list.append([dir['full_name_of_center'], dir['full_name_of_center']])
+            for ldir in dlist:
+                list.append([ldir['full_name_of_center'], ldir['full_name_of_center']])
             #
         #
         return list

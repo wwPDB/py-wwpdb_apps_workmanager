@@ -56,9 +56,11 @@ class DepictBase(object):
         self._contentDB = None
         self.__getUrlMap()
 
-    def getPageText(self, page_id='', paraD={}):
+    def getPageText(self, page_id='', paraD=None):
         """
         """
+        if paraD is None:
+            paraD = {}
         page_template, alias_page_id = self.__getPageTemplateAndAliasID(page_id)
         if not page_template:
             return ''
@@ -166,13 +168,13 @@ class DepictBase(object):
         """
         self._getUserInfoDict()
         rows = self._statusDB.getAnnUser(self._userInfo['site'])
-        list = []
-        for dir in rows:
-            list.append([str(dir['initials']), str(dir['first_name']) + ' ' + str(dir['last_name'])])
+        rlist = []
+        for row in rows:
+            rlist.append([str(row['initials']), str(row['first_name']) + ' ' + str(row['last_name'])])
         #
-        list.sort(key=lambda data: data[1])
-        list.insert(0, ['', ''])
-        return list
+        rlist.sort(key=lambda data: data[1])
+        rlist.insert(0, ['', ''])
+        return rlist
 
     def _getAnnotatorSelection(self):
         """
@@ -189,21 +191,21 @@ class DepictBase(object):
         #
         table_row1 = []
         table_row2 = []
-        for dir in rows:
-            if str(dir['active']) != '0':
+        for row in rows:
+            if str(row['active']) != '0':
                 continue
             #
-            dir['checked'] = ''
-            dir['disabled'] = ''
-            if dir['user_name'] == self._userInfo['user_name']:
-                dir['disabled'] = 'disabled="true"'
+            row['checked'] = ''
+            row['disabled'] = ''
+            if row['user_name'] == self._userInfo['user_name']:
+                row['disabled'] = 'disabled="true"'
             #
-            if str(dir['code']).upper() == 'ANN':
-                dir['value'] = 'LANN'
-                table_row1.append(dir)
-            elif str(dir['code']).upper() == 'LANN':
-                dir['value'] = 'ANN'
-                table_row2.append(dir)
+            if str(row['code']).upper() == 'ANN':
+                row['value'] = 'LANN'
+                table_row1.append(row)
+            elif str(row['code']).upper() == 'LANN':
+                row['value'] = 'ANN'
+                table_row2.append(row)
             #
         #
         self._dataInfo['privilege_ann_table_row_tmplt'] = table_row1
@@ -217,8 +219,8 @@ class DepictBase(object):
         self._getUserInfoDict()
         if self._statusDB:
             rows = self._statusDB.getSiteGroup(self._userInfo['site'])
-            for dir in rows:
-                GroupInfo.append([str(dir['group_id']), str(dir['group_name'])])
+            for row in rows:
+                GroupInfo.append([str(row['group_id']), str(row['group_name'])])
             #
         #
         return self.__getSelectionOption(GroupInfo)
@@ -230,15 +232,15 @@ class DepictBase(object):
         if not rows:
             return
         #
-        for dir in rows:
-            dir['checked'] = ''
-            dir['value'] = str(dir['active'])
-            if str(dir['active']) == '0':
-                dir['checked'] = 'checked'
+        for row in rows:
+            row['checked'] = ''
+            row['value'] = str(row['active'])
+            if str(row['active']) == '0':
+                row['checked'] = 'checked'
             #
-            dir['disabled'] = ''
-            if dir['user_name'] == self._userInfo['user_name']:
-                dir['disabled'] = 'disabled="true"'
+            row['disabled'] = ''
+            if row['user_name'] == self._userInfo['user_name']:
+                row['disabled'] = 'disabled="true"'
             #
         #
         self._dataInfo['atvice_user_table_row_tmplt'] = list(rows)
@@ -300,8 +302,8 @@ class DepictBase(object):
                         ['ValMod', 'SITE_VAL_TASKS_URL']]
         #
         cI = ConfigInfo(self._siteId)
-        for list in mod_url_list:
-            self.__urlMap[list[0]] = cI.get(list[1])
+        for mlist in mod_url_list:
+            self.__urlMap[mlist[0]] = cI.get(mlist[1])
         #
 
     def __getPageTemplateAndAliasID(self, page_id):
@@ -402,7 +404,7 @@ class DepictBase(object):
         #
         return val
 
-    def __getFuncParameter(self, page_id, funcDef, myD):
+    def __getFuncParameter(self, page_id, funcDef, myD):  # pylint: disable=unused-argument
         """
         """
         paraD = {}
@@ -488,12 +490,12 @@ class DepictBase(object):
         """
         """
         SelectionHtml = ''
-        for list in SelectionInfo:
-            SelectionHtml += '<option value="' + list[0] + '"'
-            if list[0] == '':
+        for slist in SelectionInfo:
+            SelectionHtml += '<option value="' + slist[0] + '"'
+            if slist[0] == '':
                 SelectionHtml += ' selected'
             #
-            SelectionHtml += '>' + list[1] + '</option>'
+            SelectionHtml += '>' + slist[1] + '</option>'
         #
         return SelectionHtml
 

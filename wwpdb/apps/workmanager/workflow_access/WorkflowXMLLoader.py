@@ -32,12 +32,12 @@ from wwpdb.apps.workmanager.workflow_access.OrderedDict import OrderedDict
 class WorkflowXMLLoader(object):
     """
     """
-    def __init__(self, siteId=None, verbose=False, log=sys.stderr):
+    def __init__(self, siteId=None, verbose=False, log=sys.stderr):  # pylint:  disable=unused-argument
         """
         """
         self.__siteId = siteId
-        self.__verbose = verbose
-        self.__lfh = log
+        # self.__verbose = verbose
+        # self.__lfh = log
         self.__cI = ConfigInfo(self.__siteId)
         self.__workFlowXMLPath = self.__cI.get("SITE_WF_XML_PATH")
         #
@@ -127,9 +127,9 @@ if __name__ == '__main__':
     print(wfinfo[0:1])
     print(wfinfo['T1'])
     print(wfinfo)
-    for key, task in wfinfo.items():
+    for key, mytask in wfinfo.items():
         print(key)
-        print(task)
+        print(mytask)
     #
     values = wfinfo.values()
     for v in values:

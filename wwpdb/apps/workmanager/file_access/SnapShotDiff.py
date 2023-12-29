@@ -31,11 +31,11 @@ from wwpdb.apps.wf_engine.engine.WFEapplications import getPicklePath
 class SnapShotDiff(object):
     """
     """
-    def __init__(self, siteId=None, verbose=False, log=sys.stderr):
+    def __init__(self, siteId=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         """
         """
-        self.__siteId = siteId
-        self.__verbose = verbose
+        # self.__siteId = siteId
+        # self.__verbose = verbose
         self.__lfh = log
 
     def getSnap(self, depID):
@@ -62,8 +62,8 @@ class SnapShotDiff(object):
         path = getPicklePath(depID)
         #
         ret = []
-        list = os.listdir(path)
-        for filename in list:
+        dlist = os.listdir(path)
+        for filename in dlist:
             if filename[-4:] == '.pkl':
                 olddat = self.__getData(os.path.join(path, filename))
                 newdat = self.__getData(os.path.join(path, snap, filename))
@@ -148,9 +148,13 @@ class SnapShotDiff(object):
         return ret
 
 
-if __name__ == '__main__':
+def main_snap():
     ssd = SnapShotDiff(siteId="WWPDB_DEPLOY_INTERNAL")
     snap = ssd.getSnap('D_1100209960')
     print(snap)
     diff = ssd.getDifference('D_1100209960', snap)
     print(diff)
+
+
+if __name__ == '__main__':
+    main_snap()

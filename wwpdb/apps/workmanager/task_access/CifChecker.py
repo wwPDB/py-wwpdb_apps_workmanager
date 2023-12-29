@@ -55,10 +55,10 @@ class CifChecker(BaseClass):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMulti")
         mpu.setWorkingDir(self._sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
         return self.__getReturnMessage()
 
-    def runMulti(self, dataList, procName, optionsD, workingDir):
+    def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -131,7 +131,7 @@ class CifChecker(BaseClass):
 
 
 if __name__ == '__main__':
-    from wwpdb.utils.rcsb.WebRequest import InputRequest
+    from wwpdb.utils.session.WebRequest import InputRequest
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
     siteId = 'WWPDB_DEPLOY_TEST_RU'
     os.environ["WWPDB_SITE_ID"] = siteId
@@ -142,6 +142,6 @@ if __name__ == '__main__':
     myReqObj.setValue("WWPDB_SITE_ID", siteId)
     myReqObj.setValue("identifier", "G_1002030")
     myReqObj.setValue("sessionid", "88626e0cc0b1a1bbd10bb2df8a0d68573fcbd5fe")
-    entryList = ['D_8000210285', 'D_8000210286']
-    checkUtil = CifChecker(reqObj=myReqObj, entryList=entryList, verbose=False, log=sys.stderr)
+    myentryList = ['D_8000210285', 'D_8000210286']
+    checkUtil = CifChecker(reqObj=myReqObj, entryList=myentryList, verbose=False, log=sys.stderr)
     print(checkUtil.run())

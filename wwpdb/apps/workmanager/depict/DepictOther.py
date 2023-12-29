@@ -83,9 +83,9 @@ class DepictOther(DepictBase):
         timestamps = self._statusDB.getTimeStampInfo(depositionid=self._reqObj.getValue("identifier"))
         if timestamps:
             self._dataInfo['timestamp_table_row_tmplt'] = list(timestamps)
-            for dir in self._dataInfo['timestamp_table_row_tmplt']:
-                if ('mtime' in dir) and dir['mtime']:
-                    dir['mtime'] = getTimeFromEpoc(dir['mtime'])
+            for tdir in self._dataInfo['timestamp_table_row_tmplt']:
+                if ('mtime' in tdir) and tdir['mtime']:
+                    tdir['mtime'] = getTimeFromEpoc(tdir['mtime'])
                 #
             #
         #
@@ -121,7 +121,7 @@ class DepictOther(DepictBase):
         """
         fu = FileUtils(self._reqObj.getValue("identifier"), reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
         for item in ('archive', 'deposit', 'wf-instance'):
-            nFiles, list = fu.renderFileList(fileSource=item)
+            _nFiles, list = fu.renderFileList(fileSource=item)  # pylint: disable=redefined-builtin
             if item == 'wf-instance':
                 self.__dataD['wf_instance'] = '\n'.join(list)
             else:

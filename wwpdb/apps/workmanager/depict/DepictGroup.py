@@ -55,7 +55,7 @@ class DepictGroup(DepictBase):
             wfloader = WorkflowXMLLoader(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
             wfloader.loadWorkFlowXMLFile(self.__classInfo['class_file'])
             wfWorkFlowInfo = wfloader.getWorkFlowInfo()
-            self.__wfFlow = wfWorkFlowInfo.values()
+            # self.__wfFlow = wfWorkFlowInfo.values()
             for wf in wfWorkFlowInfo.values():
                 if 'classID' not in wf:
                     continue

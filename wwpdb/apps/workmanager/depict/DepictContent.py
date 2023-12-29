@@ -38,6 +38,7 @@ class DepictContent(DepictBase):
         """
         """
         super(DepictContent, self).__init__(reqObj=reqObj, statusDB=statusDB, conFigObj=conFigObj, verbose=verbose, log=log)
+        self.__returnMap = {}
         self._connectStatusDB()
         self._getUserInfoDict()
         self.__commun_tmplt = self._getPageTemplate('commun_tmplt')
@@ -76,9 +77,9 @@ class DepictContent(DepictBase):
             if 'binding_class' in tableMap:
                 self._processBindingClass(tableMap['binding_class'])
                 classUtil = self._UtilClass[tableMap['binding_class']]
-                columnDef, contentResults = getattr(classUtil, '%s' % tableMap['binding_function'])()
+                _columnDef, contentResults = getattr(classUtil, '%s' % tableMap['binding_function'])()
             else:
-                columnDef, contentResults = getattr(self, '%s' % tableMap['binding_function'])()
+                _columnDef, contentResults = getattr(self, '%s' % tableMap['binding_function'])()
             #
             dumpPickleFile(self.__sessionPath, tableMap['pkl'], contentResults)
             return
@@ -143,7 +144,7 @@ class DepictContent(DepictBase):
             #        ('pi_name' in tableMap['data-field']) or ('country' in tableMap['data-field']) or \
             #        ('pi_name_only' in tableMap['data-field']) or ('pi_country_only' in tableMap['data-field']):
 
-            if (
+            if (  # pylint: disable=using-constant-test
                     x for x in tableMap['data-field'] if x in ('add_list',
                                                                'major_issue',
                                                                'pi_name',
@@ -261,14 +262,14 @@ class DepictContent(DepictBase):
                         continue
                     #
                     value = self.__dataFieldMap[field_item]['value']
-                    type = self.__dataFieldMap[field_item]['type']
-                    if type == 'page_template':
+                    dtype = self.__dataFieldMap[field_item]['type']
+                    if dtype == 'page_template':
                         resultD[field_item] = self.getPageText(page_id=value)
-                    elif type == 'dataInfo':
+                    elif dtype == 'dataInfo':
                         if (value in dataD) and dataD[value]:
                             resultD[field_item] = str(dataD[value])
                         #
-                    elif type == 'function':
+                    elif dtype == 'function':
                         resultD[field_item] = getattr(self, "%s" % value)(dataD)
                     #
                 #
@@ -279,15 +280,15 @@ class DepictContent(DepictBase):
         dumpPickleFile(self.__sessionPath, tableMap['pkl'], contentResults)
         #
         if 'entry_count' in tableMap:
-            for type, list in tableMap['entry_count'].items():
-                for item in list:
+            for t_type, ilist in tableMap['entry_count'].items():
+                for item in ilist:
                     count = 0
                     if item == 'num_entries':
                         count = len(rows)
                     elif item in count_map:
                         count = count_map[item]
                     #
-                    self.__returnMap[type + '_' + item + '_' + tableMap['tab_count_id']] = count
+                    self.__returnMap[t_type + '_' + item + '_' + tableMap['tab_count_id']] = count
                 #
             #
         #

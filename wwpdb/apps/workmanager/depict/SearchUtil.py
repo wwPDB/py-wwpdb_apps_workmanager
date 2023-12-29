@@ -38,14 +38,14 @@ class SearchUtil(object):
         self.__verbose = verbose
         self.__lfh = log
         self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
-        self.__topPath = self.__reqObj.getValue("TemplatePath")
+        # self.__topPath = self.__reqObj.getValue("TemplatePath")
         #
         self.__statusDB = None
         self.__contentDB = None
         self.__conFigObj = None
         #
         self.__sObj = self.__reqObj.newSessionObj()
-        self.__sessionId = self.__sObj.getId()
+        # self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         #
 
@@ -73,7 +73,7 @@ class SearchUtil(object):
             myD['value'] = self.__processDependence(self.__conFigObj['ui_input_where_condition_binding'][search_type]['dependence_id'], value)
         elif search_type == 'entry_by_ids':
             self.__connectStatusDB()
-            error_message, entryIdList = self.__statusDB.getEntryIdListFromInputIdString(value)
+            _error_message, entryIdList = self.__statusDB.getEntryIdListFromInputIdString(value)
             myD['value'] = "', '".join(entryIdList)
         elif (search_type == 'user_by_ids') or (search_type == 'dep_by_ids') or (search_type == 'group_by_ids'):
             myList = []

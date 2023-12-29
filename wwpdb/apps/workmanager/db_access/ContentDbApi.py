@@ -76,12 +76,12 @@ class ContentDbApi(object):
                                  dbSocket=self.__dbSocket, dbPort=self.__dbPort, verbose=self.__verbose, log=self.__lfh)
         self.__dbApi.setSchemaMap(self.__schemaMap)
 
-    def __getDataDir(self, key, parameter):
-        list = self.__dbApi.selectData(key=key, parameter=parameter)
-        if list:
-            return list[0]
-        #
-        return None
+    # def __getDataDir(self, key, parameter):
+    #     rlist = self.__dbApi.selectData(key=key, parameter=parameter)
+    #     if rlist:
+    #         return rlist[0]
+    #     #
+    #     return None
 
     def AuditHistory(self, depositionid=None):
         if not depositionid:
@@ -111,13 +111,13 @@ class ContentDbApi(object):
         if not initial:
             return None
         #
-        list = self.__dbApi.selectData(key="GET_REMINDER_LIST", parameter=(initial))
-        if not list:
+        tlist = self.__dbApi.selectData(key="GET_REMINDER_LIST", parameter=(initial))
+        if not tlist:
             return None
         #
         id_list = []
-        for dir in list:
-            id_list.append(dir['structure_id'])
+        for row in tlist:
+            id_list.append(row['structure_id'])
         #
         return id_list
 
@@ -126,16 +126,16 @@ class ContentDbApi(object):
         if not date:
             return initial_list
         #
-        list = self.__dbApi.selectData(key="GET_DAILY_STATS", parameter=(date))
-        return self.__getAnnoList(list)
+        rlist = self.__dbApi.selectData(key="GET_DAILY_STATS", parameter=(date))
+        return self.__getAnnoList(rlist)
 
     def getRangeStatsList(self, startdate=None, enddate=None):
         initial_list = []
         if not startdate or not enddate:
             return initial_list
         #
-        list = self.__dbApi.selectData(key="GET_RANGE_STATS", parameter=(startdate, enddate))
-        return self.__getAnnoList(list)
+        rlist = self.__dbApi.selectData(key="GET_RANGE_STATS", parameter=(startdate, enddate))
+        return self.__getAnnoList(rlist)
 
     def getInProcessStatsList(self):
         return self.__dbApi.selectData(key="GET_INPROCESS_STATS", parameter=())
@@ -174,7 +174,7 @@ class ContentDbApi(object):
         #
         return self.__dbApi.selectData(key="GET_REPLACE_COUNTS")
 
-    def getLigandIdList(self, entryIdList=[]):
+    def getLigandIdList(self, entryIdList=None):
         #
         if not entryIdList:
             return None
@@ -187,11 +187,11 @@ class ContentDbApi(object):
     def runUpdate(self, table=None, where=None, data=None):
         return self.__dbApi.runUpdate(table=table, where=where, data=data)
 
-    def __getAnnoList(self, list):
+    def __getAnnoList(self, rlist):
         initial_list = []
-        if list:
-            for dir in list:
-                initial_list.append(dir['rcsb_annotator'])
+        if rlist:
+            for row in rlist:
+                initial_list.append(row['rcsb_annotator'])
             #
         #
         return initial_list
