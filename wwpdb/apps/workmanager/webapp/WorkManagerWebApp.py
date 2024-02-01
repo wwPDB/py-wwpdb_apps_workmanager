@@ -34,7 +34,7 @@ import time
 import traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.apps.wf_engine.engine.WFEapplications import reRunWorkflow, DepUIgetDepositorEmail, getPicklePath, getNotesEmailAddr
+from wwpdb.apps.wf_engine.engine.WFEapplications import reRunWorkflow, getPicklePath
 from wwpdb.apps.workmanager.db_access.DBLoader import DBLoader
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
 from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
@@ -529,8 +529,6 @@ class WorkManagerWebAppWorker(object):
             storage_pickle_path = self.__get_deposit_storage_pickle_path('externalUpload.pkl')
             self.__dump_deposit_storage_pickle(storage_pickle_path, 'File upload in depUI failed; FTP upload enabled by Annotator from WFM')
             # send instructions email to depositor
-            frm = self.__cI.get("SITE_NOREPLY_EMAIL", "noreply@mail.wwpdb.org")
-            email = DepUIgetDepositorEmail(depositionid)
             subject = 'Instructions for wwPDB FTP upload for deposition ' + depositionid
             myD = {}
             myD['depositionid'] = depositionid
@@ -543,6 +541,7 @@ class WorkManagerWebAppWorker(object):
             am = AutoMessage(siteId=self.__siteId)
             ret = am.sendSingleMessage(depositionid, subject, message)
             text = 'FTP upload enabled; email sent to the user'
+            self.__lfh.write("+WorkManagerWebAppWorker._EnableFtpUploadOp() sent message status=%s\n" % ret)
         except Exception as e:
             self.__lfh.write("+WorkManagerWebAppWorker._EnableFtpUploadOp() Failed to enable file import and/or send instructions to the depositor %s\n" % str(e))
             error = 'Failed in enable file import to depUI; instructions not sent'
