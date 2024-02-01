@@ -34,7 +34,7 @@ import time
 import traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.apps.wf_engine.engine.WFEapplications import reRunWorkflow, DepUIgetDepositorEmail, WFEsendEmail, getPicklePath, getNotesEmailAddr
+from wwpdb.apps.wf_engine.engine.WFEapplications import reRunWorkflow, DepUIgetDepositorEmail, getPicklePath, getNotesEmailAddr
 from wwpdb.apps.workmanager.db_access.DBLoader import DBLoader
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
 from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
@@ -61,6 +61,7 @@ from wwpdb.io.locator.PathInfo import PathInfo
 from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent
 from wwpdb.utils.session.WebUploadUtils import WebUploadUtils
 from wwpdb.utils.config.ProjectVersionInfo import ProjectVersionInfo
+from wwpdb.apps.msgmodule.util.AutoMessage import AutoMessage
 #
 
 
@@ -539,7 +540,8 @@ class WorkManagerWebAppWorker(object):
             myD['ftp_connect_details_1'] = self.__cI.get('FTP_CONNECT_DETAILS')[1]
             myD['site_dep_email_url'] = self.__cI.get('SITE_DEP_EMAIL_URL')
             message = self.__processTemplate('ftp_message.txt', myD)
-            WFEsendEmail(email, frm, subject, message, getNotesEmailAddr())
+            am = AutoMessage(siteId=self.__siteId)
+            ret = am.sendSingleMessage(depositionid, subject, message)
             text = 'FTP upload enabled; email sent to the user'
         except Exception as e:
             self.__lfh.write("+WorkManagerWebAppWorker._EnableFtpUploadOp() Failed to enable file import and/or send instructions to the depositor %s\n" % str(e))
