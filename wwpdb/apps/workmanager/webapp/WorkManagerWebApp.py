@@ -539,7 +539,7 @@ class WorkManagerWebAppWorker(object):
             myD['site_dep_email_url'] = self.__cI.get('SITE_DEP_EMAIL_URL')
             message = self.__processTemplate('ftp_message.txt', myD)
             am = AutoMessage(siteId=self.__siteId)
-            ret = am.sendSingleMessage(depositionid, subject, message)
+            ret = am.sendSingleMessage(depositionid, subject, message, p_tmpltType="instruction-ftp") #CS 2024-04-04 add template type
             text = 'FTP upload enabled; email sent to the user'
             self.__lfh.write("+WorkManagerWebAppWorker._EnableFtpUploadOp() sent message status=%s\n" % ret)
         except Exception as e:
