@@ -43,7 +43,7 @@ class UserManager(object):
                 for code in ['LANN', 'ANN']:
                     if code in sdata[s]:
                         d = sdata[s][code]
-                    print("     {:4s} group: {:2d}  name: {}".format(code, d['da_group_id'], d['group_name']))
+                        print("     {:4s} group: {:2d}  name: {}".format(code, d['da_group_id'], d['group_name']))
             else:
                 print(s)
 
