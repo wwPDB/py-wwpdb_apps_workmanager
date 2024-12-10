@@ -1,7 +1,10 @@
 ##
 # File:  ContentDbApi.py
 # Date:  15-May-2015
+#
 # Updates:
+#  09-Dec-2024  zf   add getPdbExtIdMap() method.
+#
 ##
 """
 Providing addintaional APIs for WFE to get info from db_internal database.
@@ -53,7 +56,10 @@ class ContentDbApi(object):
                         "h.Structure_id = d.Structure_id and h.ordinal = d.revision_ordinal and d.type='Coordinate replacement' and DATEDIFF(CURDATE(), h.revision_date) <= 365 " +
                         "group by d.Structure_id  ) s1  where s1.Structure_id = c.Structure_Id and c.role='principal investigator/group leader' " +
                         "order by c.identifier_ORCID ) s2 group by identifier_ORCID, name order by name",
-                 "GET_LIGAND_ID_LIST" : "select Structure_ID, comp_id from pdbx_entity_nonpoly where Structure_ID in ( '%s' )"
+                 "GET_LIGAND_ID_LIST" : "select Structure_ID, comp_id from pdbx_entity_nonpoly where Structure_ID in ( '%s' )",
+                 "GET_EXT_PDB_ID_INFO": "select distinct database_code,pdbx_database_accession from database_2 where database_id = 'PDB' and pdbx_database_accession " +
+                                        "is not NULL and pdbx_database_accession != '' and database_code in ( '%s' )"
+       
                    }
     """
     """
@@ -180,6 +186,18 @@ class ContentDbApi(object):
             return None
         #
         return self.__dbApi.selectData(key="GET_LIGAND_ID_LIST", parameter=("', '".join(entryIdList)))
+
+    def getPdbExtIdMap(self, pdbIdList):
+        pdbExtIdMap = {}
+        if len(pdbIdList) > 0:
+            rows = self.__dbApi.selectData(key="GET_EXT_PDB_ID_INFO", parameter=("', '".join(pdbIdList)))
+            for row in rows:
+                if ('database_code' in row) and row['database_code'] and ('pdbx_database_accession' in row) and row['pdbx_database_accession']:
+                    pdbExtIdMap[row['database_code']] = row['pdbx_database_accession']
+                #
+            #
+        #
+        return pdbExtIdMap
 
     def runSelectSQL(self, sql):
         return self.__dbApi.runSelectSQL(sql)

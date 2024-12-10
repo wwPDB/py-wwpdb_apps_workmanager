@@ -1,7 +1,10 @@
 ##
 # File:  DepictContent.py
 # Date:  30-Mar-2016
+#
 # Updates:
+#  09-Dec-2024  zf   call _getPdbExtIdMap() method to get 'ext_pdb_id'
+#
 ##
 """
 
@@ -94,6 +97,10 @@ class DepictContent(DepictBase):
             rows = getattr(self, '%s' % tableMap['sort_function'])(rows)
         #
         if rows:
+            pdbExtIdMap = {}
+            if ('pdb_ids' in tableMap['data-field']) or ('user_pdb_id' in tableMap['data-field']):
+                pdbExtIdMap = self._getPdbExtIdMap(rows)
+            #
             groupIdMap = {}
             idList = self.__getEntryIDList(rows, 'D_')
             if idList:
@@ -243,7 +250,7 @@ class DepictContent(DepictBase):
                     #
                 #
                 if ('pdb_ids' in tableMap['data-field']) or ('user_pdb_id' in tableMap['data-field']):
-                    dataD = processPublicIDs(dataD)
+                    dataD = processPublicIDs(dataD, pdbExtIdMap)
                     if ('coor_status' in tableMap['data-field']) or ('author_status' in tableMap['data-field']):
                         dataD['comb_status_code'], dataD['comb_author_release_status_code'], titleEM, authorListEM = self.__processStatusCode(dataD)
                         if titleEM:

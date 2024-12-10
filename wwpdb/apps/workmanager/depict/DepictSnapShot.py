@@ -1,7 +1,10 @@
 ##
 # File:  DepictSnapShot.py
 # Date:  25-Mar-2016
+#
 # Updates:
+#  09-Dec-2024  zf   call contentDB.getPdbExtIdMap() method to get 'ext_pdb_id'
+#
 ##
 """
 
@@ -24,6 +27,7 @@ __version__ = "V0.07"
 import os
 import sys
 
+from wwpdb.apps.workmanager.db_access.ContentDbApi import ContentDbApi
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
 from wwpdb.apps.workmanager.depict.DepictBase import processPublicIDs
 from wwpdb.apps.workmanager.depict.ReadConFigFile import ReadConFigFile
@@ -76,7 +80,16 @@ class DepictSnapShot(object):
         if statusDB:
             myD = statusDB.getDepInfo(depositionid=self.__depositionid)
         #
-        myD = processPublicIDs(myD)
+        pdbExtIdMap = {}
+        contentDB = ContentDbApi(siteId=self.__reqObj.getValue("WWPDB_SITE_ID"), verbose=self.__verbose, log=self.__lfh)
+        if contentDB:
+            pdbIdList = []
+            if ('pdb_id' in myD) and myD['pdb_id']:
+                pdbIdList.append(myD['pdb_id'])
+            #
+            pdbExtIdMap = contentDB.getPdbExtIdMap(pdbIdList)
+        #
+        myD = processPublicIDs(myD, pdbExtIdMap)
         #
         myD['identifier'] = self.__depositionid
         #

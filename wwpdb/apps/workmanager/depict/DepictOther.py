@@ -1,7 +1,10 @@
 ##
 # File:  DepictOther.py
 # Date:  25-Mar-2016
+#
 # Updates:
+#  09-Dec-2024  zf   call _getPdbExtIdMap() method to get 'ext_pdb_id'
+#
 ##
 """
 
@@ -163,12 +166,16 @@ class DepictOther(DepictBase):
         self._connectStatusDB()
         self._getUserInfoDict()
         #
-        self.__dataD = processPublicIDs(self._statusDB.getDepInfo(depositionid=self._reqObj.getValue("identifier")))
+        dataD = self._statusDB.getDepInfo(depositionid=self._reqObj.getValue("identifier"))
+        pdbExtIdMap = self._getPdbExtIdMap([ dataD ])
+        self.__dataD = processPublicIDs(dataD, pdbExtIdMap)
 
     def __getLastInst(self):
         """
         """
-        self.__lastInst = processPublicIDs(self._statusDB.getLastInstance(depositionid=self._reqObj.getValue("identifier")))
+        dataD = self._statusDB.getLastInstance(depositionid=self._reqObj.getValue("identifier"))
+        pdbExtIdMap = self._getPdbExtIdMap([ dataD ])
+        self.__lastInst = processPublicIDs(dataD, pdbExtIdMap)
 
     def __getInstanceData(self, item):
         """

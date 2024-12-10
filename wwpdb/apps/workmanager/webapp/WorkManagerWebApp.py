@@ -1,7 +1,9 @@
 ##
 # File:  WorkManagerWebApp.py
 # Date:  23-Apr-2015
+#
 # Updates:
+#  10-Dec-2024 zf  added refreshing "latency of servers" report
 ##
 """
 Chemeditor web request and response processing modules.
@@ -43,8 +45,9 @@ from wwpdb.apps.workmanager.depict.DepictGroup import DepictGroup
 from wwpdb.apps.workmanager.depict.DepictLevel1 import DepictLevel1
 from wwpdb.apps.workmanager.depict.DepictOther import DepictOther
 from wwpdb.apps.workmanager.depict.DepictSnapShot import DepictSnapShot
-from wwpdb.apps.workmanager.depict.SearchUtil import SearchUtil
 from wwpdb.apps.workmanager.depict.ReadConFigFile import ReadConFigFile, loadPickleFile
+from wwpdb.apps.workmanager.depict.SearchUtil import SearchUtil
+from wwpdb.apps.workmanager.depict.ServerInfoUtil import ServerInfoUtil
 from wwpdb.apps.workmanager.file_access.AnnotAssignUtil import AnnotAssignUtil
 from wwpdb.apps.workmanager.file_access.CopyFileToAutoGroup import CopyFileToAutoGroup
 from wwpdb.apps.workmanager.file_access.LogFileUtil import LogFileUtil
@@ -656,7 +659,7 @@ class WorkManagerWebAppWorker(object):
         #
         sUtil = SearchUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         sUtil.updateSql()
-        return self.__refreshTableContent(None, self.__reqObj.getValue('index'))
+        return self.__refreshTableContent(None, self.__reqObj.getValue('index'), False)
 
     def _EditMyListOp(self):
         """ Add to/Remove from my list interface
@@ -673,7 +676,7 @@ class WorkManagerWebAppWorker(object):
         else:
             sdb.removeFromMyList(depositionid)
         #
-        return self.__refreshTableContent(sdb, 'all')
+        return self.__refreshTableContent(sdb, 'all', False)
 
     def _RefreshOp(self):
         """ Refresh list interface
@@ -681,7 +684,7 @@ class WorkManagerWebAppWorker(object):
         if (self.__verbose):
             self.__lfh.write("+WorkManagerWebAppWorker._RefreshOp() Starting now\n")
         #
-        return self.__refreshTableContent(None, self.__reqObj.getValue('index'))
+        return self.__refreshTableContent(None, self.__reqObj.getValue('index'), True)
 
     def _RunEngineOp(self):
         """ Run work flow engine interface
@@ -763,7 +766,7 @@ class WorkManagerWebAppWorker(object):
         sdb = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         sdb.updateAnnotatorAssignment(assignList=assign_pair_list)
         #
-        return self.__refreshTableContent(sdb, str(self.__reqObj.getValue("tab_id")) + "_table_1")
+        return self.__refreshTableContent(sdb, str(self.__reqObj.getValue("tab_id")) + "_table_1", False)
 
     def _Level2PageOp(self):
         """ Level2 page interface
@@ -1175,7 +1178,7 @@ class WorkManagerWebAppWorker(object):
         rC.addDictionaryItems(rtrnDict)
         return rC
 
-    def __refreshTableContent(self, sdb, index):
+    def __refreshTableContent(self, sdb, index, flag):
         """
         """
         readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='level1_config.cif', verbose=self.__verbose, log=self.__lfh)
@@ -1186,6 +1189,16 @@ class WorkManagerWebAppWorker(object):
         if returnMap:
             rtrnDict['status'] = 'OK'
             rtrnDict['map'] = returnMap
+            if (index == 'all') and flag:
+                if sdb is None:
+                    sdb = StatusDbApi(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
+                #
+                sInfoUtil = ServerInfoUtil(reqObj=self.__reqObj, statusDB=sdb, conFigObj=configDict, verbose=self.__verbose, log=self.__lfh)
+                text = sInfoUtil.getServerInfo()
+                if text:
+                    rtrnDict['serverinfotext'] = text
+                #
+            #
         else:
             rtrnDict['status'] = 'Failed'
         #

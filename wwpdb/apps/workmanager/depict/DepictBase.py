@@ -1,7 +1,10 @@
 ##
 # File:  DepictBase.py
 # Date:  17-Mar-2016
+#
 # Updates:
+#  09-Dec-2024  zf   add _getPdbExtIdMap() method and 'ext_pdb_id'
+#
 ##
 """
 
@@ -292,6 +295,19 @@ class DepictBase(object):
         #
         return ''
 
+    def _getPdbExtIdMap(self, dataDictList):
+        """
+        """
+        self._connectContentDB()
+        #
+        pdbIdList = []
+        for dataDict in dataDictList:
+            if ('pdb_id' in dataDict) and dataDict['pdb_id']:
+                pdbIdList.append(dataDict['pdb_id'])
+            #
+        #
+        return self._contentDB.getPdbExtIdMap(pdbIdList)
+
     def __getUrlMap(self):
         """
         """
@@ -509,9 +525,10 @@ class DepictBase(object):
         return self._statusDB.getSiteUser(self._userInfo['site'])
 
 
-def processPublicIDs(dataDict):
+def processPublicIDs(dataDict, pdbExtIdMap):
     if not dataDict:
         dataDict = {}
+        dataDict['ext_pdb_id'] = '-'
         dataDict['pdb_id'] = '-'
         dataDict['bmrb_id'] = '-'
         dataDict['emdb_id'] = '-'
@@ -519,6 +536,13 @@ def processPublicIDs(dataDict):
     for item in ('pdb_id', 'bmrb_id', 'emdb_id'):
         if (item not in dataDict) or (not dataDict[item]) or (dataDict[item] == '?'):
             dataDict[item] = '-'
+        #
+        if item == 'pdb_id':
+            if (dataDict['pdb_id'] in pdbExtIdMap) and pdbExtIdMap[dataDict['pdb_id']]:
+                dataDict['ext_pdb_id'] = pdbExtIdMap[dataDict['pdb_id']]
+            else:
+                dataDict['ext_pdb_id'] = dataDict['pdb_id']
+            #
         #
     #
     return dataDict
