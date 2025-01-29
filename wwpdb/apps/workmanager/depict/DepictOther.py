@@ -167,14 +167,14 @@ class DepictOther(DepictBase):
         self._getUserInfoDict()
         #
         dataD = self._statusDB.getDepInfo(depositionid=self._reqObj.getValue("identifier"))
-        pdbExtIdMap = self._getPdbExtIdMap([ dataD ])
+        pdbExtIdMap = self._getPdbExtIdMap([dataD])
         self.__dataD = processPublicIDs(dataD, pdbExtIdMap)
 
     def __getLastInst(self):
         """
         """
         dataD = self._statusDB.getLastInstance(depositionid=self._reqObj.getValue("identifier"))
-        pdbExtIdMap = self._getPdbExtIdMap([ dataD ])
+        pdbExtIdMap = self._getPdbExtIdMap([dataD])
         self.__lastInst = processPublicIDs(dataD, pdbExtIdMap)
 
     def __getInstanceData(self, item):

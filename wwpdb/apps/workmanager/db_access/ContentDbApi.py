@@ -59,7 +59,6 @@ class ContentDbApi(object):
                  "GET_LIGAND_ID_LIST" : "select Structure_ID, comp_id from pdbx_entity_nonpoly where Structure_ID in ( '%s' )",
                  "GET_EXT_PDB_ID_INFO": "select distinct database_code,pdbx_database_accession from database_2 where database_id = 'PDB' and pdbx_database_accession " +
                                         "is not NULL and pdbx_database_accession != '' and database_code in ( '%s' )"
-       
                    }
     """
     """
