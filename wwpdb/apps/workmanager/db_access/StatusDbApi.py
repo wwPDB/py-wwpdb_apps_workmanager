@@ -563,6 +563,8 @@ class StatusDbApi(object):
                 id_type = 'pdb_id'
             elif len(input_id) == 5:
                 id_type = 'bmrb_id'
+            elif (len(input_id) == 12) and input_id.lower().startswith('pdb_'):
+                id_type = 'pdb_id'
             #
             if not id_type:
                 if error_message:
@@ -578,6 +580,15 @@ class StatusDbApi(object):
                     id_type_map[id_type].append(input_id)
                 else:
                     id_type_map[id_type] = [input_id]
+                #
+                if input_id.lower().startswith('pdb_0000') and (id_type == 'pdb_id'):
+                    short_pdb_id = input_id[8:]
+                    #
+                    if id_type in id_type_map:
+                        id_type_map[id_type].append(short_pdb_id)
+                    else:
+                        id_type_map[id_type] = [short_pdb_id]
+                    #
                 #
             #
         #

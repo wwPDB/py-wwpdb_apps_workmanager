@@ -131,6 +131,11 @@ class DepictWorkFlow(DepictBase):
             myD['run_with_ui'] = ''
             if wf['classID'] in ('TransMod', 'LigMod', 'SeqMod' , 'AnnMod'):
                 myD['run_with_ui'] = single_module_UI_tmplt % myD
+            elif wf['classID'] == 'ValMod':
+                groupId = self._reqObj.getValue('group_id')
+                if groupId and groupId.startswith('G_'):
+                    myD['run_with_ui'] = single_module_UI_tmplt % myD
+                #
             #
             myD['open_interface'] = ''
             if myD['inst_status'] == 'notdone':

@@ -38,6 +38,7 @@ class DepictGroup(DepictBase):
         self.__workFlowFlag = workFlow
         self.__wfTaskList = []
         self.__entryList = []
+        self.__colorCodeMap = { 'WF': 'groupTaskWF', 'Bucket': 'groupTaskBucket', 'UI': 'groupTaskUI' }
         self.__setup()
         self.__get_workflow_info()
         self.__get_entry_info()
@@ -49,21 +50,23 @@ class DepictGroup(DepictBase):
         self._getUserInfoDict()
         #
         if self.__workFlowFlag:
-            self.__wfTaskList.append({'name' : 'run Annotation', 'classID' : 'runWF_Annotate'})
-            self.__wfTaskList.append({'name' : 'restart Annotation', 'classID' : 'restartGoWF_Annotate'})
+            self.__wfTaskList.append({'name' : 'run Annotation WF', 'classID' : 'runWF_Annotate_WF', 'groupclass' : self.__colorCodeMap['WF']})
+            self.__wfTaskList.append({'name' : 'restart Annotation WF', 'classID' : 'restartGoWF_Annotate_WF', 'groupclass' : self.__colorCodeMap['WF']})
             self.__classInfo = self._statusDB.getWfClassByID(classID='Annotate')
             wfloader = WorkflowXMLLoader(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
             wfloader.loadWorkFlowXMLFile(self.__classInfo['class_file'])
             wfWorkFlowInfo = wfloader.getWorkFlowInfo()
-            # self.__wfFlow = wfWorkFlowInfo.values()
-            for wf in wfWorkFlowInfo.values():
-                if 'classID' not in wf:
-                    continue
+            for wfType in ( 'WF', 'Bucket' ):
+                for wf in wfWorkFlowInfo.values():
+                    if 'classID' not in wf:
+                        continue
+                    #
+                    myD = {}
+                    myD['name'] = 'restart ' + wf['name'] + ' ' + wfType
+                    myD['classID'] = 'restartGoWF_' + wf['classID'] + '_' + wfType
+                    myD['groupclass'] = self.__colorCodeMap[wfType]
+                    self.__wfTaskList.append(myD)
                 #
-                myD = {}
-                myD['name'] = 'restart ' + wf['name']
-                myD['classID'] = 'restartGoWF_' + wf['classID']
-                self.__wfTaskList.append(myD)
             #
         #
         entryIdList = self._statusDB.getEntryListForGroup(groupids=[self._reqObj.getValue("identifier")])
@@ -95,6 +98,14 @@ class DepictGroup(DepictBase):
             #
             workflow_info += module_tmplt % wfTask
             count += 1
+        #
+        workflow_info += '</tr>\n<tr>\n'
+        for wfMod in ( 'TransMod', 'LigMod', 'SeqMod', 'AnnMod', 'ValMod' ):
+            myD = {}
+            myD['name'] = 'restart ' +  wfMod + ' UI'
+            myD['classID'] = 'restartGoWF_' + wfMod + '_UI'
+            myD['groupclass'] = self.__colorCodeMap['UI']
+            workflow_info += module_tmplt % myD
         #
         workflow_info += '</tr>\n'
         self._dataInfo['workflow_info'] = workflow_info

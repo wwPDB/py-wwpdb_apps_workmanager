@@ -185,8 +185,10 @@ class DepictContent(DepictBase):
             order = 0
             for dataD in rows:
                 dataD['display_ids'] = dataD['dep_set_id']
+                dataD['group_info'] = ''
                 if (dataD['dep_set_id'] in groupIdMap) and groupIdMap[dataD['dep_set_id']]:
                     dataD['display_ids'] = dataD['dep_set_id'] + '/' + groupIdMap[dataD['dep_set_id']]
+                    dataD['group_info'] = '&group_id=' + groupIdMap[dataD['dep_set_id']]
                 #
                 if 'default_order' in tableMap['data-field']:
                     order_condition = ''

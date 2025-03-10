@@ -978,6 +978,9 @@ class WorkManagerWebAppWorker(object):
         c_list = class_comb.split('_')
         command = c_list[0]
         classid = c_list[1]
+        if c_list[2] == 'UI':
+            classid = c_list[1] + c_list[2]
+        #
         version = ''
         if command == 'restartGoWF':
             version = 'latest'
@@ -986,6 +989,12 @@ class WorkManagerWebAppWorker(object):
         classInfo = sdb.getWfClassByID(classID=classid)
         if not classInfo:
             return self.__returnJsonObject('', "Start '" + classid + "' workflow failed.")
+        #
+        classFileName = classInfo['class_file']
+        if c_list[2] == 'WF':
+            if (classFileName != 'Annotation.bf.xml') and (classFileName != 'Annotation.xml') and (classFileName != 'wf_op_annot-main_fs_archive.xml'):
+                classFileName = 'Annotation.bf.xml:' + str(classid)
+            #
         #
         for entry_id in entryList:
             if successful_msg:
@@ -997,7 +1006,7 @@ class WorkManagerWebAppWorker(object):
                 instanceid = lastWFInstance['wf_inst_id']
             #
             msg = sdb.insertCommunicationCommand(depositionid=entry_id, instid=instanceid, classid=classid,
-                                                 command=command, classname=classInfo['class_file'], dataversion=version)
+                                                 command=command, classname=classFileName, dataversion=version)
             if msg != 'OK':
                 successful_msg += msg
             else:
