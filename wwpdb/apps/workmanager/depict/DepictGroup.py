@@ -38,7 +38,7 @@ class DepictGroup(DepictBase):
         self.__workFlowFlag = workFlow
         self.__wfTaskList = []
         self.__entryList = []
-        self.__colorCodeMap = { 'WF': 'groupTaskWF', 'Bucket': 'groupTaskBucket', 'UI': 'groupTaskUI' }
+        self.__colorCodeMap = {'WF': 'groupTaskWF', 'Bucket': 'groupTaskBucket', 'UI': 'groupTaskUI'}
         self.__setup()
         self.__get_workflow_info()
         self.__get_entry_info()
@@ -56,7 +56,7 @@ class DepictGroup(DepictBase):
             wfloader = WorkflowXMLLoader(siteId=self._siteId, verbose=self._verbose, log=self._lfh)
             wfloader.loadWorkFlowXMLFile(self.__classInfo['class_file'])
             wfWorkFlowInfo = wfloader.getWorkFlowInfo()
-            for wfType in ( 'WF', 'Bucket' ):
+            for wfType in ('WF', 'Bucket'):
                 for wf in wfWorkFlowInfo.values():
                     if 'classID' not in wf:
                         continue
@@ -100,9 +100,9 @@ class DepictGroup(DepictBase):
             count += 1
         #
         workflow_info += '</tr>\n<tr>\n'
-        for wfMod in ( 'TransMod', 'LigMod', 'SeqMod', 'AnnMod', 'ValMod' ):
+        for wfMod in ('TransMod', 'LigMod', 'SeqMod', 'AnnMod', 'ValMod'):
             myD = {}
-            myD['name'] = 'restart ' +  wfMod + ' UI'
+            myD['name'] = 'restart ' + wfMod + ' UI'
             myD['classID'] = 'restartGoWF_' + wfMod + '_UI'
             myD['groupclass'] = self.__colorCodeMap['UI']
             workflow_info += module_tmplt % myD
