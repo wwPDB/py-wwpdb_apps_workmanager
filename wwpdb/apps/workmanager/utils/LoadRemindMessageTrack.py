@@ -30,10 +30,7 @@ import time
 import traceback
 
 import MySQLdb
-from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from wwpdb.io.locator.PathInfo import PathInfo
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppMessaging
 from wwpdb.utils.wf.dbapi.DbConnection import DbConnection
 
 # Import msgmodule utilities - ExtractMessage does the heavy lifting
@@ -211,29 +208,8 @@ class LoadRemindMessageTrack(object):
         self.__lfh = log
         self.__statusDB = DbApiUtil(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         
-        # Check configuration to determine which method to use, just like in MessagingIo
-        self.__legacycomm = not ConfigInfoAppMessaging(self.__siteId).get_msgdb_support()
-        
-        # Initialize based on configuration
-        if not self.__legacycomm:
-            self.__initMsgModule()
-            if self.__verbose:
-                self.__lfh.write("Using msgmodule ExtractMessage for message tracking\n")
-        else:
-            self.__initCifMethod()
-            if self.__verbose:
-                self.__lfh.write("Using CIF file parsing for message tracking\n")
-
-    def __initMsgModule(self):
-        """ Initialize msgmodule ExtractMessage utility """
-        # Use ExtractMessage which handles the heavy lifting as Ezra mentioned
+        # Use ExtractMessage which automatically handles legacy vs modern communication
         self.__extractMessage = ExtractMessage(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        self.__pathIo = None
-
-    def __initCifMethod(self):
-        """ Initialize CIF file parsing method """
-        self.__pathIo = PathInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        self.__extractMessage = None
 
     def UpdateBasedIDList(self, depIDList):
         """ Update remind_message_track table based depID list ( comma separate )
@@ -273,12 +249,9 @@ class LoadRemindMessageTrack(object):
     def __getRemindMessageTrack(self, depID):
         """ Get remind_message_track table information for given depID
         """
-        if not self.__legacycomm:
-            return self.__getRemindMessageTrackFromMsgModule(depID)
-        else:
-            return self.__getRemindMessageTrackFromCif(depID)
+        return self.__getRemindMessageTrackFromExtractMessage(depID)
 
-    def __getRemindMessageTrackFromMsgModule(self, depID):
+    def __getRemindMessageTrackFromExtractMessage(self, depID):
         """ Get remind_message_track table information using ExtractMessage utility """
         # Use ExtractMessage API methods - let it handle the heavy lifting
         trackMap = {}
@@ -310,58 +283,6 @@ class LoadRemindMessageTrack(object):
             if self.__verbose:
                 self.__lfh.write("Error getting message track from ExtractMessage for %s: %s\n" % (depID, str(e)))
         
-        return trackMap
-
-    def __getRemindMessageTrackFromCif(self, depID):
-        """ Get remind_message_track table information from CIF files (original implementation)
-        """
-        text_re = re.compile('This message is to inform you that your structure.*is still awaiting your input')
-        subj_re = re.compile('Still awaiting feedback/new file')
-        #
-        typeList = [['messages-from-depositor', 'last_message_received_date'],
-                    ['messages-to-depositor', 'last_message_sent_date']]
-        #
-        trackMap = {}
-        for type in typeList:  # pylint: disable=redefined-builtin
-            FilePath = self.__pathIo.getFilePath(depID, contentType=type[0], formatType='pdbx', fileSource='archive')
-            if (not FilePath) or (not os.access(FilePath, os.F_OK)):
-                continue
-            #
-            cifObj = mmCIFUtil(filePath=FilePath)
-            message_list = cifObj.GetValue('pdbx_deposition_message_info')
-            if not message_list:
-                continue
-            #
-            trackMap[type[1]] = message_list[len(message_list) - 1]['timestamp'][0:10]
-            if type[0] != 'messages-to-depositor':
-                continue
-            #
-            map = {}  # pylint: disable=redefined-builtin
-            reference_list = cifObj.GetValue('pdbx_deposition_message_file_reference')
-            if reference_list:
-                for ref in reference_list:
-                    if ref['content_type'] == 'validation-report-annotate':
-                        map[ref['message_id']] = ref['content_type']
-                    #
-                #
-            #
-            last_validation_report = ''
-            for message in message_list:
-                if ('message_text' in message and text_re.search(message['message_text'])) or \
-                        ('message_subject' in message and subj_re.search(message['message_subject'])):
-                    trackMap['last_reminder_sent_date'] = message['timestamp'][0:10]
-                #
-                if message['message_id'] in map and map[message['message_id']] == 'validation-report-annotate':
-                    trackMap['last_validation_sent_date'] = message['timestamp'][0:10]
-                    if 'message_text' in message:
-                        last_validation_report = message['message_text']
-                    #
-                #
-            #
-            if last_validation_report and re.search('Some major issues', last_validation_report) is not None:
-                trackMap['major_issue'] = 'Yes'
-            #
-        #
         return trackMap
 
 
