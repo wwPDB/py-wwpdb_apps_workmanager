@@ -36,8 +36,8 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppMessaging
 from wwpdb.utils.wf.dbapi.DbConnection import DbConnection
 
-# Import msgmodule database API for message data access
-from wwpdb.apps.msgmodule.db import DataAccessLayer
+# Import msgmodule utilities - ExtractMessage does the heavy lifting
+from wwpdb.apps.msgmodule.util.ExtractMessage import ExtractMessage
 
 
 class DbApiUtil(object):
@@ -214,41 +214,26 @@ class LoadRemindMessageTrack(object):
         # Check configuration to determine which method to use, just like in MessagingIo
         self.__legacycomm = not ConfigInfoAppMessaging(self.__siteId).get_msgdb_support()
         
-        # Initialize based on configuration and availability
+        # Initialize based on configuration
         if not self.__legacycomm:
             self.__initMsgModule()
             if self.__verbose:
-                self.__lfh.write("Using msgmodule database for message tracking\n")
+                self.__lfh.write("Using msgmodule ExtractMessage for message tracking\n")
         else:
             self.__initCifMethod()
             if self.__verbose:
                 self.__lfh.write("Using CIF file parsing for message tracking\n")
 
     def __initMsgModule(self):
-        """ Initialize msgmodule database connection """
-        try:
-            cI = ConfigInfo(self.__siteId)
-            # Configure msgmodule database connection
-            db_config = {
-                'host': cI.get('SITE_DB_HOST_NAME'),
-                'port': int(cI.get('SITE_DB_PORT_NUMBER', '3306')),
-                'database': cI.get('WWPDB_MESSAGING_DB_NAME'),
-                'username': cI.get('SITE_DB_USER_NAME'),
-                'password': cI.get('SITE_DB_PASSWORD', ''),
-                'charset': 'utf8mb4',
-            }
-            self.__msgDataAccess = DataAccessLayer(db_config)
-            self.__pathIo = None
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write("Error initializing msgmodule: %s\n" % str(e))
-            # Fall back to CIF method
-            self.__initCifMethod()
+        """ Initialize msgmodule ExtractMessage utility """
+        # Use ExtractMessage which handles the heavy lifting as Ezra mentioned
+        self.__extractMessage = ExtractMessage(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
+        self.__pathIo = None
 
     def __initCifMethod(self):
         """ Initialize CIF file parsing method """
         self.__pathIo = PathInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        self.__msgDataAccess = None
+        self.__extractMessage = None
 
     def UpdateBasedIDList(self, depIDList):
         """ Update remind_message_track table based depID list ( comma separate )
@@ -294,67 +279,36 @@ class LoadRemindMessageTrack(object):
             return self.__getRemindMessageTrackFromCif(depID)
 
     def __getRemindMessageTrackFromMsgModule(self, depID):
-        """ Get remind_message_track table information from msgmodule database
-        """
-        # Keep existing regex patterns exactly as-is
-        text_re = re.compile('This message is to inform you that your structure.*is still awaiting your input')
-        subj_re = re.compile('Still awaiting feedback/new file')
-        
+        """ Get remind_message_track table information using ExtractMessage utility """
+        # Use ExtractMessage API methods - let it handle the heavy lifting
         trackMap = {}
         
-        # Process messages-from-depositor for last_message_received_date
         try:
-            from_messages = self.__msgDataAccess.get_deposition_messages_by_content_type(
-                depID, 'messages-from-depositor'
-            )
-            if from_messages:
-                # Get latest timestamp (messages are ordered by timestamp ASC)
-                latest_message = from_messages[-1]
-                trackMap['last_message_received_date'] = latest_message.timestamp.strftime('%Y-%m-%d')
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write("Error getting messages-from-depositor for %s: %s\n" % (depID, str(e)))
-        
-        # Process messages-to-depositor for multiple tracking fields
-        try:
-            to_messages = self.__msgDataAccess.get_deposition_messages_by_content_type(
-                depID, 'messages-to-depositor'
-            )
-            if to_messages:
-                # Get latest timestamp for last_message_sent_date
-                latest_message = to_messages[-1]
-                trackMap['last_message_sent_date'] = latest_message.timestamp.strftime('%Y-%m-%d')
-                
-                # Build file reference map for validation report detection
-                file_ref_map = {}
-                for message in to_messages:
-                    file_refs = self.__msgDataAccess.get_file_references_for_message(message.message_id)
-                    for ref in file_refs:
-                        if ref.content_type == 'validation-report-annotate':
-                            file_ref_map[message.message_id] = ref.content_type
-                
-                # Process messages for reminder and validation tracking
-                last_validation_report = ''
-                for message in to_messages:
-                    # Check for reminder messages using original regex patterns
-                    message_text = message.message_text or ''
-                    message_subject = message.message_subject or ''
-                    
-                    if (text_re.search(message_text)) or (subj_re.search(message_subject)):
-                        trackMap['last_reminder_sent_date'] = message.timestamp.strftime('%Y-%m-%d')
-                    
-                    # Check for validation report messages
-                    if message.message_id in file_ref_map and file_ref_map[message.message_id] == 'validation-report-annotate':
-                        trackMap['last_validation_sent_date'] = message.timestamp.strftime('%Y-%m-%d')
-                        last_validation_report = message_text
-                
-                # Check for major issues in validation reports
-                if last_validation_report and re.search('Some major issues', last_validation_report) is not None:
+            # Get last message received date from depositor
+            last_received = self.__extractMessage.getLastReceivedMsgDatetime(depID)
+            if last_received:
+                trackMap['last_message_received_date'] = last_received.strftime('%Y-%m-%d')
+            
+            # Get last message sent to depositor
+            last_sent = self.__extractMessage.getLastSentMsgDatetime(depID)
+            if last_sent:
+                trackMap['last_message_sent_date'] = last_sent.strftime('%Y-%m-%d')
+            
+            # Get last manual reminder sent to depositor
+            last_reminder = self.__extractMessage.getLastManualReminderDatetime(depID)
+            if last_reminder:
+                trackMap['last_reminder_sent_date'] = last_reminder.strftime('%Y-%m-%d')
+            
+            # Get last validation report info (returns tuple of datetime and major_issue boolean)
+            validation_info = self.__extractMessage.getLastValidation(depID)
+            if validation_info[0]:  # validation_info is (datetime, major_issue_boolean)
+                trackMap['last_validation_sent_date'] = validation_info[0].strftime('%Y-%m-%d')
+                if validation_info[1]:  # major_issue_boolean
                     trackMap['major_issue'] = 'Yes'
-                    
+        
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write("Error getting messages-to-depositor for %s: %s\n" % (depID, str(e)))
+                self.__lfh.write("Error getting message track from ExtractMessage for %s: %s\n" % (depID, str(e)))
         
         return trackMap
 
@@ -409,14 +363,6 @@ class LoadRemindMessageTrack(object):
             #
         #
         return trackMap
-
-    def __del__(self):
-        """ Cleanup database connections """
-        try:
-            if self.__msgDataAccess:
-                self.__msgDataAccess.close()
-        except Exception:
-            pass
 
 
 def load_main():
