@@ -1,7 +1,7 @@
 ##
 # File:  LoadRemindMessageTrack.py
 # Date:  27-April-2016
-# Updates:
+# Updates: 31-October-2025 - Refactored to use msgmodule DataAccessLayer instead of CIF file parsing
 ##
 """
 API for loading message receiving/sending information into status database.
@@ -19,21 +19,21 @@ __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng"
 __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "V0.07"
+__version__ = "V0.07"  # TODO: Update version after refactor  # pylint: disable=fixme
 
 import datetime
 import getopt
 import os
-import re
 import sys
 import time
 import traceback
 
 import MySQLdb
-from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from wwpdb.io.locator.PathInfo import PathInfo
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.wf.dbapi.DbConnection import DbConnection
+
+# Import msgmodule utilities - ExtractMessage does the heavy lifting
+from wwpdb.apps.msgmodule.util.ExtractMessage import ExtractMessage
 
 
 class DbApiUtil(object):
@@ -205,13 +205,10 @@ class LoadRemindMessageTrack(object):
         self.__siteId = siteId
         self.__verbose = verbose
         self.__lfh = log
-        self.__pathIo = PathInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         self.__statusDB = DbApiUtil(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        #
-        """
-        self.__message_items = [ 'major_issue', 'last_reminder_sent_date', 'last_validation_sent_date', \
-                                 'last_message_received_date', 'last_message_sent_date' ]
-        """
+
+        # Use ExtractMessage which automatically handles legacy vs modern communication
+        self.__extractMessage = ExtractMessage(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
 
     def UpdateBasedIDList(self, depIDList):
         """ Update remind_message_track table based depID list ( comma separate )
@@ -249,55 +246,42 @@ class LoadRemindMessageTrack(object):
         self.__statusDB.runUpdate(table='remind_message_track', where={'dep_set_id': depID}, data=trackMap)
 
     def __getRemindMessageTrack(self, depID):
-        """ Get remind_message_track table information for giveng depID
+        """ Get remind_message_track table information for given depID
         """
-        text_re = re.compile('This message is to inform you that your structure.*is still awaiting your input')
-        subj_re = re.compile('Still awaiting feedback/new file')
-        #
-        typeList = [['messages-from-depositor', 'last_message_received_date'],
-                    ['messages-to-depositor', 'last_message_sent_date']]
-        #
+        return self.__getRemindMessageTrackFromExtractMessage(depID)
+
+    def __getRemindMessageTrackFromExtractMessage(self, depID):
+        """ Get remind_message_track table information using ExtractMessage utility """
+        # Use ExtractMessage API methods - let it handle the heavy lifting
         trackMap = {}
-        for type in typeList:  # pylint: disable=redefined-builtin
-            FilePath = self.__pathIo.getFilePath(depID, contentType=type[0], formatType='pdbx', fileSource='archive')
-            if (not FilePath) or (not os.access(FilePath, os.F_OK)):
-                continue
-            #
-            cifObj = mmCIFUtil(filePath=FilePath)
-            message_list = cifObj.GetValue('pdbx_deposition_message_info')
-            if not message_list:
-                continue
-            #
-            trackMap[type[1]] = message_list[len(message_list) - 1]['timestamp'][0:10]
-            if type[0] != 'messages-to-depositor':
-                continue
-            #
-            map = {}  # pylint: disable=redefined-builtin
-            reference_list = cifObj.GetValue('pdbx_deposition_message_file_reference')
-            if reference_list:
-                for ref in reference_list:
-                    if ref['content_type'] == 'validation-report-annotate':
-                        map[ref['message_id']] = ref['content_type']
-                    #
-                #
-            #
-            last_validation_report = ''
-            for message in message_list:
-                if ('message_text' in message and text_re.search(message['message_text'])) or \
-                        ('message_subject' in message and subj_re.search(message['message_subject'])):
-                    trackMap['last_reminder_sent_date'] = message['timestamp'][0:10]
-                #
-                if message['message_id'] in map and map[message['message_id']] == 'validation-report-annotate':
-                    trackMap['last_validation_sent_date'] = message['timestamp'][0:10]
-                    if 'message_text' in message:
-                        last_validation_report = message['message_text']
-                    #
-                #
-            #
-            if last_validation_report and re.search('Some major issues', last_validation_report) is not None:
-                trackMap['major_issue'] = 'Yes'
-            #
-        #
+
+        try:
+            # Get last message received date from depositor
+            last_received = self.__extractMessage.getLastReceivedMsgDatetime(depID)
+            if last_received:
+                trackMap['last_message_received_date'] = last_received.strftime('%Y-%m-%d')
+
+            # Get last message sent to depositor
+            last_sent = self.__extractMessage.getLastSentMsgDatetime(depID)
+            if last_sent:
+                trackMap['last_message_sent_date'] = last_sent.strftime('%Y-%m-%d')
+
+            # Get last manual reminder sent to depositor
+            last_reminder = self.__extractMessage.getLastManualReminderDatetime(depID)
+            if last_reminder:
+                trackMap['last_reminder_sent_date'] = last_reminder.strftime('%Y-%m-%d')
+
+            # Get last validation report info (returns tuple of datetime and major_issue boolean)
+            validation_info = self.__extractMessage.getLastValidation(depID)
+            if validation_info[0]:  # validation_info is (datetime, major_issue_boolean)
+                trackMap['last_validation_sent_date'] = validation_info[0].strftime('%Y-%m-%d')
+                if validation_info[1]:  # major_issue_boolean
+                    trackMap['major_issue'] = 'Yes'
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write("Error getting message track from ExtractMessage for %s: %s\n" % (depID, str(e)))
+
         return trackMap
 
 
