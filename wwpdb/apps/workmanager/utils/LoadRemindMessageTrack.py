@@ -19,12 +19,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng"
 __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "V0.07" # TODO: Update version after refactor
+__version__ = "V0.07"  # TODO: Update version after refactor  # pylint: disable=fixme
 
 import datetime
 import getopt
 import os
-import re
 import sys
 import time
 import traceback
@@ -207,7 +206,7 @@ class LoadRemindMessageTrack(object):
         self.__verbose = verbose
         self.__lfh = log
         self.__statusDB = DbApiUtil(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
-        
+
         # Use ExtractMessage which automatically handles legacy vs modern communication
         self.__extractMessage = ExtractMessage(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
 
@@ -255,34 +254,34 @@ class LoadRemindMessageTrack(object):
         """ Get remind_message_track table information using ExtractMessage utility """
         # Use ExtractMessage API methods - let it handle the heavy lifting
         trackMap = {}
-        
+
         try:
             # Get last message received date from depositor
             last_received = self.__extractMessage.getLastReceivedMsgDatetime(depID)
             if last_received:
                 trackMap['last_message_received_date'] = last_received.strftime('%Y-%m-%d')
-            
+
             # Get last message sent to depositor
             last_sent = self.__extractMessage.getLastSentMsgDatetime(depID)
             if last_sent:
                 trackMap['last_message_sent_date'] = last_sent.strftime('%Y-%m-%d')
-            
+
             # Get last manual reminder sent to depositor
             last_reminder = self.__extractMessage.getLastManualReminderDatetime(depID)
             if last_reminder:
                 trackMap['last_reminder_sent_date'] = last_reminder.strftime('%Y-%m-%d')
-            
+
             # Get last validation report info (returns tuple of datetime and major_issue boolean)
             validation_info = self.__extractMessage.getLastValidation(depID)
             if validation_info[0]:  # validation_info is (datetime, major_issue_boolean)
                 trackMap['last_validation_sent_date'] = validation_info[0].strftime('%Y-%m-%d')
                 if validation_info[1]:  # major_issue_boolean
                     trackMap['major_issue'] = 'Yes'
-        
+
         except Exception as e:
             if self.__verbose:
                 self.__lfh.write("Error getting message track from ExtractMessage for %s: %s\n" % (depID, str(e)))
-        
+
         return trackMap
 
 
