@@ -44,7 +44,7 @@ setup(
     #
     install_requires=['wwpdb.utils.config ~= 0.27', 'wwpdb.utils.wf', 'wwpdb.io ~= 0.6',
                       'rcsb.utils.multiproc', 'wwpdb.apps.wf_engine >= 0.5',
-                      'wwpdb.apps.msgmodule ~= 0.176',
+                      'wwpdb.apps.msgmodule ~= 0.180',
                       'wwpdb.utils.db >= 0.4', 'wwpdb.utils.session >= 0.3',
                       'mmcif.utils', 'wwpdb.utils.detach ~= 0.3', 'mysqlclient'],
     packages=find_packages(exclude=['wwpdb.apps.tests-workmanager']),
