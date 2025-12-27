@@ -42,7 +42,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['wwpdb.utils.config ~= 0.27', 'wwpdb.utils.wf', 'wwpdb.io ~= 0.6',
+    install_requires=['wwpdb.utils.config >= 0.27, < 2.0', 'wwpdb.utils.wf', 'wwpdb.io >= 0.6, < 2.0',
                       'rcsb.utils.multiproc', 'wwpdb.apps.wf_engine >= 0.5',
                       'wwpdb.apps.msgmodule ~= 0.180',
                       'wwpdb.utils.db >= 0.4', 'wwpdb.utils.session >= 0.3',
