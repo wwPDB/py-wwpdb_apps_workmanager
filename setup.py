@@ -46,7 +46,7 @@ setup(
                       'rcsb.utils.multiproc', 'wwpdb.apps.wf_engine >= 0.5',
                       'wwpdb.apps.msgmodule ~= 0.176',
                       'wwpdb.utils.db >= 0.4', 'wwpdb.utils.session >= 0.3',
-                      'mmcif.utils', 'wwpdb.utils.detach ~= 0.3', 'mysqlclient'],
+                      'mmcif.utils', 'wwpdb.utils.detach ~= 0.3', 'PyMySQL'],
     packages=find_packages(exclude=['wwpdb.apps.tests-workmanager']),
     # Enables Manifest to be used
     # include_package_data = True,
