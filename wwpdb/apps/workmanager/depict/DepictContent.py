@@ -339,6 +339,14 @@ class DepictContent(DepictBase):
         #
         return dataD['add_list']
 
+    def _processRemoveList(self, dataD):
+        """
+        Show remove action when entry is already in annotator list.
+        """
+        if ('add_list' in dataD) and (dataD['add_list'] == 'Add'):
+            return ''
+        return self.getPageText(page_id='remove_list_tmplt')
+
     def _processCommunication(self, dataD):
         """
         """
