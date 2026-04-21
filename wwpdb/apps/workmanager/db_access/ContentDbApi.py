@@ -58,7 +58,9 @@ class ContentDbApi(object):
                         "order by c.identifier_ORCID ) s2 group by identifier_ORCID, name order by name",
                  "GET_LIGAND_ID_LIST" : "select Structure_ID, comp_id from pdbx_entity_nonpoly where Structure_ID in ( '%s' )",
                  "GET_EXT_PDB_ID_INFO": "select distinct database_code,pdbx_database_accession from database_2 where database_id = 'PDB' and pdbx_database_accession " +
-                                        "is not NULL and pdbx_database_accession != '' and database_code in ( '%s' )"
+                                        "is not NULL and pdbx_database_accession != '' and database_code in ( '%s' )",
+             "GET_HAS_BEEN_AUTH_LIST": "select distinct entry_id from pdbx_database_status_history where entry_id in ( '%s' ) and " +
+                                        "(status_code_begin = 'AUTH' or status_code_end = 'AUTH')"
                    }
     """
     """
@@ -197,6 +199,21 @@ class ContentDbApi(object):
             #
         #
         return pdbExtIdMap
+
+    def getHasBeenAuthMap(self, entryIdList):
+        hasBeenAuthMap = {}
+        if not entryIdList:
+            return hasBeenAuthMap
+        #
+        rows = self.__dbApi.selectData(key="GET_HAS_BEEN_AUTH_LIST", parameter=("', '".join(entryIdList)))
+        if rows:
+            for row in rows:
+                if ('entry_id' in row) and row['entry_id']:
+                    hasBeenAuthMap[row['entry_id']] = True
+                #
+            #
+        #
+        return hasBeenAuthMap
 
     def runSelectSQL(self, sql):
         return self.__dbApi.runSelectSQL(sql)

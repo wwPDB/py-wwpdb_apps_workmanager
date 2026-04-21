@@ -97,6 +97,10 @@ class DepictContent(DepictBase):
             rows = getattr(self, '%s' % tableMap['sort_function'])(rows)
         #
         if rows:
+            if ('processing_stage' in tableMap['data-field']) or ('has_been_auth' in tableMap['data-field']):
+                rows = self.__addReplProcessingStage(rows)
+                rows = self.__sortReplRows(rows)
+            #
             pdbExtIdMap = {}
             if ('pdb_ids' in tableMap['data-field']) or ('user_pdb_id' in tableMap['data-field']):
                 pdbExtIdMap = self._getPdbExtIdMap(rows)
@@ -527,6 +531,40 @@ class DepictContent(DepictBase):
             #
         #
         return idlist
+
+    def __addReplProcessingStage(self, rows):
+        """
+        Populate has_been_auth/processing_stage for REPL table rows using da_internal status history.
+        """
+        idList = self.__getEntryIDList(rows, 'D_')
+        if not idList:
+            for dataD in rows:
+                dataD['has_been_auth'] = 0
+                dataD['processing_stage'] = 'New'
+            #
+            return rows
+        #
+        self._connectContentDB()
+        hasBeenAuthMap = self._contentDB.getHasBeenAuthMap(sorted(set(idList)))
+        for dataD in rows:
+            hasBeenAuth = 0
+            if ('dep_set_id' in dataD) and dataD['dep_set_id'] and (dataD['dep_set_id'] in hasBeenAuthMap):
+                hasBeenAuth = 1
+            #
+            dataD['has_been_auth'] = hasBeenAuth
+            if hasBeenAuth == 1:
+                dataD['processing_stage'] = 'Rework'
+            else:
+                dataD['processing_stage'] = 'New'
+            #
+        #
+        return rows
+
+    def __sortReplRows(self, rows):
+        """
+        Default REPL ordering: New first, then deposition date ascending.
+        """
+        return sorted(rows, key=lambda d: (int(d.get('has_been_auth', 0)), str(d.get('dep_initial_deposition_date', ''))))
 
     def __convertListIntoMap(self, rList):
         """
