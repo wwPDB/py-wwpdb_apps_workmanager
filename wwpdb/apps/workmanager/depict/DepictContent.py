@@ -25,6 +25,7 @@ __version__ = "V0.07"
 
 
 import sys
+import html
 try:
     from urllib.parse import quote as u_quote
 except ImportError:
@@ -97,7 +98,11 @@ class DepictContent(DepictBase):
             rows = getattr(self, '%s' % tableMap['sort_function'])(rows)
         #
         if rows:
-            if ('processing_stage' in tableMap['data-field']) or ('has_been_auth' in tableMap['data-field']):
+            if (
+                ('processing_stage' in tableMap['data-field'])
+                or ('has_been_auth' in tableMap['data-field'])
+                or ('repl_coor_status' in tableMap['data-field'])
+            ):
                 rows = self.__addReplProcessingStage(rows)
                 rows = self.__sortReplRows(rows)
             #
@@ -257,7 +262,7 @@ class DepictContent(DepictBase):
                 #
                 if ('pdb_ids' in tableMap['data-field']) or ('user_pdb_id' in tableMap['data-field']):
                     dataD = processPublicIDs(dataD, pdbExtIdMap)
-                    if ('coor_status' in tableMap['data-field']) or ('author_status' in tableMap['data-field']):
+                    if ('coor_status' in tableMap['data-field']) or ('author_status' in tableMap['data-field']) or ('repl_coor_status' in tableMap['data-field']):
                         dataD['comb_status_code'], dataD['comb_author_release_status_code'], titleEM, authorListEM = self.__processStatusCode(dataD)
                         if titleEM:
                             dataD['dep_title'] = titleEM
@@ -390,6 +395,22 @@ class DepictContent(DepictBase):
         #
         myD['commun_image'] = text
         return self.__commun_tmplt % myD
+
+    def _processReplCoorStatus(self, dataD):
+        """REPL tab Status: optional New icon (never reached AUTH) plus status text."""
+        status = ''
+        if ('comb_status_code' in dataD) and dataD['comb_status_code']:
+            status = str(dataD['comb_status_code'])
+        #
+        status_esc = html.escape(status)
+        if int(dataD.get('has_been_auth', 0)) == 0:
+            img = (
+                '<img src="/wfm/images/new-24.png" alt="New" '
+                'style="vertical-align:middle;margin-right:4px;width:24px;height:24px;" />'
+            )
+            return img + status_esc
+        #
+        return status_esc
 
     def _processAuxiliary(self, dataD):
         """
