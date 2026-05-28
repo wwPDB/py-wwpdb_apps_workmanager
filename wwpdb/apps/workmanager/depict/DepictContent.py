@@ -162,6 +162,7 @@ class DepictContent(DepictBase):
 
             if (  # pylint: disable=using-constant-test
                     x for x in tableMap['data-field'] if x in ('add_list',
+                                                               'anno_selection',
                                                                'major_issue',
                                                                'pi_name',
                                                                'country',
@@ -169,7 +170,7 @@ class DepictContent(DepictBase):
                                                                'pi_country_only',
                                                                'received_date')
             ):
-                if idList and ('add_list' in tableMap['data-field']):
+                if idList and (('add_list' in tableMap['data-field']) or ('anno_selection' in tableMap['data-field'])):
                     return_list = self._statusDB.getAnnoSelection(depositionids=idList)
                     annSelectMap = self.__convertListIntoMap(return_list)
                 #
@@ -228,6 +229,13 @@ class DepictContent(DepictBase):
                         dataD['add_list'] = annSelectMap[dataD['dep_set_id']]['annotator_initials']
                     else:
                         dataD['add_list'] = 'Add'
+                    #
+                #
+                if 'anno_selection' in tableMap['data-field']:
+                    if (dataD['dep_set_id'] in annSelectMap) and annSelectMap[dataD['dep_set_id']]:
+                        dataD['anno_selection'] = annSelectMap[dataD['dep_set_id']]['annotator_initials']
+                    else:
+                        dataD['anno_selection'] = ''
                     #
                 #
                 dataD['base_url'] = ''
