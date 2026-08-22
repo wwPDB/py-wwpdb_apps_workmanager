@@ -20,14 +20,11 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import multiprocessing
 import os
 import sys
 
+from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
-#
-
 
 class CifChecker(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
@@ -51,11 +48,8 @@ class CifChecker(BaseClass):
         if (self.__option != "cifcheck") and (self.__option != "mischeck"):
             return "No task was defined!"
         #
-        numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose=True)
-        mpu.set(workerObj=self, workerMethod="runMulti")
-        mpu.setWorkingDir(self._sessionPath)
-        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
+        self._setupGroupTaskPickle()
+        self._runMultiProcess(classMethod="runMulti", inputDataList=self.__entryList)
         return self.__getReturnMessage()
 
     def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
@@ -69,16 +63,9 @@ class CifChecker(BaseClass):
         return rList, rList, []
 
     def __runSingle(self, entry_id):
-        message, modelFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "latest")
-        if message:
-            self._dumpPickle(entry_id + self.__optionDict[self.__option][1], message)
-            return
-        #
-        message = self.__checkModelFile(entry_id, modelFile)
-        if message:
-            self._dumpPickle(entry_id + self.__optionDict[self.__option][1], message)
-        else:
-            self._dumpPickle(entry_id + self.__optionDict[self.__option][1], "OK")
+        modelFile = self._getExistingArchiveFileWithPickleMessage(entry_id, "model", "pdbx", "latest", self.__optionDict[self.__option][1])
+        if modelFile:
+            self.__checkModelFile(entry_id, modelFile)
         #
 
     def __checkModelFile(self, entry_id, inputFile):
@@ -92,7 +79,8 @@ class CifChecker(BaseClass):
         if self.__option == "cifcheck":
             message = self._copyFileUtil(inputFile, os.path.join(self._sessionPath, localModelFile))
             if message:
-                return message
+                self._dumpPickle(entry_id + self.__optionDict[self.__option][1], message)
+                return
             #
             options = " -dictSdb " + os.path.join(self.__dictRoot, self.__dictName) + " -f " + localModelFile
             cmd = self._getCmd("${DICTBINPATH}/CifCheck", "", "", "", clogFile, options)
@@ -104,14 +92,17 @@ class CifChecker(BaseClass):
         for fileName in (localModelFile, logFile, clogFile):
             self._removeFile(os.path.join(self._sessionPath, fileName))
         #
-        return ''
+        if self.__option == "mischeck":
+            self.__runGeometricChecking(entry_id, inputFile)
+        #
+        self._dumpPickle(entry_id + self.__optionDict[self.__option][1], "OK")
 
     def __getReturnMessage(self):
-        message = ''
+        message = ""
         for entry_id in self.__entryList:
             pickleData = self._loadPickle(entry_id + self.__optionDict[self.__option][1])
-            error = ''
-            if pickleData and pickleData != 'OK':
+            error = ""
+            if pickleData and pickleData != "OK":
                 error = pickleData + "\n"
             #
             logFile = os.path.join(self._sessionPath, entry_id + self.__optionDict[self.__option][3])
@@ -127,21 +118,137 @@ class CifChecker(BaseClass):
             #
             self._removePickle(entry_id + self.__optionDict[self.__option][1])
         #
+        self._updateGroupTaskPickle(message)
+        #
         return message
 
+    def __runGeometricChecking(self, entry_id, inputFile):
+        readIoObj = IoAdapter()
+        cifContainerList = readIoObj.readFile(inputFile)
+        if len(cifContainerList) == 0:
+            return
+        #
+        chiralMsg = ""
+        chiralObj = cifContainerList[0].getObj("pdbx_validate_chiral")
+        if chiralObj:
+            caveatObj = cifContainerList[0].getObj("database_PDB_caveat");
+            if caveatObj:
+                for rowIndex in range(caveatObj.getRowCount()):
+                    text = self.__getValue(caveatObj, "text", rowIndex)
+                    if text == "":
+                        continue
+                    #
+                    if chiralMsg != "":
+                        chiralMsg += "\n"
+                    #
+                    chiralMsg += text
+                #
+            #
+        #
+        contactMsg = ""
+        for category in ( "pdbx_validate_close_contact", "pdbx_validate_symm_contact" ):
+            contactObj = cifContainerList[0].getObj(category)
+            if contactObj:
+                text = self.__getCloseContactInfo(contactObj)
+                if text == "":
+                    continue
+                #
+                if contactMsg != "":
+                    contactMsg += "\n"
+                #
+                contactMsg += text
+            #
+        #
+        if (chiralMsg == "") and (contactMsg == ""):
+            return
+        #
+        message = ""
+        if chiralMsg != "":
+            message = "\nChirality errors in your coordinates have been indicated in section 5.1 (Standard geometry) or 5.4 (nonstandard\n"
+            message += "residues in protein, DNA, RNA chains) or 5.6 (Ligand geometry) in the PDF validation report. These errors are\n"
+            message += "highlighted in the database_PDB_caveat section of the coordinate CIF file.\n\n"
+            message += chiralMsg
+            message += "\n\nPlease upload new coordinates to resolve this issue."
+        #
+        if contactMsg != "":
+            if message != "":
+                message += "\n"
+            #
+            message += "\nSection 5.2 (Close contacts) of the validation report includes at least one physically unrealistic interatomic\n"
+            message += "distance. Please upload a new coordinate file that resolves any issues or send correspondence clarifying the\n"
+            message += "situation.\n\n"
+            message += "   Chain Atom       Res  Seq     Chain Atom       Res  Seq  Symm_Code   Distance\n"
+            message += contactMsg
+        #
+        logFile = os.path.join(self._sessionPath, entry_id + self.__optionDict[self.__option][3])
+        if os.access(logFile, os.F_OK):
+            fin = open(logFile, "r")
+            error = fin.read()
+            fin.close()
+            #
+            if error != "":
+                message += "\n\n" + error
+            #
+        #
+        fout = open(logFile, "w")
+        fout.write(message)
+        fout.close()
 
-if __name__ == '__main__':
-    from wwpdb.utils.session.WebRequest import InputRequest
-    from wwpdb.utils.config.ConfigInfo import ConfigInfo
-    siteId = 'WWPDB_DEPLOY_TEST_RU'
-    os.environ["WWPDB_SITE_ID"] = siteId
-    cI = ConfigInfo(siteId)
-    #
-    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
-    myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
-    myReqObj.setValue("WWPDB_SITE_ID", siteId)
-    myReqObj.setValue("identifier", "G_1002030")
-    myReqObj.setValue("sessionid", "88626e0cc0b1a1bbd10bb2df8a0d68573fcbd5fe")
-    myentryList = ['D_8000210285', 'D_8000210286']
-    checkUtil = CifChecker(reqObj=myReqObj, entryList=myentryList, verbose=False, log=sys.stderr)
-    print(checkUtil.run())
+    def __getValue(self, catObj, attribute, rowIdx):
+        """ Get a value from attributeName="attribute", rowIndex="rowIdx" in catetory object "catObj".
+        """
+        value = ""
+        try:
+            value = catObj.getValue(attributeName=attribute, rowIndex=rowIdx)
+            if (value is None) or (value == ".") or (value == "?"):
+                value = ""
+            #
+            value = value.strip()
+        except:
+            value = ""
+        #
+        return value
+
+    def __getCloseContactInfo(self, catObj):
+        text = ""
+        for rowIndex in range(catObj.getRowCount()):
+            dist = self.__getValue(catObj, "dist", rowIndex)
+            if dist == "":
+                continue
+            #
+            try:
+               if float(dist) > 1.0:
+                   continue
+            except:
+                continue
+            #
+            if text != "":
+                text += "\n"
+            #
+            text += "   " + self.__get_atom(catObj, "1", rowIndex)  + " - " + self.__get_atom(catObj, "2", rowIndex)
+            #
+            cs = self.__getValue(catObj, "site_symmetry_2", rowIndex)
+            if cs == "":
+                cs = "1_555"
+            #
+            text += " " + "%8s" % cs
+            #
+            text += "   Dist = " + "%.2f" % float(dist)
+        #
+        return text
+
+    def __get_atom(self, catObj, suffix, rowIndex):
+        chain_id = self.__getValue(catObj, "auth_asym_id_" + suffix, rowIndex)
+        atom_name = self.__getValue(catObj, "auth_atom_id_" + suffix, rowIndex)
+        cs = self.__getValue(catObj, "label_alt_id_" + suffix, rowIndex)
+        alt_id = "   "
+        if cs != "":
+            alt_id = "(" + cs + ")"
+        #
+        res_name = self.__getValue(catObj, "auth_comp_id_" + suffix, rowIndex)
+        res_num = self.__getValue(catObj, "auth_seq_id_" + suffix, rowIndex)
+        ins_code = self.__getValue(catObj, "PDB_ins_code_" + suffix, rowIndex)
+        if ins_code:
+            ins_code = " "
+        #
+        return "%5s" % chain_id + " %4s" % atom_name + " %3s" % alt_id + " %5s" % res_name + " %4s" % res_num + " %1s" % ins_code  

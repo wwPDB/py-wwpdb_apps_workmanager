@@ -24,6 +24,7 @@ __version__ = "V0.07"
 import sys
 
 from wwpdb.apps.workmanager.depict.DepictBase import DepictBase
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 from wwpdb.apps.workmanager.workflow_access.WorkflowXMLLoader import WorkflowXMLLoader
 
 
@@ -42,6 +43,12 @@ class DepictGroup(DepictBase):
         self.__setup()
         self.__get_workflow_info()
         self.__get_entry_info()
+        self._dataInfo["task_info"] = self.__get_task_info()
+
+    def getTaskInfo(self):
+        """
+        """
+        return self._dataInfo["task_info"]
 
     def __setup(self):
         """
@@ -132,3 +139,42 @@ class DepictGroup(DepictBase):
         #
         entry_info += '</tr>\n'
         self._dataInfo['entry_info'] = entry_info
+
+    def __get_task_info(self):
+        """
+        """
+        taskUtil = BaseClass(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
+        groupTaskPickleObj = taskUtil.getGroupTaskInfo()
+        if len(groupTaskPickleObj) == 0:
+            return ""
+        #
+        taskInfo = ""
+        task_info_row_tmplt = self._getPageTemplate("task_info_row_tmplt")
+        for key in sorted(groupTaskPickleObj.keys()):
+            hasValue = False
+            dictD = {}
+            for item in ( "task_id", "status", "start_time", "end_time" ):
+                if item in groupTaskPickleObj[key]:
+                    dictD[item] = groupTaskPickleObj[key][item]
+                    hasValue = True
+                else:
+                    dictD[item] = ""
+                #
+            #
+            if not hasValue:
+                continue
+            #
+            dictD["sessionid"] = self._reqObj.getValue("sessionid")
+            dictD["identifier"] = self._reqObj.getValue("identifier")
+            dictD["task_key"] = key
+            #
+            taskInfo += task_info_row_tmplt % dictD
+        #
+        if taskInfo == "":
+            return taskInfo
+        #
+        dictD = {}
+        dictD["task_info_row"] = taskInfo
+        task_info_table_tmplt = self._getPageTemplate("task_info_tmplt")
+        #
+        return task_info_table_tmplt % dictD

@@ -74,20 +74,3 @@ class LigandFinder(BaseClass):
             return {}, "No ligand found."
         #
         return ligMap, "OK"
-
-
-if __name__ == '__main__':
-    from wwpdb.utils.session.WebRequest import InputRequest
-    from wwpdb.utils.config.ConfigInfo import ConfigInfo
-    siteId = os.getenv("WWPDB_SITE_ID")
-    cI = ConfigInfo(siteId)
-    #
-    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
-    myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
-    myReqObj.setValue("WWPDB_SITE_ID", siteId)
-    myReqObj.setValue("identifier", "G_1002010")
-    myReqObj.setValue("sessionid", "79ae0371518fe08d9d3e1fb8fdd001055632d48a")
-    ligFinder = LigandFinder(reqObj=myReqObj, verbose=False, log=sys.stderr)
-    retMap, errMsg = ligFinder.getLigandInfo()
-    print(errMsg)
-    print(retMap)

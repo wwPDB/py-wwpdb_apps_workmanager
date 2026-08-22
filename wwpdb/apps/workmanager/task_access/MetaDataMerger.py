@@ -20,14 +20,10 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import multiprocessing
 import os
 import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
-#
-
 
 class MetaDataMerger(BaseClass):
     def __init__(self, reqObj=None, entryList=None, taskList=None, recoverFlag=False, templateFile=None, verbose=False, log=sys.stderr):
@@ -44,15 +40,13 @@ class MetaDataMerger(BaseClass):
     def run(self):
         """
         """
+        self._setupGroupTaskPickle()
+        #
         if "loi" in self.__taskList:
             self.__getLOIMap()
         #
-        numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose=True)
-        mpu.set(workerObj=self, workerMethod="runMulti")
-        mpu.setWorkingDir(self._sessionPath)
-        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
-        return self.__getReturnMessage()
+        self._runMultiProcess(classMethod="runMulti", inputDataList=self.__entryList)
+        return self.__loiMsg + self._getReturnMessage(self.__entryList, "_MetaDataMerger", "Merge meta data for ")
 
     def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
@@ -80,46 +74,36 @@ class MetaDataMerger(BaseClass):
     def __runSingle(self, entry_id):
         """
         """
-        message, modelFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "latest")
-        if message:
-            self._dumpPickle(entry_id + "_MetaDataMerger", message)
-            return
-        #
-        if self.__recoverFlag:
-            if "revision" in self.__taskList:
-                message, templateFile = self._getExistingArchiveFile(entry_id, "model-release", "pdbx", "latest")
+        modelFile = self._getExistingArchiveFileWithPickleMessage(entry_id, "model", "pdbx", "latest", "_MetaDataMerger")
+        if modelFile:
+            if self.__recoverFlag:
+                if "revision" in self.__taskList:
+                    templateFile = self._getExistingArchiveFileWithPickleMessage(entry_id, "model-release", "pdbx", "latest", "_MetaDataMerger")
+                else:
+                    templateFile = self._getExistingArchiveFileWithPickleMessage(entry_id, "model", "pdbx", "1", "_MetaDataMerger")
+                #
+                updatedModelFile = self.__updateModelFile(entry_id, modelFile, templateFile)
             else:
-                message, templateFile = self._getExistingArchiveFile(entry_id, "model", "pdbx", "1")
+                updatedModelFile = self.__updateModelFile(entry_id, modelFile, self.__templateFile)
             #
-            if message:
-                self._dumpPickle(entry_id + "_MetaDataMerger", message)
-                return
+            if updatedModelFile:
+                self._copyFileToArchiveDirectory(updatedModelFile, entry_id, "model", "pdbx", "next", "_MetaDataMerger")
             #
-            message, updatedModelFile = self.__updateModelFile(entry_id, modelFile, templateFile)
-        else:
-            message, updatedModelFile = self.__updateModelFile(entry_id, modelFile, self.__templateFile)
-        #
-        if message:
-            self._dumpPickle(entry_id + "_MetaDataMerger", message)
-            return
-        #
-        archiveModelFile = self._findArchiveFileName(entry_id, "model", "pdbx", "next")
-        message = self._copyFileUtil(updatedModelFile, archiveModelFile)
-        if message:
-            self._dumpPickle(entry_id + "_MetaDataMerger", message)
-        else:
-            self._dumpPickle(entry_id + "_MetaDataMerger", "OK")
         #
 
     def __updateModelFile(self, entry_id, inputFile, templateFile):
         """
         """
+        filePathList = []
         updatedModelFile = entry_id + "_MetaDataMerger.cif"
-        self._removeFile(os.path.join(self._sessionPath, updatedModelFile))
+        filePathList.append(os.path.join(self._sessionPath, updatedModelFile))
         logFile = "MetaDataMerger_update_cif_" + entry_id + ".log"
-        self._removeFile(os.path.join(self._sessionPath, logFile))
+        filePathList.append(os.path.join(self._sessionPath, logFile))
         clogFile = "MetaDataMerger_update_cif_command_" + entry_id + ".log"
-        self._removeFile(os.path.join(self._sessionPath, clogFile))
+        filePathList.append(os.path.join(self._sessionPath, clogFile))
+        #
+        for filePath in filePathList:
+            self._removeFile(filePath)
         #
         option = " -task " + ",".join(self.__taskList)
         if templateFile:
@@ -131,31 +115,12 @@ class MetaDataMerger(BaseClass):
         cmd = self._getCmd("${BINPATH}/MergeMetaDataApp", inputFile, updatedModelFile, logFile, clogFile, option)
         self._runCmd(cmd)
         #
-        msg = self._getLogMessage(os.path.join(self._sessionPath, logFile))
-        cmsg = self._getLogMessage(os.path.join(self._sessionPath, clogFile))
-        if cmsg:
-            if msg:
-                msg += "\n"
-            #
-            msg += cmsg
+        defaultErrMsg = ""
+        if not os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
+            defaultErrMsg = "Merge meta data failed."
         #
-        if msg:
-            return msg, ""
+        if self._processLogMessage(entry_id + "_MetaDataMerger", filePathList[1:], defaultErrMsg):
+            return os.path.join(self._sessionPath, updatedModelFile)
+        else:
+            return ""
         #
-        if os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
-            return "", os.path.join(self._sessionPath, updatedModelFile)
-        #
-        return "Merge meta data failed.", ""
-
-    def __getReturnMessage(self):
-        message = self.__loiMsg
-        for entry_id in self.__entryList:
-            pickleData = self._loadPickle(entry_id + "_MetaDataMerger")
-            if pickleData and pickleData != "OK":
-                message += "Merge meta data for " + entry_id + " failed:\n\t" + pickleData + "\n"
-            else:
-                message += "Merge meta data for " + entry_id + " successfully.\n"
-            #
-            self._removePickle(entry_id + "_MetaDataMerger")
-        #
-        return message

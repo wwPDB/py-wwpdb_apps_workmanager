@@ -52,11 +52,15 @@ from wwpdb.apps.workmanager.file_access.AnnotAssignUtil import AnnotAssignUtil
 from wwpdb.apps.workmanager.file_access.CopyFileToAutoGroup import CopyFileToAutoGroup
 from wwpdb.apps.workmanager.file_access.LogFileUtil import LogFileUtil
 from wwpdb.apps.workmanager.file_access.MileStoneFile import MileStoneFile
+from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 from wwpdb.apps.workmanager.task_access.CifChecker import CifChecker
 from wwpdb.apps.workmanager.task_access.LigandFinder import LigandFinder
 from wwpdb.apps.workmanager.task_access.MetaDataEditor import MetaDataEditor
 from wwpdb.apps.workmanager.task_access.MetaDataMerger import MetaDataMerger
 from wwpdb.apps.workmanager.task_access.PdbFileGenerator import PdbFileGenerator
+from wwpdb.apps.workmanager.task_access.RunAnnotationTask import RunAnnotationTask
+from wwpdb.apps.workmanager.task_access.RunLigandTask import RunLigandTask
+from wwpdb.apps.workmanager.task_access.RunValidationTask import RunValidationTask
 from wwpdb.apps.workmanager.task_access.SequenceMerger import SequenceMerger
 from wwpdb.apps.workmanager.task_access.StatusUpdater import StatusUpdater
 from wwpdb.utils.detach.DetachUtils import DetachUtils
@@ -219,6 +223,8 @@ class WorkManagerWebAppWorker(object):
                            '/service/workmanager/changeactiveuser': '_ChangeActiveUser',
                            '/service/workmanager/start_group_workflow': '_GroupEngineDepictOp',
                            '/service/workmanager/start_group_worktask': '_GroupTaskDepictOp',
+                           '/service/workmanager/get_task_message': '_GetGroupTaskMessageOp',
+                           '/service/workmanager/remove_task_message': '_RemoveGroupTaskMessageOp',
                            '/service/workmanager/get_ligand_list': '_GetLigandListOp',
                            '/service/workmanager/run_group_engine': '_RunGroupEngineOp',
                            '/service/workmanager/run_group_tasks': '_RunGroupTasksOp',
@@ -935,6 +941,35 @@ class WorkManagerWebAppWorker(object):
         rC.setHtmlText(depictUtil.getPageText(page_id='group_worktask_tmplt'))
         return rC
 
+    def _GetGroupTaskMessageOp(self):
+        """ Get group task log message based on task key
+        """
+        if (self.__verbose):
+            self.__lfh.write("+WorkManagerWebAppWorker._GetGroupTaskMessageOp() Starting now\n")
+        #
+        taskUtil = BaseClass(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        return self.__returnJsonObject(taskUtil.getMessage(), "")
+
+    def _RemoveGroupTaskMessageOp(self):
+        """ Remove group task log message based on task key
+        """
+        if (self.__verbose):
+            self.__lfh.write("+WorkManagerWebAppWorker._RemoveGroupTaskMessageOp() Starting now\n")
+        #
+        taskUtil = BaseClass(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        message = taskUtil.removeMessage()
+        if message != "OK":
+            return self.__returnJsonObject("", message)
+        #
+        readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='group_level_config.cif', verbose=self.__verbose, log=self.__lfh)
+        configDict = readUtil.read()
+        depictUtil = DepictGroup(reqObj=self.__reqObj, conFigObj=configDict, workFlow=False, verbose=self.__verbose, log=self.__lfh)
+        taskInfoTxt = depictUtil.getTaskInfo()
+        if taskInfoTxt == "":
+            taskInfoTxt = "empty"
+        #
+        return self.__returnJsonObject(taskInfoTxt, "")
+
     def _GetLigandListOp(self):
         """ Get all ligand IDs associated with the deposited entries in a group
         """
@@ -1043,8 +1078,12 @@ class WorkManagerWebAppWorker(object):
         elif option == 'database':
             dbLoader = DBLoader(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
             successful_msg = dbLoader.run()
+        elif option == 'annotation':
+            annTaskUtil = RunAnnotationTask(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
+            successful_msg = annTaskUtil.run()
         elif option == 'ligand':
-            return self.__returnJsonObject('"Merge Ligand Assignment" has not been implemented yet!', '')
+            ligTaskUtil = RunLigandTask(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
+            successful_msg = ligTaskUtil.run()
         elif option == 'pdbfile':
             pfGenUtil = PdbFileGenerator(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
             successful_msg = pfGenUtil.run()
@@ -1061,6 +1100,9 @@ class WorkManagerWebAppWorker(object):
             #
             seqMerger = SequenceMerger(reqObj=self.__reqObj, entryList=entryList, templateFile=filePath, verbose=self.__verbose, log=self.__lfh)
             successful_msg = seqMerger.run()
+        elif option == 'validation':
+            valTaskUtil = RunValidationTask(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
+            successful_msg = valTaskUtil.run()
         elif option == 'status':
             stUpdater = StatusUpdater(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
             successful_msg = stUpdater.run()
@@ -1100,7 +1142,17 @@ class WorkManagerWebAppWorker(object):
         else:
             return self.__returnJsonObject('', 'No task was defined!')
         #
-        return self.__returnJsonObject(successful_msg, failed_msg)
+        readUtil = ReadConFigFile(reqObj=self.__reqObj, configFile='group_level_config.cif', verbose=self.__verbose, log=self.__lfh)
+        configDict = readUtil.read()
+        depictUtil = DepictGroup(reqObj=self.__reqObj, conFigObj=configDict, workFlow=False, verbose=self.__verbose, log=self.__lfh)
+        taskInfoTxt = depictUtil.getTaskInfo()
+        if taskInfoTxt == "":
+            return self.__returnJsonObject(successful_msg, failed_msg)
+        #
+        rtrnDict = {}
+        rtrnDict['textcontent'] = successful_msg
+        rtrnDict['taskcontent'] = taskInfoTxt
+        return self.__returnJsonDict(rtrnDict)
 
     def _LaunchEditingPageOp(self):
         """ Launch batch editing page

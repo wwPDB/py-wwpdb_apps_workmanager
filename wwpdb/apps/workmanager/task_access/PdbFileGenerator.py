@@ -20,14 +20,10 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import multiprocessing
 import os
 import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
-from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
-#
-
 
 class PdbFileGenerator(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
@@ -39,12 +35,9 @@ class PdbFileGenerator(BaseClass):
     def run(self):
         """
         """
-        numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose=True)
-        mpu.set(workerObj=self, workerMethod="runMulti")
-        mpu.setWorkingDir(self._sessionPath)
-        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=self.__entryList, numProc=numProc, numResults=1)
-        return self.__getReturnMessage()
+        self._setupGroupTaskPickle()
+        self._runMultiProcess(classMethod="runMulti", inputDataList=self.__entryList)
+        return self._getReturnMessage(self.__entryList, "_PdbFileGenerator", "Generate PDB file for ")
 
     def runMulti(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
@@ -57,62 +50,27 @@ class PdbFileGenerator(BaseClass):
         return rList, rList, []
 
     def __runSingle(self, entry_id):
-        message, modelFile = self._getExistingArchiveFile(entry_id, 'model', 'pdbx', 'latest')
-        if message:
-            self._dumpPickle(entry_id + "_PdbFileGenerator", message)
-            return
-        #
-        message, pdbFile = self.__generatePdbFile(entry_id, modelFile)
-        if message:
-            self._dumpPickle(entry_id + "_PdbFileGenerator", message)
-            return
-        #
-        archivePdbFile = self._findArchiveFileName(entry_id, 'model', 'pdb', 'next')
-        message = self._copyFileUtil(pdbFile, archivePdbFile)
-        if message:
-            self._dumpPickle(entry_id + "_PdbFileGenerator", message)
-        else:
-            self._dumpPickle(entry_id + "_PdbFileGenerator", 'OK')
+        modelFile = self._getExistingArchiveFileWithPickleMessage(entry_id, "model", "pdbx", "latest", "_PdbFileGenerator")
+        if modelFile:
+            pdbFile = self.__generatePdbFile(entry_id, modelFile)
+            if pdbFile:
+                self._copyFileToArchiveDirectory(pdbFile, entry_id, "model", "pdb", "next", "_PdbFileGenerator")
+            #
         #
 
     def __generatePdbFile(self, entry_id, inputFile):
-        pdbFile = entry_id + "_PdbFileGenerator.pdb"
-        self._removeFile(os.path.join(self._sessionPath, pdbFile))
-        logFile = 'PdbFileGenerator_generate_pdb_' + entry_id + '.log'
-        clogFile = 'PdbFileGenerator_generate_pdb_command_' + entry_id + '.log'
-        cmd = self._getCmd('${BINPATH}/maxit', inputFile, pdbFile, logFile, clogFile, ' -o 2 ')
-        self._runCmd(cmd)
-        if os.access(os.path.join(self._sessionPath, pdbFile), os.F_OK):
-            return '', os.path.join(self._sessionPath, pdbFile)
+        pdbFilePath = os.path.join(self._sessionPath, entry_id + "_PdbFileGenerator.pdb")
+        logFilePath = os.path.join(self._sessionPath, "PdbFileGenerator_generate_pdb_" + entry_id + ".log")
+        clogFilePath = os.path.join(self._sessionPath, "PdbFileGenerator_generate_pdb_command_" + entry_id + ".log")
+        outputFileList = [ pdbFilePath, logFilePath, clogFilePath ]
+        self._dpUtilityApi(operator="annot-get-pdb-file", inputFileName=inputFile, outputFilePathList=outputFileList, pickleFile=entry_id + "_PdbFileGenerator")
         #
-        return "Convert PDB file failed.", ""
-
-    def __getReturnMessage(self):
-        message = ''
-        for entry_id in self.__entryList:
-            pickleData = self._loadPickle(entry_id + "_PdbFileGenerator")
-            if pickleData and pickleData != 'OK':
-                message += "Generate PDB file for " + entry_id + " failed:\n\t" + pickleData + "\n"
-            else:
-                message += "Generate PDB file for " + entry_id + " successfully.\n"
-            #
-            self._removePickle(entry_id + "_PdbFileGenerator")
+        defaultErrMsg = ""
+        if not os.access(pdbFilePath, os.F_OK):
+            defaultErrMsg = "Convert PDB file failed."
         #
-        return message
-
-
-if __name__ == '__main__':
-    from wwpdb.utils.session.WebRequest import InputRequest
-    from wwpdb.utils.config.ConfigInfo import ConfigInfo
-    siteId = 'WWPDB_DEPLOY_TEST_RU'
-    os.environ["WWPDB_SITE_ID"] = siteId
-    cI = ConfigInfo(siteId)
-    #
-    myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
-    myReqObj.setValue("TopSessionPath", cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH'))
-    myReqObj.setValue("WWPDB_SITE_ID", siteId)
-    myReqObj.setValue("identifier", "G_1002030")
-    myReqObj.setValue("sessionid", "88626e0cc0b1a1bbd10bb2df8a0d68573fcbd5fe")
-    myentryList = ['D_8000210285', 'D_8000210286']
-    pfGenUtil = PdbFileGenerator(reqObj=myReqObj, entryList=myentryList, verbose=False, log=sys.stderr)
-    print(pfGenUtil.run())
+        if self._processLogMessage(entry_id + "_PdbFileGenerator", outputFileList[1:], defaultErrMsg):
+            return pdbFilePath
+        else:
+            return ""
+        #

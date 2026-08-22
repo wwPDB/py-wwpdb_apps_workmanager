@@ -22,16 +22,12 @@ __version__ = "V0.07"
 
 import copy
 import json
-import multiprocessing
 import os
 import sys
 
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
-#
-
 
 class MetaDataEditor(BaseClass):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
@@ -148,11 +144,7 @@ class MetaDataEditor(BaseClass):
         self.__all_data_type = str(self._reqObj.getValue("all_data_type"))  # pylint: disable=attribute-defined-outside-init
         all_data_type = self.__all_data_type.split(",")
         #
-        numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose=True)
-        mpu.set(workerObj=self, workerMethod="runGetEntriesInfo")
-        mpu.setWorkingDir(self._sessionPath)
-        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=selectedEntryList, numProc=numProc, numResults=1)
+        self._runMultiProcess(classMethod="runGetEntriesInfo", inputDataList=selectedEntryList)
         #
         validEntryList = []
         for entry_id in selectedEntryList:
@@ -232,11 +224,7 @@ class MetaDataEditor(BaseClass):
         if not entryList:
             return
         #
-        numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose=True)
-        mpu.set(workerObj=self, workerMethod="runUpdateEntriesInfo")
-        mpu.setWorkingDir(self._sessionPath)
-        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=entryList, numProc=numProc, numResults=1)
+        self._runMultiProcess(classMethod="runUpdateEntriesInfo", inputDataList=entryList)
         #
         for entry_id in entryList:
             entryPickle = self._loadPickle(entry_id + "_MetaDataEditor")
@@ -359,7 +347,7 @@ class MetaDataEditor(BaseClass):
     def __getEntryList(self):
         """
         """
-        entryList = self._reqObj.getValueList('entry')
+        entryList = self._reqObj.getValueList("entry")
         if not entryList:
             self.__statusCode = "failed"
             self.__errorMessage = "No Entry selected."
@@ -385,7 +373,7 @@ class MetaDataEditor(BaseClass):
             self._dumpPickle(entry_id + "_MetaDataEditor", entryPickle)
             return
         #
-        archiveModelFile = self._findArchiveFileName(entry_id, 'model', 'pdbx', 'next')
+        archiveModelFile = self._findArchiveFileName(entry_id, "model", "pdbx", "next")
         message = self._copyFileUtil(updatedModelFile, archiveModelFile)
         if message:
             entryPickle["error"] = "Updating " + entry_id + " failed:\n" + message
@@ -441,7 +429,7 @@ class MetaDataEditor(BaseClass):
             msg += cmsg
         #
         if msg:
-            return msg, ''
+            return msg, ""
         #
         if os.access(os.path.join(self._sessionPath, updatedModelFile), os.F_OK):
             return "", os.path.join(self._sessionPath, updatedModelFile)
