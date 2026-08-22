@@ -153,7 +153,7 @@ class DepictGroup(DepictBase):
         for key in sorted(groupTaskPickleObj.keys()):
             hasValue = False
             dictD = {}
-            for item in ( "task_id", "status", "start_time", "end_time" ):
+            for item in ("task_id", "status", "start_time", "end_time"):
                 if item in groupTaskPickleObj[key]:
                     dictD[item] = groupTaskPickleObj[key][item]
                     hasValue = True

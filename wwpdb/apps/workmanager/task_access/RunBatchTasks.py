@@ -1,6 +1,20 @@
 #
-scriptDescription=\
-"""This script is for running batch data processes in command line. It requires the proper OneDep system environmental setting
+import argparse
+import os
+import sys
+import textwrap
+
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+from wwpdb.apps.workmanager.task_access.CifChecker import CifChecker
+from wwpdb.apps.workmanager.task_access.PdbFileGenerator import PdbFileGenerator
+from wwpdb.apps.workmanager.task_access.RunAnnotationTask import RunAnnotationTask
+from wwpdb.apps.workmanager.task_access.RunLigandTask import RunLigandTask
+from wwpdb.apps.workmanager.task_access.RunValidationTask import RunValidationTask
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.session.WebRequest import InputRequest
+
+scriptDescription = \
+    """This script is for running batch data processes in command line. It requires the proper OneDep system environmental setting
 before the script can be run:
 
 For csh/tcsh shell, run the following command:
@@ -28,8 +42,8 @@ D_8000000116
 
 """
 #
-task_type_help=\
-"""The supported task types are listed in left column.
+task_type_help = \
+    """The supported task types are listed in left column.
 The corresponding tasks are listed in right column.
 
 annotation : run standard annotation tasks
@@ -41,34 +55,20 @@ validation : run validation task
 
 """
 #
-group_id_help=\
-"""The group deposition identifier.
+group_id_help = \
+    """The group deposition identifier.
 
 """
 #
-dep_id_list_file_help=\
-"""The file contains deposition identifier list:
+dep_id_list_file_help = \
+    """The file contains deposition identifier list:
 
 D_xxxxxxxxxx
 D_xxxxxxxxxx
 ......
 
 """
-#
-import argparse
-import os
-import shutil
-import sys
-import textwrap
 
-from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
-from wwpdb.apps.workmanager.task_access.CifChecker import CifChecker
-from wwpdb.apps.workmanager.task_access.PdbFileGenerator import PdbFileGenerator
-from wwpdb.apps.workmanager.task_access.RunAnnotationTask import RunAnnotationTask
-from wwpdb.apps.workmanager.task_access.RunLigandTask import RunLigandTask
-from wwpdb.apps.workmanager.task_access.RunValidationTask import RunValidationTask
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.utils.session.WebRequest import InputRequest
 
 class RunBatchTasks(object):
     """ Wrapper class responsible for running batch processes
@@ -105,7 +105,7 @@ class RunBatchTasks(object):
         print(entryList)
         self.__run(task_type=task_type, entryList=entryList)
 
-    def runWithDepIdList(self, task_type=None, file_name=None):  
+    def runWithDepIdList(self, task_type=None, file_name=None):
         """
         """
         if not os.access(file_name, os.F_OK):
@@ -131,12 +131,14 @@ class RunBatchTasks(object):
         print(entryList)
         self.__run(task_type=task_type, entryList=entryList)
 
-    def __run(self, task_type=None, entryList=[]):
+    def __run(self, task_type=None, entryList=None):
         """
         """
+        if entryList is None:
+            entryList = []
         if task_type == "annotation":
             obj = RunAnnotationTask(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
-        elif task_type in ( "cifcheck", "mischeck" ):
+        elif task_type in ("cifcheck", "mischeck"):
             self.__reqObj.setValue("option", task_type)
             obj = CifChecker(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
         elif task_type == "ligand":
@@ -145,9 +147,12 @@ class RunBatchTasks(object):
             obj = PdbFileGenerator(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
         elif task_type == "validation":
             obj = RunValidationTask(reqObj=self.__reqObj, entryList=entryList, verbose=self.__verbose, log=self.__lfh)
+        else:
+            raise ValueError("unknown task " + task_type)
         #
         message = obj.run()
         self.__lfh.write("%s\n" % message)
+
 
 if __name__ == "__main__":
     #
@@ -161,7 +166,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
     #
-    if args.task_type not in  ( "annotation", "cifcheck", "ligand", "mischeck", "pdbfile", "validation" ):
+    if args.task_type not in ("annotation", "cifcheck", "ligand", "mischeck", "pdbfile", "validation"):
         print(f'The FILE_TYPE value "{args.task_type}" is not allowed. See below for the allowed FILE_TYPE values.\n')
         parser.print_help()
     #

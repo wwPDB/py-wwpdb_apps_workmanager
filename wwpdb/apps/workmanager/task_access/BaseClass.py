@@ -42,6 +42,7 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility
 
+
 class BaseClass(object):
     """ Base Class responsible for all workflow manager task activities
     """
@@ -124,11 +125,13 @@ class BaseClass(object):
         #
         return message
 
-    def _runMultiProcess(self, classMethod=None, inputDataList=[]):
+    def _runMultiProcess(self, classMethod=None, inputDataList=None):
         """ General method to run multiprocessing with MultiProcPoolUtil wrapper class.
             classMethod: the interface method for multiprocessing module that executes the processing.
             inputDataList: input data list
         """
+        if inputDataList is None:
+            inputDataList = []
         numProcess = int(multiprocessing.cpu_count() / 2)
         if numProcess == 0:
             if self._defaultNumProcess > 1:
@@ -143,7 +146,7 @@ class BaseClass(object):
             numProcess = self._defaultNumProcess
         #
         chunksize = 0
-        if int(len(inputDataList)/numProcess) > 10:
+        if int(len(inputDataList) / numProcess) > 10:
             chunksize = 10
         #
         mpu = MultiProcUtil(verbose=True)
@@ -217,7 +220,6 @@ class BaseClass(object):
 
     def _getExistingArchiveFileWithPickleMessage(self, entryId, contentType, formatType, version, pickleSuffix):
         filePath = self._findArchiveFileName(entryId, contentType, formatType, version)
-        message = ""
         if not filePath:
             self._dumpPickle(entryId + pickleSuffix, "Can not find " + version + " " + contentType + " " + formatType + " file.")
             return ""
@@ -227,7 +229,12 @@ class BaseClass(object):
         #
         return filePath
 
-    def _dpUtilityApi(self, operator="", inputFileName="", outputFilePath="", outputFilePathList=[], options={}, WorkingDir=None, pickleFile="", cleanUp=True):
+    def _dpUtilityApi(self, operator="", inputFileName="", outputFilePath="", outputFilePathList=None, options=None, WorkingDir=None, pickleFile="", cleanUp=True):
+        if options is None:
+            options = {}
+        if outputFilePathList is None:
+            outputFilePathList = []
+
         if (not operator) or (not inputFileName) or ((outputFilePath == "") and (len(outputFilePathList) == 0)):
             return
         #
@@ -247,7 +254,7 @@ class BaseClass(object):
                 dp.setWorkingDir(WorkingDir)
             #
             if len(options) > 0:
-                for key,valtypeTupl in options.items():
+                for key, valtypeTupl in options.items():
                     dp.addInput(name=key, value=valtypeTupl[0], type=valtypeTupl[1])
                 #
             #

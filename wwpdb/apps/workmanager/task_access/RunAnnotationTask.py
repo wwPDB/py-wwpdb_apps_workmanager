@@ -25,6 +25,7 @@ import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 
+
 class RunAnnotationTask(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
@@ -62,7 +63,7 @@ class RunAnnotationTask(BaseClass):
         cifFilePath = os.path.join(self._sessionPath, entry_id + "_RunAnnotationTask.cif")
         logFilePath = os.path.join(self._sessionPath, "RunAnnotationTask_" + entry_id + ".log")
         clogFilePath = os.path.join(self._sessionPath, "RunAnnotationTask_command_" + entry_id + ".log")
-        outputFileList = [ cifFilePath, logFilePath, clogFilePath ]
+        outputFileList = [cifFilePath, logFilePath, clogFilePath]
         self._dpUtilityApi(operator="annot-consolidated-tasks", inputFileName=inputFile, outputFilePathList=outputFileList, pickleFile=entry_id + "_RunAnnotationTask")
         #
         defaultErrMsg = ""

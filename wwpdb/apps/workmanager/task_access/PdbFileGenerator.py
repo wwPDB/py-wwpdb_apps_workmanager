@@ -25,6 +25,7 @@ import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 
+
 class PdbFileGenerator(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
@@ -62,7 +63,7 @@ class PdbFileGenerator(BaseClass):
         pdbFilePath = os.path.join(self._sessionPath, entry_id + "_PdbFileGenerator.pdb")
         logFilePath = os.path.join(self._sessionPath, "PdbFileGenerator_generate_pdb_" + entry_id + ".log")
         clogFilePath = os.path.join(self._sessionPath, "PdbFileGenerator_generate_pdb_command_" + entry_id + ".log")
-        outputFileList = [ pdbFilePath, logFilePath, clogFilePath ]
+        outputFileList = [pdbFilePath, logFilePath, clogFilePath]
         self._dpUtilityApi(operator="annot-get-pdb-file", inputFileName=inputFile, outputFilePathList=outputFileList, pickleFile=entry_id + "_PdbFileGenerator")
         #
         defaultErrMsg = ""

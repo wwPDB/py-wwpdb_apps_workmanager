@@ -25,6 +25,7 @@ import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 
+
 class MetaDataMerger(BaseClass):
     def __init__(self, reqObj=None, entryList=None, taskList=None, recoverFlag=False, templateFile=None, verbose=False, log=sys.stderr):
         """

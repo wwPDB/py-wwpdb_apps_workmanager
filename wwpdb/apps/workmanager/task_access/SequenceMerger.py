@@ -25,6 +25,7 @@ import sys
 
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 
+
 class SequenceMerger(BaseClass):
     def __init__(self, reqObj=None, entryList=None, templateFile=None, verbose=False, log=sys.stderr):
         """

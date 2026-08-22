@@ -27,6 +27,7 @@ import traceback
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 from wwpdb.utils.dp.ValidationWrapper import ValidationWrapper
 
+
 class RunValidationTask(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
@@ -74,9 +75,9 @@ class RunValidationTask(BaseClass):
             dp.addInput(name="run_dir", value=rundir)
             #
             hasSFile = False
-            for inputExpFileTuple in ( ( "sf_file_path", "structure-factors", "pdbx" ), ( "cs_file_path", "nmr-data-str", "pdbx" ), \
-                                       ( "nmr_restraint_file_path", "nmr-data-str", "pdbx" ), ( "vol_file_path", "em-volume", "map" ), \
-                                       ( "fsc_file_path", "fsc", "xml" ) ):
+            for inputExpFileTuple in (("sf_file_path", "structure-factors", "pdbx"), ("cs_file_path", "nmr-data-str", "pdbx"),
+                                      ("nmr_restraint_file_path", "nmr-data-str", "pdbx"), ("vol_file_path", "em-volume", "map"),
+                                      ("fsc_file_path", "fsc", "xml")):
                 expFilePath = self._findArchiveFileName(entry_id, inputExpFileTuple[1], inputExpFileTuple[2], "latest")
                 if (not expFilePath) and (inputExpFileTuple[0] == "cs_file_path"):
                     expFilePath = self._findArchiveFileName(entry_id, "nmr-chemical-shifts", "pdbx", "latest")
@@ -93,10 +94,10 @@ class RunValidationTask(BaseClass):
             dp.op("annot-wwpdb-validate-all-sf")
             #
             outputFileList = []
-            for reportFileTuple in ( ( "validation-report", "pdf" ), ( "validation-data", "xml" ), ( "validation-report-full", "pdf" ), \
-                                     ( "validation-report-slider", "png" ), ( "validation-report-slider", "svg" ), \
-                                     ( "validation-report-images", "tar" ), ( "validation-data", "pdbx" ), \
-                                     ( "validation-report-fo-map-coef", "pdbx" ), ( "validation-report-2fo-map-coef", "pdbx" ) ):
+            for reportFileTuple in (("validation-report", "pdf"), ("validation-data", "xml"), ("validation-report-full", "pdf"),
+                                    ("validation-report-slider", "png"), ("validation-report-slider", "svg"),
+                                    ("validation-report-images", "tar"), ("validation-data", "pdbx"),
+                                    ("validation-report-fo-map-coef", "pdbx"), ("validation-report-2fo-map-coef", "pdbx")):
                 fName = self._pI.getFileName(entry_id, contentType=reportFileTuple[0], formatType=reportFileTuple[1], versionId="none", partNumber="1")
                 outputFileList.append(os.path.join(self._sessionPath, fName))
             #
@@ -106,15 +107,15 @@ class RunValidationTask(BaseClass):
             dp.cleanup()
             #
             errMsg = ""
-            for idx,reportFileTuple in enumerate( ( ( "validation-report", "pdf", "validation-report pdf", False ), \
-                    ( "validation-data", "xml", "validation-data xml", False ), \
-                    ( "validation-report-full", "pdf", "validation-report-full pdf", False ), \
-                    ( "validation-report-slider", "png", "validation-report-slider png", False ), \
-                    ( "validation-report-slider", "svg", "validation-report-slider svg", False ), \
-                    ( "validation-report-images", "tar", "validation-report-images tar", False ), \
-                    ( "validation-data", "pdbx", "validation-data cif", False ), \
-                    ( "validation-report-fo-map-coef", "pdbx", "validation-report-fo-map-coef cif", True ), \
-                    ( "validation-report-2fo-map-coef", "pdbx", "validation-report-2fo-map-coef cif", True ) ) ):
+            for idx, reportFileTuple in enumerate((("validation-report", "pdf", "validation-report pdf", False),
+                                                   ("validation-data", "xml", "validation-data xml", False),
+                                                   ("validation-report-full", "pdf", "validation-report-full pdf", False),
+                                                   ("validation-report-slider", "png", "validation-report-slider png", False),
+                                                   ("validation-report-slider", "svg", "validation-report-slider svg", False),
+                                                   ("validation-report-images", "tar", "validation-report-images tar", False),
+                                                   ("validation-data", "pdbx", "validation-data cif", False),
+                                                   ("validation-report-fo-map-coef", "pdbx", "validation-report-fo-map-coef cif", True),
+                                                   ("validation-report-2fo-map-coef", "pdbx", "validation-report-2fo-map-coef cif", True))):
                 if reportFileTuple[0] == "validation-report-images":
                     continue
                 #
@@ -125,7 +126,7 @@ class RunValidationTask(BaseClass):
                     if errMsg:
                         errMsg += "\n"
                     #
-                    errMsg += "Missing " + reportFileTuple[2] + " file.";
+                    errMsg += "Missing " + reportFileTuple[2] + " file."
                     continue
                 #
                 archiveFilePath = self._findArchiveFileName(entry_id, reportFileTuple[0], reportFileTuple[1], "next")

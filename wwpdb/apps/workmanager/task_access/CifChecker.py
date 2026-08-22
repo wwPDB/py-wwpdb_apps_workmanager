@@ -26,6 +26,7 @@ import sys
 from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 
+
 class CifChecker(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
@@ -131,7 +132,7 @@ class CifChecker(BaseClass):
         chiralMsg = ""
         chiralObj = cifContainerList[0].getObj("pdbx_validate_chiral")
         if chiralObj:
-            caveatObj = cifContainerList[0].getObj("database_PDB_caveat");
+            caveatObj = cifContainerList[0].getObj("database_PDB_caveat")
             if caveatObj:
                 for rowIndex in range(caveatObj.getRowCount()):
                     text = self.__getValue(caveatObj, "text", rowIndex)
@@ -146,7 +147,7 @@ class CifChecker(BaseClass):
             #
         #
         contactMsg = ""
-        for category in ( "pdbx_validate_close_contact", "pdbx_validate_symm_contact" ):
+        for category in ("pdbx_validate_close_contact", "pdbx_validate_symm_contact"):
             contactObj = cifContainerList[0].getObj(category)
             if contactObj:
                 text = self.__getCloseContactInfo(contactObj)
@@ -204,7 +205,7 @@ class CifChecker(BaseClass):
                 value = ""
             #
             value = value.strip()
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             value = ""
         #
         return value
@@ -217,15 +218,15 @@ class CifChecker(BaseClass):
                 continue
             #
             try:
-               if float(dist) > 1.0:
-                   continue
-            except:
+                if float(dist) > 1.0:
+                    continue
+            except:  # noqa: E722 pylint: disable=bare-except
                 continue
             #
             if text != "":
                 text += "\n"
             #
-            text += "   " + self.__get_atom(catObj, "1", rowIndex)  + " - " + self.__get_atom(catObj, "2", rowIndex)
+            text += "   " + self.__get_atom(catObj, "1", rowIndex) + " - " + self.__get_atom(catObj, "2", rowIndex)
             #
             cs = self.__getValue(catObj, "site_symmetry_2", rowIndex)
             if cs == "":
@@ -251,4 +252,4 @@ class CifChecker(BaseClass):
         if ins_code:
             ins_code = " "
         #
-        return "%5s" % chain_id + " %4s" % atom_name + " %3s" % alt_id + " %5s" % res_name + " %4s" % res_num + " %1s" % ins_code  
+        return "%5s" % chain_id + " %4s" % atom_name + " %3s" % alt_id + " %5s" % res_name + " %4s" % res_num + " %1s" % ins_code

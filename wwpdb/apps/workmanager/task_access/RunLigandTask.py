@@ -27,6 +27,7 @@ import traceback
 from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 
+
 class RunLigandTask(BaseClass):
     def __init__(self, reqObj=None, entryList=None, verbose=False, log=sys.stderr):
         """
@@ -68,13 +69,13 @@ class RunLigandTask(BaseClass):
             ccLinkPath = os.path.join(entryDirPath, entry_id + "-link.cif")
             self._dpUtilityApi(operator="chem-comp-link", inputFileName=inputFile, outputFilePath=ccLinkPath, pickleFile=entry_id + "_RunLigandTask")
             #
-            ccAssignPath = os.path.join(entryDirPath, entry_id + "-assign.cif") 
+            ccAssignPath = os.path.join(entryDirPath, entry_id + "-assign.cif")
             additionalOptions = {}
             if os.access(ccLinkPath, os.F_OK):
-                additionalOptions["cc_link_file_path"] = ( ccLinkPath, "file" )
+                additionalOptions["cc_link_file_path"] = (ccLinkPath, "file")
             #
-            additionalOptions["id"] = ( entry_id, "param" )
-            self._dpUtilityApi(operator="chem-comp-assign", inputFileName=inputFile, outputFilePath=ccAssignPath, options=additionalOptions, \
+            additionalOptions["id"] = (entry_id, "param")
+            self._dpUtilityApi(operator="chem-comp-assign", inputFileName=inputFile, outputFilePath=ccAssignPath, options=additionalOptions,
                                WorkingDir=entryDirPath, pickleFile=entry_id + "_RunLigandTask", cleanUp=False)
             #
             if not os.access(ccAssignPath, os.F_OK):
@@ -106,12 +107,12 @@ class RunLigandTask(BaseClass):
                 return
             #
             additionalOptions = {}
-            additionalOptions["cc_assign_file_path"] = ( ccAssignPath, "file" )
+            additionalOptions["cc_assign_file_path"] = (ccAssignPath, "file")
             updatedModelFilePath = os.path.join(entryDirPath, entry_id + "_updated.cif")
             logFilePath = os.path.join(entryDirPath, "RunLigandTask_" + entry_id + ".log")
             clogFilePath = os.path.join(entryDirPath, "RunLigandTask_command_" + entry_id + ".log")
-            outputFileList = [ updatedModelFilePath, logFilePath, clogFilePath ]
-            self._dpUtilityApi(operator="chem-comp-instance-update", inputFileName=inputFile, outputFilePathList=outputFileList, \
+            outputFileList = [updatedModelFilePath, logFilePath, clogFilePath]
+            self._dpUtilityApi(operator="chem-comp-instance-update", inputFileName=inputFile, outputFilePathList=outputFileList,
                                options=additionalOptions, pickleFile=entry_id + "_RunLigandTask")
             #
             defaultErrMsg = ""
@@ -136,7 +137,7 @@ class RunLigandTask(BaseClass):
                 value = ""
             #
             value = value.strip()
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             value = ""
         #
         return value

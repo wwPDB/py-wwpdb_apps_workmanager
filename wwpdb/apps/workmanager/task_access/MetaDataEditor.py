@@ -29,6 +29,7 @@ from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
 from wwpdb.apps.workmanager.task_access.BaseClass import BaseClass
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 
+
 class MetaDataEditor(BaseClass):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
