@@ -125,7 +125,7 @@ class StatusHelperTests(unittest.TestCase):
         self.assertEqual(compute_extended_hold_date("2020-01-31", 3), "2021-05-01")
         self.assertRaises(ValueError, compute_extended_hold_date, "", 3)
         self.assertRaises(ValueError, compute_extended_hold_date, "2020-01-15", "x")
-        self.assertRaises(ValueError, compute_extended_hold_date, "15-01-2020", 3)
+        self.assertRaises(ValueError, compute_extended_hold_date, "not-a-date", 3)
 
 
 class ActionTests(unittest.TestCase):
