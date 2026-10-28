@@ -2,7 +2,7 @@
 # File:  actions.py
 # Date:  28-Oct-2026
 ##
-"""Per-deposition backends for console actions (To Do, Level 2, Status, Communication)."""
+"""Per-deposition backends for console actions (To Do, Level 2, Status, Communication, AnnMod)."""
 
 from wwpdb.apps.workmanager.console import catalog
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
@@ -82,6 +82,8 @@ def run_action(site_id, action_id, deposition_id, annotator, extra, verbose=Fals
         catalog.ACTION_SEND_TEMPLATE_MESSAGE,
         catalog.ACTION_ADD_INTERNAL_NOTE,
         catalog.ACTION_SET_INTERNAL_NOTES_FLAG,
+        catalog.ACTION_ANNMOD_FINISH,
+        catalog.ACTION_ANNMOD_ASSIGN_ALL_MONOMERS,
     ):
         if req_obj is None:
             raise ValueError("This action needs a Work Manager session.")
@@ -111,4 +113,16 @@ def run_action(site_id, action_id, deposition_id, annotator, extra, verbose=Fals
         from wwpdb.apps.workmanager.console import msg_ops
 
         return msg_ops.set_notes_flag(req_obj, deposition_id, annotator, extra, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_ANNMOD_FINISH:
+        from wwpdb.apps.workmanager.console import annmod_ops
+
+        return annmod_ops.run_open_and_finish(req_obj, deposition_id, annotator, extra=None, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_ANNMOD_ASSIGN_ALL_MONOMERS:
+        from wwpdb.apps.workmanager.console import annmod_ops
+
+        extra_ann = dict(extra or {})
+        extra_ann["assign_all_monomers"] = True
+        return annmod_ops.run_open_and_finish(
+            req_obj, deposition_id, annotator, extra=extra_ann, verbose=verbose, log=log
+        )
     raise ValueError("Unknown or not-yet-implemented action.")

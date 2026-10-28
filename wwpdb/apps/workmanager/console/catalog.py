@@ -15,6 +15,8 @@ ACTION_SET_AUTH_VALIDATION_LETTER = "set_auth_validation_letter"
 ACTION_SEND_TEMPLATE_MESSAGE = "send_template_message"
 ACTION_ADD_INTERNAL_NOTE = "add_internal_note"
 ACTION_SET_INTERNAL_NOTES_FLAG = "set_internal_notes_flag"
+ACTION_ANNMOD_FINISH = "annmod_finish"
+ACTION_ANNMOD_ASSIGN_ALL_MONOMERS = "annmod_assign_all_monomers"
 
 IMPLEMENTED_ACTION_IDS = frozenset(
     (
@@ -27,6 +29,8 @@ IMPLEMENTED_ACTION_IDS = frozenset(
         ACTION_SEND_TEMPLATE_MESSAGE,
         ACTION_ADD_INTERNAL_NOTE,
         ACTION_SET_INTERNAL_NOTES_FLAG,
+        ACTION_ANNMOD_FINISH,
+        ACTION_ANNMOD_ASSIGN_ALL_MONOMERS,
     )
 )
 
@@ -40,6 +44,8 @@ ACTION_LABELS = {
     ACTION_SEND_TEMPLATE_MESSAGE: "Send template message",
     ACTION_ADD_INTERNAL_NOTE: "Add internal note",
     ACTION_SET_INTERNAL_NOTES_FLAG: "Enable or disable internal notes",
+    ACTION_ANNMOD_FINISH: "Open AnnMod and Finish",
+    ACTION_ANNMOD_ASSIGN_ALL_MONOMERS: "Open AnnMod, assign all monomers, and Finish",
 }
 
 # Communication UI ids (cmps_*) and the context_type stored on the message.
