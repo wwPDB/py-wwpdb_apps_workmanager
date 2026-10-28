@@ -34,7 +34,7 @@ def run_add_to_my_todo(sdb, deposition_id, annotator):
     return "added to TO DO"
 
 
-def run_remove_from_my_todo(sdb, deposition_id, annotator):
+def run_remove_from_my_todo(sdb, deposition_id, annotator):  # pylint: disable=unused-argument
     existing = sdb.getAnnoSelection(depositionids=[deposition_id])
     if not existing:
         return "not on TO DO"

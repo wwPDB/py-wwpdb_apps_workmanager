@@ -28,7 +28,7 @@ def compute_extended_hold_date(deposit_date, months):
         year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
         add = int(months)
     except (TypeError, ValueError):
-        raise ValueError("No deposition date; cannot extend hold.")
+        raise ValueError("No deposition date; cannot extend hold.")  # pylint: disable=raise-missing-from
     total = (month - 1) + add + 12
     ny = year + (total // 12)
     nm = total % 12
@@ -39,12 +39,12 @@ def _pdbx_entry_info_io(verbose, log):
     try:
         from mmcif_utils.pdbx.PdbxIo import PdbxEntryInfoIo
     except ImportError:
-        from wwpdb.apps.ann_tasks_v2.report.styles.PdbxIo import PdbxEntryInfoIo
+        from wwpdb.apps.ann_tasks_v2.report.styles.PdbxIo import PdbxEntryInfoIo  # pylint: disable=import-error,no-name-in-module
     return PdbxEntryInfoIo(verbose=verbose, log=log)
 
 
-def _fetch_model(req_obj, deposition_id, verbose, log):
-    from wwpdb.apps.ann_tasks_v2.utils.SessionDownloadUtils import SessionDownloadUtils
+def fetch_model(req_obj, deposition_id, verbose, log):
+    from wwpdb.apps.ann_tasks_v2.utils.SessionDownloadUtils import SessionDownloadUtils  # pylint: disable=import-error,no-name-in-module
 
     req_obj.setValue("identifier", deposition_id)
     req_obj.setValue("idcode", deposition_id)
@@ -57,7 +57,7 @@ def _fetch_model(req_obj, deposition_id, verbose, log):
     return du, path
 
 
-def _read_entry_info(file_path, verbose, log):
+def read_entry_info(file_path, verbose, log):
     pdbx_i = _pdbx_entry_info_io(verbose, log)
     pdbx_i.setFilePath(file_path)
     pdbx_i.get()
@@ -101,7 +101,7 @@ def _archive_next_path(req_obj, deposition_id, verbose, log):
 
 
 def _status_update(req_obj, verbose, log):
-    from wwpdb.apps.ann_tasks_v2.status.StatusUpdate import StatusUpdate
+    from wwpdb.apps.ann_tasks_v2.status.StatusUpdate import StatusUpdate  # pylint: disable=import-error,no-name-in-module
 
     return StatusUpdate(reqObj=req_obj, verbose=verbose, log=log)
 
@@ -109,8 +109,8 @@ def _status_update(req_obj, verbose, log):
 def run_reload(req_obj, deposition_id, annotator, verbose=False, log=sys.stderr):
     from wwpdb.apps.wf_engine.engine.WFEapplications import killAllWF
 
-    _du, file_path = _fetch_model(req_obj, deposition_id, verbose, log)
-    info, _em = _read_entry_info(file_path, verbose, log)
+    _du, file_path = fetch_model(req_obj, deposition_id, verbose, log)
+    info, _em = read_entry_info(file_path, verbose, log)
     sU = _status_update(req_obj, verbose, log)
     ok1 = sU.wfLoad(
         deposition_id,
@@ -136,8 +136,8 @@ def run_extend_hold(req_obj, deposition_id, annotator, extra, verbose=False, log
 
     months = catalog.validate_hold_months((extra or {}).get("hold_months"))
     notify = _truthy((extra or {}).get("hold_notify"))
-    du, file_path = _fetch_model(req_obj, deposition_id, verbose, log)
-    info, em = _read_entry_info(file_path, verbose, log)
+    _du, file_path = fetch_model(req_obj, deposition_id, verbose, log)
+    info, em = read_entry_info(file_path, verbose, log)
     has_pdb, has_em = _acc_flags(info)
     new_date = compute_extended_hold_date(info.get("deposit_date"), months)
     pdb_hold = new_date if has_pdb else str(info.get("hold_coord_date") or "")
@@ -214,8 +214,8 @@ def run_set_auth(req_obj, deposition_id, annotator, extra, verbose=False, log=sy
     send_letter = _truthy((extra or {}).get("send_letter"))
     if (extra or {}).get("send_letter") is None:
         send_letter = True
-    du, file_path = _fetch_model(req_obj, deposition_id, verbose, log)
-    info, em = _read_entry_info(file_path, verbose, log)
+    _du, file_path = fetch_model(req_obj, deposition_id, verbose, log)
+    info, em = read_entry_info(file_path, verbose, log)
     has_pdb, has_em = _acc_flags(info)
     _check_auth_policy(info, em, has_pdb, has_em)
     org_status = str(info.get("status_code") or "")
@@ -289,5 +289,5 @@ def run_set_auth(req_obj, deposition_id, annotator, extra, verbose=False, log=sy
             letter = msg_ops.send_template(req_obj, deposition_id, annotator, "cmps_vldtn", verbose=verbose, log=log)
             detail += "; " + letter
         except Exception as exc:  # noqa: BLE001
-            raise ValueError("AUTH done, letter failed: %s" % (exc,))
+            raise ValueError("AUTH done, letter failed: %s" % (exc,))  # pylint: disable=raise-missing-from
     return detail

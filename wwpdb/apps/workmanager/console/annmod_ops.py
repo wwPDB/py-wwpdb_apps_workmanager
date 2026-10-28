@@ -51,7 +51,8 @@ def _error_text(rC, fallback):
         return fallback
     try:
         if rC.isError():
-            text = str(rC._cD.get("errortext") or rC._cD.get("statustext") or "").strip()
+            payload = getattr(rC, "_cD", {})  # pylint: disable=protected-access
+            text = str(payload.get("errortext") or payload.get("statustext") or "").strip()
             text = re.sub(r"<[^>]+>", " ", text)
             text = " ".join(text.split())
             if text:
@@ -62,7 +63,7 @@ def _error_text(rC, fallback):
 
 
 def _do_annmod(req, verbose, log):
-    from wwpdb.apps.ann_tasks_v2.webapp.AnnTasksWebAppWorker import AnnTasksWebAppWorker
+    from wwpdb.apps.ann_tasks_v2.webapp.AnnTasksWebAppWorker import AnnTasksWebAppWorker  # pylint: disable=import-error,no-name-in-module
 
     worker = AnnTasksWebAppWorker(reqObj=req, verbose=verbose, log=log)
     return worker.doOp()

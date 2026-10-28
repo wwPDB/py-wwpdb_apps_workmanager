@@ -78,14 +78,14 @@ def send_template(req_obj, deposition_id, annotator, template_id, verbose=False,
         try:
             from wwpdb.apps.workmanager.console import status_ops
 
-            _du, file_path = status_ops._fetch_model(req_obj, deposition_id, verbose, log)
-            info, em = status_ops._read_entry_info(file_path, verbose, log)
+            _du, file_path = status_ops.fetch_model(req_obj, deposition_id, verbose, log)
+            info, em = status_ops.read_entry_info(file_path, verbose, log)
             hold_date = str(info.get("hold_coord_date") or em.get("em_map_hold_date") or "").strip()
         except Exception:  # noqa: BLE001
             hold_date = ""
         if not hold_date:
             raise ValueError("No hold date on the model; cannot send an extension letter.")
-        if not mio.sendHoldExtensionNotice(deposition_id, months, hold_date, annotator):
+        if not mio.sendHoldExtensionNotice(deposition_id, months, hold_date, annotator):  # pylint: disable=no-member
             raise ValueError("Failed to send extension message.")
         return "sent %s" % row["label"]
 
@@ -137,7 +137,7 @@ def send_template(req_obj, deposition_id, annotator, template_id, verbose=False,
         else:
             raise ValueError("Choose a Communication template.")
     except KeyError as exc:
-        raise ValueError("Could not fill Communication template (missing %s)." % (exc,))
+        raise ValueError("Could not fill Communication template (missing %s)." % (exc,))  # pylint: disable=raise-missing-from
     if not attach:
         file_refs = []
     message_dict = {
@@ -191,7 +191,7 @@ def _notes_flag_path(req_obj, deposition_id, verbose, log):
     return os.path.join(archive_pth, "NOTES_FLAGGING_STATUS")
 
 
-def set_notes_flag(req_obj, deposition_id, annotator, extra, verbose=False, log=sys.stderr):
+def set_notes_flag(req_obj, deposition_id, annotator, extra, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
     wanted = catalog.validate_notes_flag((extra or {}).get("notes_flag"))
     path = _notes_flag_path(req_obj, deposition_id, verbose, log)
     current = ""
