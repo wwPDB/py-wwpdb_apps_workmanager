@@ -2,7 +2,7 @@
 # File:  actions.py
 # Date:  28-Oct-2026
 ##
-"""Per-deposition backends for Phase 1 console actions (To Do + Level 2)."""
+"""Per-deposition backends for console actions (To Do, Level 2, Status, Communication)."""
 
 from wwpdb.apps.workmanager.console import catalog
 from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
@@ -63,7 +63,7 @@ def run_level2(sdb, deposition_id, module_row, operation):
     return "queued %s %s" % (op_label, class_id)
 
 
-def run_action(site_id, action_id, deposition_id, annotator, extra, verbose=False, log=None):
+def run_action(site_id, action_id, deposition_id, annotator, extra, verbose=False, log=None, req_obj=None):
     sdb = StatusDbApi(siteId=site_id, verbose=verbose, log=log)
     if action_id == catalog.ACTION_ADD_TO_MY_TODO:
         return run_add_to_my_todo(sdb, deposition_id, annotator)
@@ -75,4 +75,40 @@ def run_action(site_id, action_id, deposition_id, annotator, extra, verbose=Fals
             (extra or {}).get("level2_operation"),
         )
         return run_level2(sdb, deposition_id, module_row, operation)
+    if action_id in (
+        catalog.ACTION_RELOAD_DATA_FILE,
+        catalog.ACTION_EXTEND_HOLD_DATE,
+        catalog.ACTION_SET_AUTH_VALIDATION_LETTER,
+        catalog.ACTION_SEND_TEMPLATE_MESSAGE,
+        catalog.ACTION_ADD_INTERNAL_NOTE,
+        catalog.ACTION_SET_INTERNAL_NOTES_FLAG,
+    ):
+        if req_obj is None:
+            raise ValueError("This action needs a Work Manager session.")
+    if action_id == catalog.ACTION_RELOAD_DATA_FILE:
+        from wwpdb.apps.workmanager.console import status_ops
+
+        return status_ops.run_reload(req_obj, deposition_id, annotator, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_EXTEND_HOLD_DATE:
+        from wwpdb.apps.workmanager.console import status_ops
+
+        return status_ops.run_extend_hold(req_obj, deposition_id, annotator, extra, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_SET_AUTH_VALIDATION_LETTER:
+        from wwpdb.apps.workmanager.console import status_ops
+
+        return status_ops.run_set_auth(req_obj, deposition_id, annotator, extra, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_SEND_TEMPLATE_MESSAGE:
+        from wwpdb.apps.workmanager.console import msg_ops
+
+        return msg_ops.send_template(
+            req_obj, deposition_id, annotator, (extra or {}).get("message_template_id"), verbose=verbose, log=log
+        )
+    if action_id == catalog.ACTION_ADD_INTERNAL_NOTE:
+        from wwpdb.apps.workmanager.console import msg_ops
+
+        return msg_ops.add_internal_note(req_obj, deposition_id, annotator, extra, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_SET_INTERNAL_NOTES_FLAG:
+        from wwpdb.apps.workmanager.console import msg_ops
+
+        return msg_ops.set_notes_flag(req_obj, deposition_id, annotator, extra, verbose=verbose, log=log)
     raise ValueError("Unknown or not-yet-implemented action.")

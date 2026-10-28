@@ -35,6 +35,36 @@ class ConsoleOps(object):
         rC.addDictionaryItems(data)
         return rC
 
+    def _extra_for_action(self, action_id):
+        extra = {}
+        if action_id == catalog.ACTION_RUN_OR_RESTART_LEVEL2_MODULE:
+            module_row, operation = catalog.validate_level2_choice(
+                self.__reqObj.getValue("level2_module"),
+                self.__reqObj.getValue("level2_operation"),
+            )
+            extra["level2_module"] = module_row["id"]
+            extra["level2_operation"] = operation
+            extra["level2_label"] = module_row["label"]
+        elif action_id == catalog.ACTION_EXTEND_HOLD_DATE:
+            extra["hold_months"] = catalog.validate_hold_months(self.__reqObj.getValue("hold_months"))
+            extra["hold_notify"] = str(self.__reqObj.getValue("hold_notify") or "").strip().lower() in ("1", "yes", "true", "on")
+        elif action_id == catalog.ACTION_SET_AUTH_VALIDATION_LETTER:
+            send = str(self.__reqObj.getValue("send_letter") or "yes").strip().lower()
+            extra["send_letter"] = send not in ("0", "no", "false", "off")
+            extra["send_letter_label"] = "AUTH + letter" if extra["send_letter"] else "AUTH only"
+        elif action_id == catalog.ACTION_SEND_TEMPLATE_MESSAGE:
+            row = catalog.validate_message_template(self.__reqObj.getValue("message_template_id"))
+            extra["message_template_id"] = row["id"]
+            extra["message_template_label"] = row["label"]
+        elif action_id == catalog.ACTION_ADD_INTERNAL_NOTE:
+            extra["note_subject"] = str(self.__reqObj.getValue("note_subject") or "").strip()
+            extra["note_body"] = str(self.__reqObj.getRawValue("note_body") or "").strip()
+            if not extra["note_subject"] or not extra["note_body"]:
+                raise ValueError("Enter a note subject and body.")
+        elif action_id == catalog.ACTION_SET_INTERNAL_NOTES_FLAG:
+            extra["notes_flag"] = catalog.validate_notes_flag(self.__reqObj.getValue("notes_flag"))
+        return extra
+
     def login(self):
         username = str(self.__reqObj.getValue("username") or "").strip()
         password = str(self.__reqObj.getValue("password") or "")
@@ -88,17 +118,10 @@ class ConsoleOps(object):
         if not deposition_ids:
             return self._json(error="No valid deposition IDs (expected D_1234567890).")
         extra = {}
-        if action_id == catalog.ACTION_RUN_OR_RESTART_LEVEL2_MODULE:
-            try:
-                module_row, operation = catalog.validate_level2_choice(
-                    self.__reqObj.getValue("level2_module"),
-                    self.__reqObj.getValue("level2_operation"),
-                )
-            except ValueError as exc:
-                return self._json(error=str(exc))
-            extra["level2_module"] = module_row["id"]
-            extra["level2_operation"] = operation
-            extra["level2_label"] = module_row["label"]
+        try:
+            extra = self._extra_for_action(action_id)
+        except ValueError as exc:
+            return self._json(error=str(exc))
         annotator = user["annotator"]
         progress = jobs.new_job(self.__sessionPath, action_id, annotator, deposition_ids, extra=extra)
         job_id = progress["job_id"]
@@ -120,6 +143,7 @@ class ConsoleOps(object):
                     extra,
                     verbose=self.__verbose,
                     log=self.__lfh,
+                    req_obj=self.__reqObj,
                 )
                 jobs.set_row(self.__sessionPath, job_id, dep_id, "ok", "")
                 jobs.append_log(self.__sessionPath, job_id, "[%s] OK %s" % (dep_id, detail))
