@@ -4,6 +4,7 @@
 #
 # Updates:
 #  10-Dec-2024 zf  added refreshing "latency of servers" report
+#  28-Oct-2026     annotator batch console (/service/workmanager/console_*)
 ##
 """
 Chemeditor web request and response processing modules.
@@ -69,6 +70,7 @@ from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent
 from wwpdb.utils.session.WebUploadUtils import WebUploadUtils
 from wwpdb.utils.config.ProjectVersionInfo import ProjectVersionInfo
 from wwpdb.apps.msgmodule.util.AutoMessage import AutoMessage
+from wwpdb.apps.workmanager.console.ops import ConsoleOps
 #
 
 
@@ -231,6 +233,12 @@ class WorkManagerWebAppWorker(object):
                            '/service/workmanager/open_editing_page': '_LaunchEditingPageOp',
                            '/service/workmanager/submit_editing_form': '_ProcessEditingFormOp',
                            '/service/workmanager/check_editing_form_status': '_CheckEditingFormStatusOp',
+                           '/service/workmanager/console_login': '_ConsoleLoginOp',
+                           '/service/workmanager/console_logout': '_ConsoleLogoutOp',
+                           '/service/workmanager/console_whoami': '_ConsoleWhoamiOp',
+                           '/service/workmanager/console_start': '_ConsoleStartOp',
+                           '/service/workmanager/console_status': '_ConsoleStatusOp',
+                           '/service/workmanager/console_cancel': '_ConsoleCancelOp',
                            }
 
     def doOp(self):
@@ -1153,6 +1161,35 @@ class WorkManagerWebAppWorker(object):
         rtrnDict['textcontent'] = successful_msg
         rtrnDict['taskcontent'] = taskInfoTxt
         return self.__returnJsonDict(rtrnDict)
+
+    def _consoleOps(self):
+        self.__getSession()
+        return ConsoleOps(
+            reqObj=self.__reqObj,
+            session_id=self.__sessionId,
+            session_path=self.__sessionPath,
+            site_id=self.__siteId,
+            verbose=self.__verbose,
+            log=self.__lfh,
+        )
+
+    def _ConsoleLoginOp(self):
+        return self._consoleOps().login()
+
+    def _ConsoleLogoutOp(self):
+        return self._consoleOps().logout()
+
+    def _ConsoleWhoamiOp(self):
+        return self._consoleOps().whoami()
+
+    def _ConsoleStartOp(self):
+        return self._consoleOps().start()
+
+    def _ConsoleStatusOp(self):
+        return self._consoleOps().status()
+
+    def _ConsoleCancelOp(self):
+        return self._consoleOps().cancel()
 
     def _LaunchEditingPageOp(self):
         """ Launch batch editing page

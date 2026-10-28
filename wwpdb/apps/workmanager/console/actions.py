@@ -1,0 +1,78 @@
+##
+# File:  actions.py
+# Date:  28-Oct-2026
+##
+"""Per-deposition backends for Phase 1 console actions (To Do + Level 2)."""
+
+from wwpdb.apps.workmanager.console import catalog
+from wwpdb.apps.workmanager.db_access.StatusDbApi import StatusDbApi
+
+
+def _level2_class_id(module_row, operation):
+    class_id = module_row["class_id"]
+    if operation == "run_ui":
+        return class_id + "UI"
+    return class_id
+
+
+def _level2_class_file(sdb, class_id, operation):
+    class_info = sdb.getWfClassByID(classID=class_id)
+    if not class_info or not class_info.get("class_file"):
+        raise ValueError("Unknown workflow class '%s'." % class_id)
+    class_file = str(class_info["class_file"])
+    if operation == "restart":
+        if class_file.find(".bf.xml") < 0:
+            class_file = "Annotation.bf.xml:" + str(class_id)
+    return class_file
+
+
+def run_add_to_my_todo(sdb, deposition_id, annotator):
+    existing = sdb.getAnnoSelection(depositionids=[deposition_id])
+    if existing:
+        return "already on TO DO"
+    sdb.addToMyList(deposition_id, annotator)
+    return "added to TO DO"
+
+
+def run_remove_from_my_todo(sdb, deposition_id, annotator):
+    existing = sdb.getAnnoSelection(depositionids=[deposition_id])
+    if not existing:
+        return "not on TO DO"
+    sdb.removeFromMyList(deposition_id)
+    return "removed from TO DO"
+
+
+def run_level2(sdb, deposition_id, module_row, operation):
+    class_id = _level2_class_id(module_row, operation)
+    class_file = _level2_class_file(sdb, class_id, operation)
+    instance_id = None
+    last = sdb.getLastWFInstance(depositionid=deposition_id, classid=class_id)
+    if last and last.get("wf_inst_id"):
+        instance_id = last["wf_inst_id"]
+    msg = sdb.insertCommunicationCommand(
+        depositionid=deposition_id,
+        instid=instance_id,
+        classid=class_id,
+        command="restartGoWF",
+        classname=class_file,
+        dataversion="latest",
+    )
+    if msg != "OK":
+        raise ValueError(msg or "Failed to queue workflow command.")
+    op_label = "Run+UI" if operation == "run_ui" else ("Restart" if operation == "restart" else "Run")
+    return "queued %s %s" % (op_label, class_id)
+
+
+def run_action(site_id, action_id, deposition_id, annotator, extra, verbose=False, log=None):
+    sdb = StatusDbApi(siteId=site_id, verbose=verbose, log=log)
+    if action_id == catalog.ACTION_ADD_TO_MY_TODO:
+        return run_add_to_my_todo(sdb, deposition_id, annotator)
+    if action_id == catalog.ACTION_REMOVE_FROM_MY_TODO:
+        return run_remove_from_my_todo(sdb, deposition_id, annotator)
+    if action_id == catalog.ACTION_RUN_OR_RESTART_LEVEL2_MODULE:
+        module_row, operation = catalog.validate_level2_choice(
+            (extra or {}).get("level2_module"),
+            (extra or {}).get("level2_operation"),
+        )
+        return run_level2(sdb, deposition_id, module_row, operation)
+    raise ValueError("Unknown or not-yet-implemented action.")
